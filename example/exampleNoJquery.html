@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mpinjs example</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="../dist/mpinjs.js" type="text/javascript"></script>
+  </head>
+  <body>
+		<div>Mpinjs example:</div>
+
+		<span>Setup flow only</span>
+
+		<script type="text/javascript">
+      function step1 () {
+        var usrId = "test@user.de";
+        mpin.makeNewUser(usrId);
+        mpin.startRegistration(usrId, function (err, data) {
+					if (err) {
+						return ;
+					}
+          step2(usrId);
+        });
+      }
+
+      function step2 (userId) {
+        mpin.confirmRegistration(userId, function (err, data) {
+					if (err) {
+						//activate Identity error
+						return ;
+					}
+          step3(userId);
+        });
+      }
+
+      function step3 (userId) {
+        var final = mpin.finishRegistration(userId, 1234);
+				
+      }
+
+      var mpin = new mpinjs({
+        server: "http://192.168.10.63:8005"
+      });
+
+      mpin.init(function (err, data) {
+        step1();
+      });
+
+		</script>
+
+
+  </body>
+</html>

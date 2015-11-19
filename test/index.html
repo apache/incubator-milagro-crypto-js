@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+  <head>
+    <title>MPin js Browser tests</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" media="all" href="../node_modules/mocha/mocha.css">
+		<script src="../node_modules/chai/chai.js"></script>
+		<script src="../node_modules/sinon-chai/lib/sinon-chai.js"></script>
+		<script src="../node_modules/mocha/mocha.js"></script>
+		<script src="../node_modules/sinon/pkg/sinon.js"></script>
+		<script src="../dist/mpinjs.js"></script> 
+  </head>
+  <body>
+		<!-- This is where mocha inserts the test results that are styled with the css file above -->
+		<div id="mocha"></div>
+		<!-- This is where any fixtures we need for the test will be inserted into. Naturally, we won't want to cover the mocha test results so we position this bad boy off screen. -->
+		<div id="test" style="position: fixed; top: 0; left: -99999px;"></div>
+
+		<script>
+      mocha.setup('bdd');
+
+      mocha.ui('bdd');
+      mocha.reporter('html');
+      expect = chai.expect;
+
+
+		</script>
+
+		<script src="init.js"></script>
+		<script src="index.js"></script>
+		<script src="auth.js"></script>
+		<script>
+
+      mocha.run();
+		</script>
+  </body>
+</html>

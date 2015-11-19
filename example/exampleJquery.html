@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+  <head>
+    <title>Mpin JS SDK</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="../dist/mpinjs.js" type="text/javascript"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.js" type="text/javascript"></script>
+
+		<style>
+			fieldset {
+				margin: 0 auto;
+				width: 50%;
+			}
+
+			.notActivate {
+				color: red;
+				cursor: pointer;
+			}
+
+			.smallInput {
+				width: 100px;
+			}
+		</style>
+
+		<script type="text/javascript">
+      $(document).ready(function () {
+
+        //// MPIN init
+        window.mpin = mpin = new mpinjs({
+          server: "http://ssodemo.certivox.com"
+        });
+
+        mpin.init(function (err, data) {
+          if (err) {
+            console.error("Wrong setup : ", err);
+          }
+
+          listUsers();
+        });
+
+        function listUsers () {
+          var mpinUsers = mpin.listUsers(), htmlList;
+
+          htmlList = "<ul>";
+          for (var i in mpinUsers) {
+            htmlList += "<li>" + mpinUsers[i].userId + "&nbsp;&nbsp;&nbsp;";
+            htmlList += "<input type='text' placeholder='PIN' size='10' class='userPin'>&nbsp;&nbsp;&nbsp;";
+            if (mpinUsers[i].state === "REGISTERED") {
+              htmlList += "<span class='registered' data-userid='" + mpinUsers[i].userId + "' data-state='" + mpinUsers[i].state + "'>Authenticate</span>";
+              htmlList += "<div style='float: right'><input type='text' placeholder='Access Number' size='10' class='userAN'>&nbsp;&nbsp;&nbsp;";
+              htmlList += "<span class='auth-accnumber' data-userid='" + mpinUsers[i].userId + "'>Authenticate(AN)</span></div>";
+            } else {
+              htmlList += "<span class='setup' data-userid='" + mpinUsers[i].userId + "' data-state='" + mpinUsers[i].state + "'>Setup</span>";
+            }
+            htmlList += "</span></li>";
+          }
+          htmlList += "<ul>";
+
+          $("#mpinUsers").html(htmlList);
+        }
+
+
+        $(document).on('click', ".setup", function (ev) {
+          var thisElem, userId, userPin, state;
+
+          thisElem = $(ev.currentTarget);
+          userId = thisElem.data('userid');
+          userPin = thisElem.prev("input").val();
+          state = thisElem.data('state');
+
+          mpin.startRegistration(userId, function (err3, data3) {
+            mpin.confirmRegistration(userId, function (err, data) {
+              if (err) {
+                console.error("Error :1::", err);
+                return;
+              }
+
+              var finish = mpin.finishRegistration(userId, userPin);
+              if (finish.error) {
+                console.error("Error :::", finish.error);
+                return;
+              }
+
+              thisElem.append(" :: Successful");
+            });
+
+          });
+
+        });
+
+
+        $(document).on('click', ".registered", function (ev) {
+          var userId, userPin, state;
+          userId = $(ev.currentTarget).data('userid');
+          userPin = $(ev.currentTarget).prev("input.userPin").val();
+          state = $(ev.currentTarget).data('state');
+
+          mpin.startAuthentication(userId, function (err, data) {
+            if (err) {
+              console.error("Error :::", err);
+              return;
+            }
+
+            mpin.finishAuthentication(userId, userPin, function (err2, data2) {
+              if (err2) {
+                console.error("Error :::", err2);
+                return;
+              }
+
+              $(ev.currentTarget).append(" :: Successful");
+            });
+          });
+        });
+
+
+        $(document).on('click', ".auth-accnumber", function (ev) {
+          var userId, userPin, userAN;
+          userId = $(ev.currentTarget).data('userid');
+					userPin = $(ev.currentTarget).parents("li").find("input.userPin").val();
+					userAN = $(ev.currentTarget).prev("input.userAN").val();
+					
+					if (!mpin.checkAccessNumber(userAN)) {
+						$(".errAccessNumber").remove();
+						$(ev.currentTarget).prepend("<span style='color: red' class='errAccessNumber'>Invalid Access Number</span>");
+						return;
+					}
+					
+          mpin.startAuthentication(userId, function (err, data) {
+            if (err) {
+              console.error("Error :::", err);
+              return;
+            }
+             mpin.finishAuthenticationAN(userId, userPin, userAN, function (err2, data2) {
+             if (err2) {
+             console.error("Error :::", err2);
+             return;
+             }
+             
+             $(ev.currentTarget).append(" :: Successful");
+             });
+          });
+        });
+
+
+
+
+        $("#regButton").click(function (ev) {
+          var usrId;
+          usrId = $("#mpinUsrId").val();
+
+          if (usrId) {
+            mpin.makeNewUser(usrId);
+            mpin.startRegistration(usrId, function (err, data) {
+              if (err) {
+                return console.error("startRegistration error :::", err);
+              }
+              chkUser(usrId);
+            });
+          }
+
+          ev.stopPropagation();
+        });
+
+
+
+        function chkUser (userId) {
+          var userState = mpin.getUser(userId, "state");
+
+          mpin.confirmRegistration(userId, function (err, data) {
+            //not Active Identity
+            var userElem = $(".usrId[data-userid='" + userId + "']");
+            if (err) {
+              if (userElem.length === 0) {
+                $("#mpinUsersList").append("<li><span class='usrId notActivate' data-userid='" + userId + "'>" + userId + "</span>&nbsp;&nbsp;&nbsp;<input class='smallInput' type='text' placeholder='user Pin'></li>");
+              }
+              return;
+            }
+
+            if (userElem.length === 0) {
+              $("#mpinUsersList").append("<li><span class='usrId notActivate' data-userid='" + userId + "'>" + userId + "</span>&nbsp;&nbsp;&nbsp;<input class='smallInput' type='text' placeholder='user Pin'></li>");
+            }
+
+            var usrPin = userElem.next("input").val();
+            console.log("usrPin :::", usrPin);
+            if (usrPin) {
+              var finish = mpin.finishRegistration(userId, usrPin);
+              if (!finish.error) {
+                userElem.removeClass("notActivate");
+
+                userElem.next("input").remove();
+                userElem.append("&nbsp;&nbsp;&nbsp;>> SETUP DONE");
+
+              } else {
+                console.error("::: OPs something goes wrong.", finish.error);
+              }
+            }
+//						var final = mpin.finishRegistration(userId, 1234);
+            console.log(".: done CONFIRM registration. NOW FINISH");
+          });
+        }
+
+        //live bind click for setup user
+        $(document).on('click', '.usrId', function (ev) {
+          var usrId;
+          usrId = $(this).data('userid');
+
+          chkUser(usrId);
+
+          ev.stopPropagation();
+        });
+
+
+        //// Mobile auth
+        $("#waitMobile").click(function () {
+          var totalTime, requestTime;
+          totalTime = $("#totalTime").val() || 30;
+          requestTime = $("#requestTime").val();
+
+          mpin.getAccessNumber(function (err, data) {
+            $("#mobileStatus").append("Access number: &nbsp;" + data.accessNumber + "<br>");
+            mpin.waitForMobileAuth(totalTime, requestTime, function (err, data) {
+              if (err) {
+                $("#mobileStatus").append(" Pending mobile authentication finish with " + err.type + "<br>");
+                return;
+              }
+              $("#mobileStatus").append(" Login successful");
+            });
+          });
+        });
+
+      });
+		</script>
+
+  </head>
+  <body>
+		<div>Mpin JS SDK </div>
+		<fieldset>
+			<legend>Mpin form:</legend>
+			<input type="text" id="mpinUsrId" placeholder="user id" >
+			<input type="submit" value="Register" id="regButton" style="float:right">
+
+			<h2>Registered users:</h2>
+
+			<div id="mpinUsers"></div>
+			<ul id="mpinUsersList"></ul>
+			<div class="mpinErrors"></div>
+		</fieldset>
+		<br><br>
+		<div style="border: 1px solid grey; margin: 0px auto; width: 50%;">
+
+			Mobile Authentication:<br>
+			<input type="text" id="totalTime" placeholder="Total time in seconds" ><br>
+			<input type="text" id="requestTime" placeholder="per request in seconds" ><br>
+
+			<input type="submit" value="Call" id="waitMobile">
+			<div id="mobileStatus"></div>
+		</div>
+  </body>
+</html>
