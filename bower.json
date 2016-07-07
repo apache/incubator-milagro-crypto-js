@@ -1,12 +1,11 @@
 {
 	"name": "mpinjs",
-	"version": "1.0.0",
 	"description": "Mpin lib front-end project",
 	"authors": [
 		"MIRACL"
 	],
 	"dependencies": {
-		"amcl": "https://github.com/miracl/mpin-crypto.git"
+		"milagro-crypto": "https://github.com/miracl/milagro-crypto.git#1.0.0"
 	},
 	"ignore": [
 		"**/*",
