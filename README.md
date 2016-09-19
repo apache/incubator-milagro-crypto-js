@@ -1,4 +1,4 @@
-# Headless M-Pin Client Library
+# Headless Milagro Client Library
 
 ## Requirement for build & testing
 
@@ -118,7 +118,10 @@ The list of errors is:
 
 ### The User object
 
-For each user an object needs to be created. The key to the user object is its identity, which is supposed to be unique. The user object has a _State_ which basically indicates what can be done with the user. For instance, if a user has not been registered, it cannot be authenticated, obviously. The different user states are:
+For each user an object needs to be created. The key to the user object is its identity, which is supposed to be unique.
+The user object has a _State_ which basically indicates what can be done with the user.
+For instance, if a user has not been registered, it cannot be authenticated, obviously.
+The different user states are:
 
 | State | Description |
 | ----- | ----------- |
@@ -132,7 +135,8 @@ For each user an object needs to be created. The key to the user object is its i
 
 #### Callbacks
 
-Some of the API methods have a `callback` parameter. The convention for the callback function is:
+Some of the API methods have a `callback` parameter.
+The convention for the callback function is:
 ```js
 function(error, data)
 ```
@@ -161,24 +165,29 @@ mpin = new mpinjs({
 })
 ```
 A key/value list of parameters is passed to the constructor as the currently recognized parameters are:
-* `server` - _Mandatory_. The address at which the M-Pin Service is accessible. This is usually the address of the Relying Party Application. For instance if the backend is an M-Pin SSO server this would be the address of that server.
+* `server` - _Mandatory_. The address at which the _Milagro MFA Service_ is accessible. This is usually the address of the Relying Party Application. For instance if the backend is an _M-Pin SSO_ server this would be the address of that server.
 * `rpsPrefix` - _Optional_. This parameter could be specified in case `rpsPrefix` parameter in the RPS configuration has been changed and is not the default one. If this option is not specified, then the default `"rps"` is used.
 
 ##### `init(callback)`
 
-This method will attempt to initialize the `mpinjs` instance according the provided options and retrieve users from the storage. It makes a request to retrieve the _Client Settings_ from the server. If the method succeeds, it will return the retrieved client settings as the `data` in the callback function.
+This method will attempt to initialize the `mpinjs` instance according the provided options and retrieve users from the storage.
+It makes a request to retrieve the _Client Settings_ from the server.
+If the method succeeds, it will return the retrieved client settings as the `data` in the callback function.
  
 #### User management API
 
 ##### `makeNewUser(userId, deviceId)`
 
-This method will create a new user object in the internal user storage. The new user will be initialized with the _state_ `"INVALID"`. The received parameters are:
-* `userId` - _Mandatory_, String - The identity of the new user. It should be unique for the given server / application. The user object could later on be referred to using this user identity. 
-* `deviceId` - _Optional_, String - Some description of the local device. This Device ID is passed to the RPA, which might store it and use it later to determine which M-Pin ID is associated with this device.
+This method will create a new user object in the internal user storage.
+The new user will be initialized with the _state_ `"INVALID"`.
+The received parameters are:
+* `userId` - _Mandatory_, String - The identity of the new user. It should be a unique for the given server / application. The user object could later on be referred to using this user identity.
+* `deviceId` - _Optional_, String - Some description of the local device. This Device ID is passed to the RPA, which might store it and use it later to determine which _M-Pin ID_ is associated with this device.
 
 ##### `listUsers()`
 
-This method will return a list of all the user objects that `mpinjs` has in its storage. The user objects are of the form:
+This method will return a list of all the user objects that `mpinjs` has in its storage.
+The user objects are of the form:
 ```js
 {
     userId: <user-identity>,
@@ -188,11 +197,11 @@ This method will return a list of all the user objects that `mpinjs` has in its 
 ```
 ##### `checkUser(userId)`
 
-This method will return `true` if a user object with the given `userId` exists, or `false` if not.
+This method will return `true` is a user object with the given `userId` exists, or `false` if not.
 
 ##### `getUser(userId, property)`
 
-This method will return either the user object that is associated with the given `userId`, or if `property` is specified it will return just the value of that property of the user object.
+This method will return either the user object that is associated with the given `userId`, or id `property` is specified it will return just the value of that property of the user object.
 * `userId` - _Mandatory_, String - The user identity associated with the user object
 * `property` - _Optional_, String - One of `"deviceId"`, `"state"` or `"userId"`. If specified, only the value of the specified property will be returned. Otherwise the whole user object will be returned, according to the specification in `listUsers()`.
 
@@ -208,9 +217,13 @@ Parameters:
 * `userId` - _Mandatory_, String - the user identity associated with the user that has to be registered.
 * `callback` - _Mandatory_, function(error,data) - The callback that will be called after the registration has been started. This parameter complies to the convention explained above.
 
-This method will start the registration process for the user with the identity `userId`. Such a user should be previously created with the `makeNewUser()` method and should be in _state_ `"INVALID"`. 
+This method will start the registration process for the user with the identity `userId`.
+Such a user should be previously created with the `makeNewUser()` method and should be in _state_ `"INVALID"`.
 
-After successful completion of this call the user should be in one of two states - `"STARTED"` or `"ACTIVATED"`. If the user is in state `"STARTED"`, then its identity needs to be verified according to the process chosen by the RPA. When this process is complete the method `confirmRegistration()` should be called to proceed with the registration process. If the user is in state `"ACTIVATED"`, then it was instantly made active by the RPA and `confirmRegistration()` could be called right away to continue with the registration process.
+After successful completion of this call the user should be in one of two states - `"STARTED"` or `"ACTIVATED"`.
+If the user is in state `"STARTED"`, then its identity needs to be verified according to the process chosen by the RPA.
+When this process is complete the method `confirmRegistration()` should be called to proceed with the registration process.
+If the user is in state `"ACTIVATED"`, then it was instantly made active by the RPA and `confirmRegistration()` could be called right away to continue with the registration process.
 
 ##### `restartRegistration(userId, callback)`
 
@@ -218,9 +231,12 @@ Parameters:
 * `userId` - _Mandatory_, String - the user identity associated with the user that has to be registered.
 * `callback` - _Mandatory_, function(error,data) - The callback that will be called after the registration has been started. This parameter complies to the convention explained above.
 
-This method will restart the registration process for the user with the identity `userId`. The registration process for the user should have been previously started with `startRegistration()` and the user object should be in _state_ `"STARTED"`. This method will cause the user identity verification to be restarted, i.e. if the verification is done by sending an e-mail, then a new e-mail will be sent.
+This method will restart the registration process for the user with the identity `userId`.
+The registration process for the user should have been previously started with `startRegistration()` and the user object should be in _state_ `"STARTED"`.
+This method will cause the user identity verification to be restarted, i.e. if the verification is done by sending an e-mail, then a new e-mail will be sent.
 
-After successful completion of this call the user should stay in state `"STARTED"`, awaiting for the identity to be verified. After it is done, `confirmRegistration()` should be called to proceed with the registration process.
+After successful completion of this call the user should stay in state `"STARTED"`, awaiting for the identity to be verified.
+After it is done, `confirmRegistration()` should be called to proceed with the registration process.
 
 ##### `confirmRegistration(userId, callback)`
 
@@ -228,7 +244,12 @@ Parameters:
 * `userId` - _Mandatory_, String - the user identity associated with the user which identity needs to be confirmed.
 * `callback` - _Mandatory_, function(error,data) - The callback that will be called after the method has been completed. This parameter complies to the convention explained above.
 
-This method attempts to retrieve the _Client Key_ for the user associated with the identity `userId`. The user is expected to be in one of two states - `"STARTED"` or `"ACTIVATED"`. If this is not the case, `"WRONG_FLOW"` error will be returned through the callback. If the user identity has not been verified and the _Client Key_ cannot be retrieved, `"IDENTITY_NOT_VERIFIED"` error will be returned through the callback. If the method has been completed successfully, then the user state is set to `"ACTIVATED"`. Afterwards, the desired secret (PIN or password) should be read from the end user and then `finishRegistration()` should be called to complete the user registration.
+This method attempts to retrieve the _Client Key_ for the user associated with the identity `userId`.
+The user is expected to be in one of two states - `"STARTED"` or `"ACTIVATED"`.
+If this is not the case, `"WRONG_FLOW"` error will be returned through the callback.
+If the user identity has not been verified and the _Client Key_ cannot be retrieved, `"IDENTITY_NOT_VERIFIED"` error will be returned through the callback.
+If the method has been completed successfully, then the user state is set to `"ACTIVATED"`.
+Afterwards, the desired secret (PIN or password) should be read from the end user and then `finishRegistration()` should be called to complete the user registration.
 
 ##### `finishRegistration(userId, pin)`
 
@@ -236,7 +257,10 @@ Parameters:
 * `userId` - _Mandatory_, String - the user identity associated with the user which registration process should be finalized.
 * `pin` - _Mandatory_, String - The user secret (PIN or password) that should be used while generating the _M-Pin Token_.
 
-This method will generate and store the _M-Pin Token_ using the _Client Key_ retrieved during `confirmRegistration()` and the provided `pin`. The user state has to be `"ACTIVATED"` and its _Client Key_ has to be previously retrieved. If those conditions are not met, the function will fail, returning a `"WRONG_FLOW"` error. If successful, the method will return `true` and the user state will be set to `"REGISTERED"`.
+This method will generate the and store the _M-Pin Token_ using the _Client Key_ retrieved during `confirmRegistration()` and the provided `pin`.
+The users' state has to be `"ACTIVATED"` and its _Client Key_ has to be previously retrieved.
+If those conditions are not met, the function will fail, returning a `"WRONG_FLOW"` error.
+If successful the method will return `true` and the user state will be set to `"REGISTERED"`.
 
 #### Authentication API
 
@@ -246,7 +270,10 @@ Parameters:
 * `userId` - _Mandatory_, String - the user identity associated with the user that needs to be authenticated.
 * `callback` - _Mandatory_, function(error,data) - The callback that will be called after the method has been completed. This parameter complies to the convention explained above.
 
-This method will attempt to retrieve _Time Permits_ for the given user, as a first step in the authentication process. The user has to be in state `"REGISTERED"`. If this is not the case, `"WRONG_FLOW"` error will be returned through the callback. If the time permit cannot be retrieved for some reason, `"USER_REVOKED"` error will be returned.
+This method will attempt to retrieve _Time Permits_ for the given user, as a first step in the authentication process.
+The user has to be in state `"REGISTERED"`.
+If this is not the case, `"WRONG_FLOW"` error will be returned through the callback.
+If the time permit cannot be retrieved for some reason, `"USER_REVOKED"` error will be returned.
 
 ##### `finishAuthentication(userId, pin, callback)`
 
@@ -255,7 +282,13 @@ Parameters:
 * `pin` - _Mandatory_, String - the user secret (PIN or password) that should be used for the user authentication.
 * `callback` - _Mandatory_, function(error,data) - The callback that will be called after the method has been completed. This parameter complies to the convention explained above.
 
-This method will attempt to authenticate the user against the M-Pin Server, using the provided `pin`. The user needs to have a valid time permit, previously retrieved via the `startAuthentication()` method. If the user authentication fails, `"WRONG_PIN"` error will be returned through the callback. If the authentication failed several times sequentially (usually 3), the user might become "blocked". When this happens the user state will be set to `"BLOCKED"` and this user will no longer be able to authenticate. If the authentication was successful, the returned `error` through the callback will be `null` and any data that was passed back by the RPA in the authentication response, will be returned through the callback's `data` parameter. Note that this data is not mandatory and might also be `null` or empty.
+This method will attempt to authenticate the user against the _Milagro MFA Server_, using the provided `pin`.
+The user needs to have a valid time permit, previously retrieved via the `startAuthentication()` method.
+If the user authentication fails, `"WRONG_PIN"` error will be returned through the callback.
+If the authentication failed several times sequentially (usually 3), the user might become "blocked".
+When this happens the users' state will be set to `"BLOCKED"` and this user will no longer be able to authenticate.
+If the authentication was successful, the returned `error` through the callback will be `null` and any data that was passed back by the RPA in the authentication response, will be returned through the callbacks' `data` parameter.
+Note that this data is not mandatory and might also be `null` or empty.
 
 ##### `finishAuthenticationOtp(userId, pin, callback)`
 
@@ -264,7 +297,9 @@ Parameters:
 * `pin` - _Mandatory_, String - the user secret (PIN or password) that should be used for the user authentication.
 * `callback` - _Mandatory_, function(error,data) - The callback that will be called after the method has been completed. This parameter complies to the convention explained above.
 
-This method is very similar to `finishAuthentication()`, but it is intended to be used when a _One Time Password_ (OTP) is intended to be generated by the server. Note that not all of the servers support that functionality and currently this type of authentication could only be used against M-Pin SSO servers. The authentication process is the same, but as a result the `data` provided in the callback will carry the OTP information as follows:
+This method is very similar to `finishAuthentication()`, but it is intended to be used when a _One Time Password_ (OTP) is intended to be generated by the server.
+Note that not all of the servers support that functionality and currently this time of authentication could only be used against M-Pin SSO servers.
+The authentication process is the same, but as a result the `data` provided in the callback will carry the OTP information as follows:
 ```js
 {
     otp: <otp>,
@@ -275,15 +310,18 @@ This method is very similar to `finishAuthentication()`, but it is intended to b
 ```
 * `otp` - String - the OTP returned by the server
 * `ttlSeconds` - Number - the OTP expiration period in seconds.
-* `nowTime` - Number - Current M-Pin system time in seconds since the Epoch
-* `expireTime` - Number - The M-Pin system time in seconds since the Epoch when the OTP will expire.
+* `nowTime` - Number - Current Milagro MFA System time in seconds since the Epoch
+* `expireTime` - Number - The Milagro MFA System time in seconds since the Epoch when the OTP will expire.
 
 ##### `getAccessNumber(callback)`
 
 Parameters:
 * `callback` - _Mandatory_, function(error,data) - The callback that will be called after the method has been completed. This parameter complies to the convention explained above.
 
-This method should be used when the authentication is about to be carried out from a remote/mobile device. For this reason an _Access Number_ should be displayed to the end user, and this number should be used on the mobile device to authenticate the user and then associate the local browser session with the mobile authentication event. The Access Number has an expiration period, which also should be displayed to the user, normally in a count-down fashion. Upon successful completion, this method will return through the callback the following `data`:
+This method should be used when the authentication is about to be carried out from a remote/mobile device.
+For this reason an _Access Number_ should be displayed to the end user, and this number should be used on the mobile device to authenticate the user and then associate the local browser session with the mobile authentication event.
+The Access Number has an expiration period, which also should be displayed to the user, normally in a count-down fashion.
+Upon successful completion, this method will return through the callback the following `data`:
 ```js
 {
     accessNumber: <access-number>,
@@ -296,12 +334,15 @@ This method should be used when the authentication is about to be carried out fr
 ##### `getQrUrl(prerollId, callback)`
 
 Parameters:
-* `prerollId` - _Optional_, String - an optional end-user ID that will be "embedded" into the QA code and will be pre-seeded to the Mobile App reading the QR code.
+* `prerollId` - _Optional_, String - an optional end-user ID that will be "embedded" into the QA code and will be pre-sed to the Mobile App reading the QR code.
 * `callback` - _Mandatory_, function(error,data) - The callback that will be called after the method has been completed. This parameter complies to the convention explained above.
 
-This method should be used when the authentication is about to be carried out from a remote/mobile device. This is an alternative to the _Access Number_ explained above and thus is very similar to it.
-The retrieved URL should be encoded and displayed to the end-user in the form of a QR code, which could be scanned by a Mobile App. The QR code carries information regarding that associates the local browser session with the mobile authentication event.
-The QR Code URL has an expiration period, which also should be displayed to the user, normally in a count-down fashion. Upon successful completion, this method will return through the callback the following `data`:
+This method should be used when the authentication is about to be carried out from a remote/mobile device.
+This is an alternative to the _Access Number_ explained above and thus is very similar to it.
+The retrieved URL should be encoded and displayed to the end-user in the form of a QR code, which could be scanned by a Mobile App.
+The QR code carries information regarding that associates the local browser session with the mobile authentication event.
+The QR Code URL has an expiration period, which also should be displayed to the user, normally in a count-down fashion.
+Upon successful completion, this method will return through the callback the following `data`:
  
 ```js
 {
@@ -320,8 +361,14 @@ Parameters:
 * `callback` - _Mandatory_, function(error,data) - The callback that will be called after the method has been completed. This parameter complies to the convention explained above.
 * `callbackStatus` - _Optional_, function(data) - A status callback that is called by this method in order to update the caller about any change of waiting status.
 
-This method should be used when the authentication is about to be carried out from a remote/mobile device. After an _Access Number_ or a _QR Code URL_ has been retrieved and displayed to the end user, the client should wait for an authentication from a remote/mobile device. Calling this method will initiate such an awaiting. The method will poll for a successful authentication each `requestSeconds` and if no such authentication happened will finally fail after `timeoutSeconds`. When this happens, the `error` returned through the callback will be `"TIMEOUT_FINISH"`. If successful, the function will return through the callback the same values expected after successful `finishAuthentication()`.
-This method will also call `callbackStatus`, if provided, to update for any change of the waiting status. `callbackStatus` should exit normally, so the control returns back to `waitForMobileAuth`, which will continue waiting.
+This method should be used when the authentication is about to be carried out from a remote/mobile device.
+After an _Access Number_ or a _QR Code URL_ has been retrieved and displayed to the end user, the client should wait for an authentication from a remote/mobile device.
+Calling this method will initiate such an awaiting.
+The method will poll for a successful authentication each `requestSeconds` and if no such authentication happened will finally fail after `timeoutSeconds`.
+When this happens, the `error` returned through the callback will be `"TIMEOUT_FINISH"`.
+If successful, the function will return through the callback the same values expected after successful `finishAuthentication()`.
+This method will also call `callbackStatus`, if provided, to update for any change of the waiting status.
+`callbackStatus` should exit normally, so the control returns back to `waitForMobileAuth`, which will continue waiting.
 The data provided to `callbackStatus` has the form:
 ```js
 {
@@ -332,11 +379,14 @@ The data provided to `callbackStatus` has the form:
 ```
 * `status` - either `"wid"` or `"user"`. Status `"wid"` means that the QR code has been scanned, while `"user"` means that the user ID that attempts to authenticate has been provided.
 * `statusCode` - a numeric code for the current status. It would normally be 0 meaning that no errors had occurred.
-* `userId` - would be empty when the `status` is `"wid"` and if the `status` is `"user"` it will be the identity of the user that is attempting to authenticate.       
+* `userId` - would be empty when the `status` is `"wid"` and if the `status` is `"user"` it will be the identity of the user that is attempting to authenticate.
 
 ##### `cancelMobileAuth()`
 
-This method should be used when the authentication is about to be carried out from a remote/mobile device. This method will prematurely cause the `waitForMobileAuth()` to stop and exit. This might be necessary if the end user decides to navigate away from the UI page where the waiting for mobile authentication has been initiated. this method always succeeds.
+This method should be used when the authentication is about to be carried out from a remote/mobile device.
+This method will prematurely cause the `waitForMobileAuth()` to stop and exit.
+This might be necessary if the end user decides to navigate away from the UI page where the waiting for mobile authentication has been initiated.
+this method always succeeds.
 
 ### Main Flows
 
