@@ -5,7 +5,7 @@
 		"MIRACL"
 	],
 	"dependencies": {
-		"milagro-crypto": "https://github.com/miracl/milagro-crypto.git#1.0.0"
+		"milagro-crypto": "https://github.com/apache/incubator-milagro-crypto.git#1.0.0"
 	},
 	"ignore": [
 		"**/*",
