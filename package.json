@@ -4,8 +4,9 @@
   "description": "Mpin frontend library.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -R mocha-bamboo-reporter",
-    "test2": "mocha test --require blanket --reporter html-cov > test/coverage.html"
+    "test": "mocha --reporter mocha-bamboo-reporter",
+    "test2": "mocha test --require blanket --reporter html-cov > test/coverage.html",
+    "test_basic": "mocha"
   },
   "repository": {
     "type": "git",
@@ -18,7 +19,6 @@
   "author": "Mpin",
   "license": "ISC",
   "devDependencies": {
-    "blanket": "^1.2.1",
     "chai": "^3.4.1",
     "mocha": "^2.3.4",
     "sinon": "^1.17.2",

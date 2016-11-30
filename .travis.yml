@@ -1,0 +1,45 @@
+language: node_js
+
+sudo: false
+
+branches:
+  except:
+    - release
+
+branches:
+  only:
+    - master
+    - develop
+    - travis
+
+node_js:
+  - "4"
+  - "5"
+  - "6"
+  - "node"
+  - "iojs"
+
+matrix:
+  allow_failures:
+    - node_js: nightly
+
+addons:
+  apt:
+    packages:
+    - build-essential
+
+before_install:
+  - if [ -n "$GH_USER" ]; then git config --global github.user ${GH_USER}; fi;
+  - if [ -n "$GH_TOKEN" ]; then git config --global github.token ${GH_TOKEN}; fi;
+
+install:
+  - if [ "$TRAVIS_NODE_VERSION" = "node" ]; then npm install istanbul coveralls --save; fi;
+  - npm install express --save
+  - npm install
+
+script:
+  - npm run-script test_basic
+  - if [ "$TRAVIS_NODE_VERSION" = "node" ]; then ./node_modules/.bin/istanbul cover ./; fi;
+
+after_success:
+  - if [ "$TRAVIS_NODE_VERSION" = "node" ]; then cat ./coverage/lcov.info | ./node_modules/.bin/coveralls; fi

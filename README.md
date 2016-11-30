@@ -1,5 +1,17 @@
 # Headless Milagro Client Library
 
+[![Master Build Status](https://travis-ci.org/miracl/incubator-milagro-mfa-js-lib.svg?branch=master)](https://travis-ci.org/miracl/incubator-milagro-mfa-js-lib)
+[![Master Coverage Status](https://coveralls.io/repos/github/miracl/incubator-milagro-mfa-js-lib/badge.svg?branch=master)](https://coveralls.io/github/miracl/incubator-milagro-mfa-js-lib?branch=master)
+
+* **category**:    Library
+* **copyright**:   2016 MIRACL UK LTD
+* **license**:     ASL 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+* **link**:        https://github.com/apache/incubator-milagro-mfa-js-lib
+
+## Description
+
+NodeJS client for Milagro
+
 ## Requirement for build & testing
 
 1. Nodejs
