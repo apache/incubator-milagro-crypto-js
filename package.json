@@ -1,42 +1,55 @@
 {
-  "name": "mpinjs",
-  "version": "1.0.0",
-  "description": "Mpin frontend library.",
+  "name": "milagro-crypto-js",
+  "version": "3.6.0",
+  "description": "Crypto Library in Javascript - Refact of Apache Milagro Crypto Library",
   "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "example": "examples",
+    "test": "test"
+  },
   "scripts": {
-    "test": "mocha --reporter mocha-bamboo-reporter",
-    "test2": "mocha test --require blanket --reporter html-cov > test/coverage.html",
-    "test_basic": "mocha"
+    "test": "mocha-parallel-tests",
+    "coverage": "nyc mocha-parallel-tests",
+    "report": "nyc report --reporter=text-lcov | coveralls",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/apache/incubator-milagro-mfa-js-lib.git"
+    "url": "git+https://github.com/miracl/milagro-crypto-js.git"
   },
   "keywords": [
-    "Mpin",
-    "frontend"
+    "pairing",
+    "elliptic",
+    "curve",
+    "cryptography"
   ],
-  "author": "Mpin",
-  "license": "ISC",
+  "author": "Michael Scott, Alessandro Budroni, Kealan McCusker",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/miracl/milagro-crypto-js/issues"
+  },
+  "homepage": "https://github.com/miracl/milagro-crypto-js#readme",
   "devDependencies": {
-    "chai": "^3.4.1",
-    "mocha": "^2.3.4",
-    "sinon": "^1.17.2",
-    "sinon-chai": "^2.8.0"
+    "chai": "^3.5.0",
+    "coveralls": "^3.0.2",
+    "eslint": "^4.12.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.2.0",
+    "mocha-text-cov": "^0.1.1",
+    "nyc": "^11.0.2",
+    "mocha-parallel-tests": "^2.0.4"
   },
-  "config": {
-    "blanket": {
-      "pattern": [
-        "mpin.js"
-      ],
-      "data-cover-never": "node_modules"
-    }
-  },
-  "dependencies": {
-    "bower": "^1.6.5",
-    "grunt": "^0.4.5",
-    "grunt-bg-shell": "^2.3.1",
-    "grunt-contrib-concat": "^0.5.1",
-    "mocha-bamboo-reporter": "^1.1.0"
+  "nyc": {
+    "include": [
+      "src/**/*.js"
+    ],
+    "reporter": [
+      "lcov",
+      "text-summary",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
   }
 }
