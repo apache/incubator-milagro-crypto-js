@@ -6,9 +6,9 @@
 
 
 * **category**:    Library
-* **copyright**:   2017 The Apache Software Foundation
+* **copyright**:   2019 The Apache Software Foundation
 * **license**:     ASL 2.0 - http://www.apache.org/licenses/LICENSE-2.0
-* **link**:        https://github.com/milagro-crypto/milagro-crypto-js
+* **link**:        https://github.com/apache/incubator-milagro-javascript
 * **introduction**: [AMCL.pdf](doc/AMCL.pdf)
 
 ## Description
