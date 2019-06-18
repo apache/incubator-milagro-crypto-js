@@ -33,14 +33,11 @@ var RAND = function(ctx) {
 
     var RAND = function() {
         /* Cryptographically strong pseudo-random number generator */
-        /* random number...   */
-        this.ira = [];
-        /* ...array & pointer */
-        this.rndptr = 0;
+        this.ira = []; /* random number...   */
+        this.rndptr = 0; /* ...array & pointer */
         this.borrow = 0;
         this.pool_ptr = 0;
-        /* random pool */
-        this.pool = [];
+        this.pool = []; /* random pool */
         this.clean();
     };
 
@@ -76,16 +73,14 @@ var RAND = function(ctx) {
 
             this.rndptr = 0;
 
-            /* calculate next NK values */
-            for (i = 0, k = this.NK - this.NJ; i < this.NK; i++, k++) {
+            for (i = 0, k = this.NK - this.NJ; i < this.NK; i++, k++) { /* calculate next NK values */
                 if (k == this.NK) {
                     k = 0;
                 }
 
                 t = this.ira[k] >>> 0;
                 pdiff = (t - this.ira[i] - this.borrow) | 0;
-                /* This is seriously weird stuff. I got to do this to get a proper unsigned comparison... */
-                pdiff >>>= 0;
+                pdiff >>>= 0; /* This is seriously weird shit. I got to do this to get a proper unsigned comparison... */
 
                 if (pdiff < t) {
                     this.borrow = 0;
@@ -110,11 +105,9 @@ var RAND = function(ctx) {
             seed >>>= 0;
             this.ira[0] ^= seed;
 
-            /* fill initialisation vector */
-            for (i = 1; i < this.NK; i++) {
+            for (i = 1; i < this.NK; i++) { /* fill initialisation vector */
                 inn = (this.NV * i) % this.NK;
-                /* note XOR */
-                this.ira[inn] ^= m;
+                this.ira[inn] ^= m; /* note XOR */
                 t = m;
                 m = (seed - m) | 0;
                 seed = t;
@@ -138,8 +131,8 @@ var RAND = function(ctx) {
             this.pool_ptr = 0;
         },
 
-        /* Initialize RNG with some real entropy from some external source - at least 128 byte string */
-        seed: function(rawlen, raw) {
+        /* Initialize RNG with some real entropy from some external source */
+        seed: function(rawlen, raw) { /* initialise from at least 128 byte string of raw random entropy */
             var sh = new ctx.HASH256(),
                 digest = [],
                 b = [],
@@ -183,8 +176,7 @@ var RAND = function(ctx) {
         }
     };
 
-    /* pack 4 bytes into a 32-bit Word */
-    RAND.pack = function(b) {
+    RAND.pack = function(b) { /* pack 4 bytes into a 32-bit Word */
         return (((b[3]) & 0xff) << 24) | ((b[2] & 0xff) << 16) | ((b[1] & 0xff) << 8) | (b[0] & 0xff);
     };
 

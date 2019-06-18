@@ -25,7 +25,7 @@ var chai = require('chai');
 
 var expect = chai.expect;
 
-// Curves for consistency test
+// Curves for test
 var pf_curves = ['BN254', 'BN254CX', 'BLS381', 'BLS383', 'BLS461', 'FP256BN', 'FP512BN', 'BLS24', 'BLS48'];
 
 // Curves for test with test vectors
@@ -87,7 +87,7 @@ pf_curves.forEach(function(curve) {
 
             sha = ctx.ECP.HASH_TYPE,
 
-            IDstr = "testUser@miracl.com",
+            IDstr = "testUser@milagro.com",
             pin = 1234,
             pin2 = 2345,
             CLIENT_ID, date;

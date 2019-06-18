@@ -129,6 +129,7 @@ var MPIN192 = function(ctx) {
                 t[i] = w[i - 7 * this.EFS];
             }
 
+
             U.getX().toBytes(w);
             for (i = 8 * this.EFS; i < 9 * this.EFS; i++) {
                 t[i] = w[i - 8 * this.EFS];
@@ -240,7 +241,7 @@ var MPIN192 = function(ctx) {
                 u.dec(1);
                 u.norm();
                 r++;
-                R.setxi(u, s);
+                R.setxi(u, s); 
                 if (!R.is_infinity()) {
                     break;
                 }
@@ -508,8 +509,6 @@ var MPIN192 = function(ctx) {
                 x, P, T, W, h;
 
             r.rcopy(ctx.ROM_CURVE.CURVE_Order);
-
-            //  var q=new ctx.BIG(0); q.rcopy(ctx.ROM_FIELD.Modulus);
             if (rng !== null) {
                 x = ctx.BIG.randomnum(r, rng);
                 x.toBytes(X);
@@ -652,7 +651,7 @@ var MPIN192 = function(ctx) {
 
             P = ctx.PAIR192.G1mul(P, y);
             P.add(R);
-            P.affine();
+            //P.affine();
             R = ctx.ECP.fromBytes(mSEC);
             if (R.is_infinity()) {
                 return this.INVALID_POINT;
@@ -678,7 +677,6 @@ var MPIN192 = function(ctx) {
 
                         P = ctx.PAIR192.G1mul(P, y);
                         P.add(R);
-                        P.affine();
                     }
                     g = ctx.PAIR192.ate(Q, P);
                     g = ctx.PAIR192.fexp(g);
@@ -977,7 +975,6 @@ var MPIN192 = function(ctx) {
             h = ctx.BIG.fromBytes(H);
             A = ctx.PAIR192.G1mul(A, h);
             R.add(A);
-            R.affine();
 
             U = ctx.PAIR192.G1mul(U, w);
             g = ctx.PAIR192.ate(sQ, R);

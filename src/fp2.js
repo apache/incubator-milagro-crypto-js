@@ -50,7 +50,6 @@ var FP2 = function(ctx) {
 
         /* test this=0 ? */
         iszilch: function() {
-            this.reduce();
             return (this.a.iszilch() && this.b.iszilch());
         },
 
@@ -151,7 +150,7 @@ var FP2 = function(ctx) {
 
         /* this-=x */
         sub: function(x) {
-            var m = new FP2(x);
+            var m = new FP2(x); 
             m.neg();
             this.add(m);
         },
@@ -180,7 +179,6 @@ var FP2 = function(ctx) {
                 mb = new ctx.FP(this.b);
 
             w1.add(this.b);
-
             w3.add(this.a);
             w3.norm();
             this.b.mul(w3);
@@ -317,7 +315,7 @@ var FP2 = function(ctx) {
 
         /* this*=sqrt(-1) */
         times_i: function() {
-            var z = new ctx.FP(this.a);
+            var z = new ctx.FP(this.a); //z.copy(this.a);
             this.a.copy(this.b);
             this.a.neg();
             this.b.copy(z);
@@ -326,13 +324,14 @@ var FP2 = function(ctx) {
         /* w*=(1+sqrt(-1)) */
         /* where X*2-(1+sqrt(-1)) is irreducible for FP4, assumes p=3 mod 8 */
         mul_ip: function() {
-            var t = new FP2(this),
+            var t = new FP2(this), 
                 z = new ctx.FP(this.a);
 
             this.a.copy(this.b);
             this.a.neg();
             this.b.copy(z);
             this.add(t);
+            //      this.norm();
         },
 
         div_ip2: function() {
@@ -364,7 +363,7 @@ var FP2 = function(ctx) {
             this.norm();
 
             var r = new FP2(1),
-                x = new FP2(this),
+                x = new FP2(this), 
                 bt;
 
             e.norm();

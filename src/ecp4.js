@@ -57,6 +57,7 @@ var ECP4 = function(ctx) {
             this.x.cmove(Q.x, d);
             this.y.cmove(Q.y, d);
             this.z.cmove(Q.z, d);
+
         },
 
         /* Constant time select from pre-computed table */
@@ -140,14 +141,14 @@ var ECP4 = function(ctx) {
 
         /* extract affine x as ctx.FP4 */
         getX: function() {
-            this.affine();
-            return this.x;
+			var W=new ECP4(); W.copy(this); W.affine();
+            return W.x;
         },
 
         /* extract affine y as ctx.FP4 */
         getY: function() {
-            this.affine();
-            return this.y;
+			var W=new ECP4(); W.copy(this); W.affine();
+            return W.y;
         },
 
         /* extract projective x */
@@ -169,39 +170,39 @@ var ECP4 = function(ctx) {
         toBytes: function(b) {
             var t = [],
                 i;
-
-            this.affine();
-            this.x.geta().getA().toBytes(t);
+			var W=new ECP4(); W.copy(this);
+            W.affine();
+            W.x.geta().getA().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i] = t[i];
             }
-            this.x.geta().getB().toBytes(t);
+            W.x.geta().getB().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + ctx.BIG.MODBYTES] = t[i];
             }
-            this.x.getb().getA().toBytes(t);
+            W.x.getb().getA().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + 2*ctx.BIG.MODBYTES] = t[i];
             }
-            this.x.getb().getB().toBytes(t);
+            W.x.getb().getB().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + 3*ctx.BIG.MODBYTES] = t[i];
             }
 
 
-            this.y.geta().getA().toBytes(t);
+            W.y.geta().getA().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + 4 * ctx.BIG.MODBYTES] = t[i];
             }
-            this.y.geta().getB().toBytes(t);
+            W.y.geta().getB().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + 5 * ctx.BIG.MODBYTES] = t[i];
             }
-            this.y.getb().getA().toBytes(t);
+            W.y.getb().getA().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + 6 * ctx.BIG.MODBYTES] = t[i];
             }
-            this.y.getb().getB().toBytes(t);
+            W.y.getb().getB().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + 7 * ctx.BIG.MODBYTES] = t[i];
             }
@@ -209,11 +210,12 @@ var ECP4 = function(ctx) {
 
         /* convert this to hex string */
         toString: function() {
-            if (this.is_infinity()) {
+			var W=new ECP4(); W.copy(this);
+            if (W.is_infinity()) {
                 return "infinity";
             }
-            this.affine();
-            return "(" + this.x.toString() + "," + this.y.toString() + ")";
+            W.affine();
+            return "(" + W.x.toString() + "," + W.y.toString() + ")";
         },
 
         /* set this=(x,y) */
@@ -223,15 +225,17 @@ var ECP4 = function(ctx) {
             this.x.copy(ix);
             this.y.copy(iy);
             this.z.one();
+			this.x.norm();
 
             rhs = ECP4.RHS(this.x);
 
-            y2 = new ctx.FP4(this.y);
+            y2 = new ctx.FP4(this.y); //y2.copy(this.y);
             y2.sqr();
 
             if (!y2.equals(rhs)) {
                 this.inf();
             }
+
         },
 
         /* set this=(x,.) */
@@ -240,7 +244,7 @@ var ECP4 = function(ctx) {
 
             this.x.copy(ix);
             this.z.one();
-
+			this.x.norm();
             rhs = ECP4.RHS(this.x);
 
             if (rhs.sqrt()) {
@@ -313,7 +317,7 @@ var ECP4 = function(ctx) {
             y3.mul(t0);
             y3.add(x3); //(y^2+3z*2)(y^2-9z^2)+3b.z^2.8y^2
             t1.copy(this.x);
-            t1.mul(iy);
+            t1.mul(iy); //
             this.x.copy(t0);
             this.x.norm();
             this.x.mul(t1);
@@ -362,7 +366,7 @@ var ECP4 = function(ctx) {
             x3.norm(); //x3=Y2+Z2
 
             t4.mul(x3); //t4=(Y1+Z1)(Y2+Z2)
-            x3.copy(t1);
+            x3.copy(t1); //
             x3.add(t2); //X3=Y1.Y2+Z1.Z2
 
             t4.sub(x3);
@@ -432,11 +436,9 @@ var ECP4 = function(ctx) {
         /* this-=Q */
         sub: function(Q) {
             var D;
-
-            Q.neg();
-            D = this.add(Q);
-            Q.neg();
-
+			var NQ=new ECP4(); NQ.copy(Q);
+            NQ.neg();
+            D = this.add(NQ);
             return D;
         },
 
@@ -455,8 +457,6 @@ var ECP4 = function(ctx) {
             if (this.is_infinity()) {
                 return new ECP4();
             }
-
-            this.affine();
 
             // precompute table
             Q.copy(this);
@@ -567,7 +567,7 @@ var ECP4 = function(ctx) {
         rb = ctx.BIG.fromBytes(t);
         rb4=new ctx.FP2(ra,rb);
 
-        rx = new ctx.FP4(ra4, rb4);
+        rx = new ctx.FP4(ra4, rb4); //rx.bset(ra,rb);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = b[i + 4 * ctx.BIG.MODBYTES];
@@ -590,7 +590,7 @@ var ECP4 = function(ctx) {
         rb4=new ctx.FP2(ra,rb);
 
 
-        ry = new ctx.FP4(ra4, rb4);
+        ry = new ctx.FP4(ra4, rb4); //ry.bset(ra,rb);
 
         P = new ECP4();
         P.setxy(rx, ry);
@@ -602,13 +602,13 @@ var ECP4 = function(ctx) {
     ECP4.RHS = function(x) {
         var r, c, b;
 
-        x.norm();
-        r = new ctx.FP4(x);
+        //x.norm();
+        r = new ctx.FP4(x); //r.copy(x);
         r.sqr();
 
         c = new ctx.BIG(0);
         c.rcopy(ctx.ROM_CURVE.CURVE_B);
-        b = new ctx.FP4(c);
+        b = new ctx.FP4(c); //b.bseta(c);
 
         if (ctx.ECP.SEXTIC_TWIST == ctx.ECP.D_TYPE) {
             b.div_i();
@@ -644,17 +644,17 @@ var ECP4 = function(ctx) {
 
         for (i = 0; i < 8; i++) {
             t[i] = new ctx.BIG(u[i]); t[i].norm();
-            Q[i].affine();
+            //Q[i].affine();
         }
 
-        T1[0] = new ECP4(); T1[0].copy(Q[0]);
-        T1[1] = new ECP4(); T1[1].copy(T1[0]); T1[1].add(Q[1]);
-        T1[2] = new ECP4(); T1[2].copy(T1[0]); T1[2].add(Q[2]);
-        T1[3] = new ECP4(); T1[3].copy(T1[1]); T1[3].add(Q[2]);
-        T1[4] = new ECP4(); T1[4].copy(T1[0]); T1[4].add(Q[3]);
-        T1[5] = new ECP4(); T1[5].copy(T1[1]); T1[5].add(Q[3]);
-        T1[6] = new ECP4(); T1[6].copy(T1[2]); T1[6].add(Q[3]);
-        T1[7] = new ECP4(); T1[7].copy(T1[3]); T1[7].add(Q[3]);
+        T1[0] = new ECP4(); T1[0].copy(Q[0]); // Q[0]
+        T1[1] = new ECP4(); T1[1].copy(T1[0]); T1[1].add(Q[1]); // Q[0]+Q[1]
+        T1[2] = new ECP4(); T1[2].copy(T1[0]); T1[2].add(Q[2]); // Q[0]+Q[2]
+        T1[3] = new ECP4(); T1[3].copy(T1[1]); T1[3].add(Q[2]); // Q[0]+Q[1]+Q[2]
+        T1[4] = new ECP4(); T1[4].copy(T1[0]); T1[4].add(Q[3]); // Q[0]+Q[3]
+        T1[5] = new ECP4(); T1[5].copy(T1[1]); T1[5].add(Q[3]); // Q[0]+Q[1]+Q[3]
+        T1[6] = new ECP4(); T1[6].copy(T1[2]); T1[6].add(Q[3]); // Q[0]+Q[2]+Q[3]
+        T1[7] = new ECP4(); T1[7].copy(T1[3]); T1[7].add(Q[3]); // Q[0]+Q[1]+Q[2]+Q[3]
 
         //  Use Frobenius
         for (i=0;i<8;i++) {

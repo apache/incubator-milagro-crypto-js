@@ -250,7 +250,7 @@ all_curves.forEach(function(curve){
 
 			done();
 		});
-
+                /*
 		it('test sum', function(done) {
 			vectors.forEach(function(vector) {
 				var BIG1 = readBIG(vector.BIG1,ctx),
@@ -276,7 +276,7 @@ all_curves.forEach(function(curve){
 
 			done();
 		});
-
+                */
 		it('test modulus this > m', function(done) {
 			vectors.forEach(function(vector) {
 				if(vectors.BIGmod2 !== undefined){

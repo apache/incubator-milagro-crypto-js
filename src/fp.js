@@ -30,7 +30,9 @@ var FP = function(ctx) {
             this.XES = x.XES;
         } else {
             this.f = new ctx.BIG(x);
-            this.nres();
+			this.XES = 1;
+			if (!this.f.iszilch())
+				this.nres();
         }
     };
 
@@ -39,11 +41,17 @@ var FP = function(ctx) {
     FP.GENERALISED_MERSENNE = 2;
     FP.MONTGOMERY_FRIENDLY = 3;
 
+	FP.ZERO = 0;
+	FP.ONE = 1;
+	FP.SPARSER = 2;
+	FP.SPARSE = 3;
+	FP.DENSE= 4;
+
     FP.MODBITS = ctx.config["@NBT"];
     FP.MOD8 = ctx.config["@M8"];
     FP.MODTYPE = ctx.config["@MT"];
 
-    FP.FEXCESS = (1 << ctx.config["@SH"]); // 2^(BASEBITS*NLEN-MODBITS)
+    FP.FEXCESS = ((1 << ctx.config["@SH"])-1); // 2^(BASEBITS*NLEN-MODBITS)-1
     FP.OMASK = (-1) << FP.TBITS;
     FP.TBITS = FP.MODBITS % ctx.BIG.BASEBITS;
     FP.TMASK = (1 << FP.TBITS) - 1;
@@ -136,22 +144,48 @@ var FP = function(ctx) {
 
         /* test this=0 */
         iszilch: function() {
-            this.reduce();
-            return this.f.iszilch();
+			var c=new FP(0); c.copy(this);
+            c.reduce();
+            return c.f.iszilch();
         },
 
         /* reduce this mod Modulus */
         reduce: function() {
-            var p = new ctx.BIG(0);
-            p.rcopy(ctx.ROM_FIELD.Modulus);
-            this.f.mod(p);
+            var q,carry,sr,sb,m = new ctx.BIG(0);
+            m.rcopy(ctx.ROM_FIELD.Modulus);
+			var r = new ctx.BIG(0);
+            r.rcopy(ctx.ROM_FIELD.Modulus);
+			this.f.norm();
+
+			if (this.XES>16)
+			{
+				q=FP.quo(this.f,m);
+				carry=r.pmul(q);
+				r.w[ctx.BIG.NLEN-1]+=(carry<<ctx.BIG.BASEBITS); // correction - put any carry out back in again
+				this.f.sub(r);
+				this.f.norm();
+				sb=2;
+			}
+			else {
+					sb=FP.logb2(this.XES-1);
+			}
+			m.fshl(sb);
+
+			while (sb>0)
+			{
+// constant time...
+				sr=ctx.BIG.ssn(r,this.f,m);  // optimized combined shift, subtract and norm
+				this.f.cmove(r,1-sr);
+				sb--;
+			}			
+
             this.XES = 1;
         },
 
         /* set this=1 */
         one: function() {
             this.f.one();
-            return this.nres();
+            this.nres();
         },
 
         /* normalise this */
@@ -242,7 +276,7 @@ var FP = function(ctx) {
             sb = FP.logb2(this.XES - 1);
 
             m.fshl(sb);
-            this.XES = (1 << sb);
+            this.XES = (1 << sb)+1;
             this.f.rsub(m);
 
             if (this.XES > FP.FEXCESS) {
@@ -290,23 +324,144 @@ var FP = function(ctx) {
             return this;
         },
 
+// return this^(p-3)/4 or this^(p-5)/8
+// See https://eprint.iacr.org/2018/1038
+		fpow: function() {
+			var i,j,k,bw,w,c,nw,lo,m,n;
+			var xp=[];
+			var ac=[1,2,3,6,12,15,30,60,120,240,255];
+// phase 1
+			
+			xp[0]=new FP(this);	// 1 
+			xp[1]=new FP(this); xp[1].sqr(); // 2
+			xp[2]=new FP(xp[1]); xp[2].mul(this);  //3
+			xp[3]=new FP(xp[2]); xp[3].sqr();  // 6 
+			xp[4]=new FP(xp[3]); xp[4].sqr();  // 12
+			xp[5]=new FP(xp[4]); xp[5].mul(xp[2]);  // 15
+			xp[6]=new FP(xp[5]); xp[6].sqr();  // 30
+			xp[7]=new FP(xp[6]); xp[7].sqr();  // 60
+			xp[8]=new FP(xp[7]); xp[8].sqr();  // 120
+			xp[9]=new FP(xp[8]); xp[9].sqr();  // 240
+			xp[10]=new FP(xp[9]); xp[10].mul(xp[5]);  // 255		
+			
+
+			n=FP.MODBITS;
+			if (FP.MODTYPE == FP.GENERALISED_MERSENNE)   // Goldilocks ONLY
+				n/=2;
+			if (FP.MOD8==5)
+			{
+				n-=3;
+				c=(ctx.ROM_FIELD.MConst+5)/8;
+			} else {
+				n-=2;
+				c=(ctx.ROM_FIELD.MConst+3)/4;
+			}
+
+			bw=0; w=1; while (w<c) {w*=2; bw+=1;}
+			k=w-c;
+
+			i=10; var key=new FP(0);
+			if (k!=0)
+			{
+				while (ac[i]>k) i--;
+				key.copy(xp[i]); 
+				k-=ac[i];
+			}
+			while (k!=0)
+			{
+				i--;
+				if (ac[i]>k) continue;
+				key.mul(xp[i]);
+				k-=ac[i]; 
+			}
+
+// phase 2 
+			xp[1].copy(xp[2]);
+			xp[2].copy(xp[5]);
+			xp[3].copy(xp[10]);
+	
+			j=3; m=8;
+			nw=n-bw;
+			var t=new FP(0);
+			while (2*m<nw)
+			{
+				t.copy(xp[j++]);
+				for (i=0;i<m;i++)
+					t.sqr(); 
+				xp[j].copy(xp[j-1]);
+				xp[j].mul(t);
+				m*=2;
+			}
+			lo=nw-m;
+			var r=new FP(xp[j]);
+
+			while (lo!=0)
+			{
+				m/=2; j--;
+				if (lo<m) continue;
+				lo-=m;
+				t.copy(r);
+				for (i=0;i<m;i++)
+					t.sqr();
+				r.copy(t);
+				r.mul(xp[j]);
+			}
+
+// phase 3
+			if (bw!=0)
+			{
+				for (i=0;i<bw;i++ )
+					r.sqr();
+				r.mul(key); 
+			}
+
+			if (FP.MODTYPE == FP.GENERALISED_MERSENNE)   // Goldilocks ONLY
+			{
+				key.copy(r);
+				r.sqr();
+				r.mul(this);
+				for (i=0;i<n+1;i++)
+					r.sqr();
+				r.mul(key);
+			}
+			return r;
+		},
+
         /* this=1/this mod Modulus */
         inverse: function() {
-            var m2=new ctx.BIG(0);
 
-            m2.rcopy(ctx.ROM_FIELD.Modulus);
-            m2.dec(2); m2.norm();
-            this.copy(this.pow(m2));
-            return this;
+			if (FP.MODTYPE == FP.PSEUDO_MERSENNE || FP.MODTYPE == FP.GENERALISED_MERSENNE)
+			{
+				var y=this.fpow();
+				if (FP.MOD8==5)
+				{
+					var t=new FP(this);
+					t.sqr();
+					this.mul(t);
+					y.sqr();
 
+				} 
+				y.sqr();
+				y.sqr();
+				this.mul(y);
+				return this;
+			} else {
+				var m2=new ctx.BIG(0);
+				m2.rcopy(ctx.ROM_FIELD.Modulus);
+				m2.dec(2); m2.norm();
+				this.copy(this.pow(m2));
+				return this;
+			}
         },
 
         /* return TRUE if this==a */
         equals: function(a) {
-            a.reduce();
-            this.reduce();
+			var ft=new FP(0); ft.copy(this);
+			var sd=new FP(0); sd.copy(a);
+            ft.reduce();
+            sd.reduce();
 
-            if (ctx.BIG.comp(a.f, this.f) === 0) {
+            if (ctx.BIG.comp(ft.f, sd.f) === 0) {
                 return true;
             }
 
@@ -319,7 +474,7 @@ var FP = function(ctx) {
                 tb=[],
                 t=new ctx.BIG(e),
                 nb, lsbs, r;
-
+			this.norm();
             t.norm();
             nb= 1 + Math.floor((t.nbits() + 3) / 4);
 
@@ -360,21 +515,23 @@ var FP = function(ctx) {
 
         /* return sqrt(this) mod Modulus */
         sqrt: function() {
-            var b = new ctx.BIG(0),
-                i, v, r;
+            var i, v, r;
 
             this.reduce();
-
-            b.rcopy(ctx.ROM_FIELD.Modulus);
-
             if (FP.MOD8 == 5) {
-                b.dec(5);
-                b.norm();
-                b.shr(3);
                 i = new FP(0);
                 i.copy(this);
                 i.f.shl(1);
-                v = i.pow(b);
+				if (FP.MODTYPE == FP.PSEUDO_MERSENNE || FP.MODTYPE == FP.GENERALISED_MERSENNE) {
+					v=i.fpow();
+				} else {
+					var b = new ctx.BIG(0);
+					b.rcopy(ctx.ROM_FIELD.Modulus);
+					b.dec(5);
+					b.norm();
+					b.shr(3);
+					v = i.pow(b);
+				}
                 i.mul(v);
                 i.mul(v);
                 i.f.dec(1);
@@ -386,11 +543,18 @@ var FP = function(ctx) {
 
                 return r;
             } else {
-                b.inc(1);
-                b.norm();
-                b.shr(2);
-
-                return this.pow(b);
+				if (FP.MODTYPE == FP.PSEUDO_MERSENNE || FP.MODTYPE == FP.GENERALISED_MERSENNE) {
+					var r=this.fpow();
+					r.mul(this);
+					return r;
+				} else {
+					var b = new ctx.BIG(0);
+					b.rcopy(ctx.ROM_FIELD.Modulus);
+					b.inc(1);
+					b.norm();
+					b.shr(2);
+					return this.pow(b);
+				}
             }
         }
 
@@ -411,6 +575,20 @@ var FP = function(ctx) {
 
         return r;
     };
+
+	FP.quo = function(n,m) {
+		var num,den,hb=ctx.BIG.CHUNK>>1;
+		if (FP.TBITS<hb)
+		{
+			var sh=hb-FP.TBITS;
+			num=(n.w[ctx.BIG.NLEN-1]<<sh)|(n.w[ctx.BIG.NLEN-2]>>(ctx.BIG.BASEBITS-sh));
+			den=(m.w[ctx.BIG.NLEN-1]<<sh)|(m.w[ctx.BIG.NLEN-2]>>(ctx.BIG.BASEBITS-sh));
+		} else {
+			num=n.w[ctx.BIG.NLEN-1];
+			den=m.w[ctx.BIG.NLEN-1];			
+		}
+		return Math.floor(num/(den+1))
+	};
 
     /* reduce a ctx.DBIG to a ctx.BIG using a "special" modulus */
     FP.mod = function(d) {
@@ -433,6 +611,7 @@ var FP = function(ctx) {
             tw = t.w[ctx.BIG.NLEN - 1];
             t.w[ctx.BIG.NLEN - 1] &= FP.TMASK;
             t.inc(ctx.ROM_FIELD.MConst * ((tw >> FP.TBITS) + (v << (ctx.BIG.BASEBITS - FP.TBITS))));
+            //      b.add(t);
             t.norm();
 
             return t;
@@ -450,8 +629,7 @@ var FP = function(ctx) {
             b.norm();
         }
 
-        // GoldiLocks Only
-        if (FP.MODTYPE == FP.GENERALISED_MERSENNE) {
+        if (FP.MODTYPE == FP.GENERALISED_MERSENNE) { // GoldiLocks Only
             t = d.split(FP.MODBITS);
             b.hcopy(d);
             b.add(t);
@@ -465,6 +643,7 @@ var FP = function(ctx) {
 
             b.add(tt);
             b.add(lo);
+            //b.norm();
             tt.shl(FP.MODBITS / 2);
             b.add(tt);
 

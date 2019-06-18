@@ -23,6 +23,7 @@ var chai = require('chai');
 
 var CTX = require("../index");
 
+// Curves for test
 pf_curves = ['BN254', 'BN254CX', 'BLS381', 'BLS383', 'BLS461', 'FP256BN', 'FP512BN', 'BLS24', 'BLS48'];
 
 var expect = chai.expect;
@@ -38,7 +39,7 @@ pf_curves.forEach(function(curve) {
             MPIN, EGS, EFS, G1S, G2S,
             pin = 1234,
             pin2 = 2345,
-            IDstr = "testuser@miracl.com",
+            IDstr = "testuser@milagro.com",
             message = "Message to sign",
             S = [],
             SST = [],

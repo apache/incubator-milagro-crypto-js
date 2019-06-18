@@ -47,8 +47,8 @@ var AES = function() {
     AES.CTR16 = 45;
 
     AES.prototype = {
-        /* reset cipher - mode or iv */
-        reset: function(m, iv) {
+        /* reset cipher */
+        reset: function(m, iv) { /* reset mode, or reset iv */
             var i;
 
             this.mode = m;
@@ -88,7 +88,7 @@ var AES = function() {
         },
 
         /* Initialise cipher */
-        init: function(m, nk, key, iv) {
+        init: function(m, nk, key, iv) { /* Key=16 bytes */
             /* Key Scheduler. Create expanded encryption key */
             var CipherKey = [],
                 b = [],
@@ -122,10 +122,25 @@ var AES = function() {
 
             for (j = nk, k = 0; j < N; j += nk, k++) {
                 this.fkey[j] = this.fkey[j - nk] ^ AES.SubByte(AES.ROTL24(this.fkey[j - 1])) ^ (AES.rco[k]) & 0xff;
-                for (i = 1; i < nk && (i + j) < N; i++) {
-                    this.fkey[i + j] = this.fkey[i + j - nk] ^ this.fkey[i + j - 1];
-                }
+
+				if (nk<=6)
+				{
+					for (i = 1; i < nk && (i + j) < N; i++) {
+						this.fkey[i + j] = this.fkey[i + j - nk] ^ this.fkey[i + j - 1];
+					}
+				} else {
+					for (i = 1; i < 4 && (i + j) < N; i++) {
+						this.fkey[i + j] = this.fkey[i + j - nk] ^ this.fkey[i + j - 1];
+					}
+					if ((j + 4) < N) {
+						this.fkey[j + 4] = this.fkey[j + 4 - nk] ^ AES.SubByte(this.fkey[j + 3]);
+					}
+					for (i = 5; i < nk && (i + j) < N; i++) {
+						this.fkey[i + j] = this.fkey[i + j - nk] ^ this.fkey[i + j - 1];
+					}
+				}
             }
+
 
             /* now for the expanded decrypt key in reverse order */
 
@@ -447,7 +462,7 @@ var AES = function() {
         },
 
         /* Clean up and delete left-overs */
-        end: function() {
+        end: function() { // clean up
             var i;
 
             for (i = 0; i < 4 * (this.Nr + 1); i++) {
@@ -474,13 +489,11 @@ var AES = function() {
         return (((x) << 24) | ((x) >>> 8));
     };
 
-    /* pack 4 bytes into a 32-bit Word */
-    AES.pack = function(b) {
+    AES.pack = function(b) { /* pack 4 bytes into a 32-bit Word */
         return (((b[3]) & 0xff) << 24) | ((b[2] & 0xff) << 16) | ((b[1] & 0xff) << 8) | (b[0] & 0xff);
     };
 
-    /* unpack bytes from a word */
-    AES.unpack = function(a) {
+    AES.unpack = function(a) { /* unpack bytes from a word */
         var b = [];
         b[0] = (a & 0xff);
         b[1] = ((a >>> 8) & 0xff);
@@ -489,8 +502,7 @@ var AES = function() {
         return b;
     };
 
-    /* x.y= AntiLog(Log(x) + Log(y)) */
-    AES.bmul = function(x, y) {
+    AES.bmul = function(x, y) { /* x.y= AntiLog(Log(x) + Log(y)) */
         var ix = (x & 0xff),
             iy = (y & 0xff),
             lx = (AES.ltab[ix]) & 0xff,
@@ -514,16 +526,14 @@ var AES = function() {
         return AES.pack(b);
     };
 
-    /* dot product of two 4-byte arrays */
-    AES.product = function(x, y) {
+    AES.product = function(x, y) { /* dot product of two 4-byte arrays */
         var xb = AES.unpack(x),
             yb = AES.unpack(y);
 
         return (AES.bmul(xb[0], yb[0]) ^ AES.bmul(xb[1], yb[1]) ^ AES.bmul(xb[2], yb[2]) ^ AES.bmul(xb[3], yb[3])) & 0xff;
     };
 
-    /* matrix Multiplication */
-    AES.InvMixCol = function(x) {
+    AES.InvMixCol = function(x) { /* matrix Multiplication */
         var b = [],
             y, m;
 
@@ -540,8 +550,7 @@ var AES = function() {
         return y;
     };
 
-    /* Inverse Coefficients */
-    AES.InCo = [0xB, 0xD, 0x9, 0xE];
+    AES.InCo = [0xB, 0xD, 0x9, 0xE]; /* Inverse Coefficients */
     AES.rco = [1, 2, 4, 8, 16, 32, 64, 128, 27, 54, 108, 216, 171, 77, 154, 47];
 
     AES.ptab = [

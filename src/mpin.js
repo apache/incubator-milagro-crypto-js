@@ -223,7 +223,7 @@ var MPIN = function(ctx) {
                 u.dec(1);
                 u.norm();
                 r++;
-                R.setxi(u, s);
+                R.setxi(u, s); 
                 if (!R.is_infinity()) {
                     break;
                 }
@@ -336,7 +336,7 @@ var MPIN = function(ctx) {
 
             P.add(Q);
 
-            P.toBytes(R);
+            P.toBytes(R,false);
 
             return 0;
         },
@@ -395,7 +395,7 @@ var MPIN = function(ctx) {
             R = R.pinmul(factor, facbits);
             P.sub(R);
 
-            P.toBytes(TOKEN);
+            P.toBytes(TOKEN,false);
 
             return 0;
         },
@@ -416,7 +416,7 @@ var MPIN = function(ctx) {
             R = R.pinmul(factor, facbits);
             P.add(R);
 
-            P.toBytes(TOKEN);
+            P.toBytes(TOKEN,false);
 
             return 0;
         },
@@ -462,7 +462,7 @@ var MPIN = function(ctx) {
                 P = ctx.ECP.mapit(G);
             }
 
-            ctx.PAIR.G1mul(P, x).toBytes(W);
+            ctx.PAIR.G1mul(P, x).toBytes(W,false);
 
             return 0;
         },
@@ -480,7 +480,7 @@ var MPIN = function(ctx) {
                 s = ctx.BIG.fromBytes(S);
 
             P = ctx.PAIR.G1mul(P, s);
-            P.toBytes(CTT);
+            P.toBytes(CTT,false);
 
             return 0;
         },
@@ -491,8 +491,6 @@ var MPIN = function(ctx) {
                 x, P, T, W, h;
 
             r.rcopy(ctx.ROM_CURVE.CURVE_Order);
-
-            //  var q=new ctx.BIG(0); q.rcopy(ctx.ROM_FIELD.Modulus);
             if (rng !== null) {
                 x = ctx.BIG.randomnum(r, rng);
                 x.toBytes(X);
@@ -524,7 +522,7 @@ var MPIN = function(ctx) {
 
                 if (xID != null) {
                     P = ctx.PAIR.G1mul(P, x);
-                    P.toBytes(xID);
+                    P.toBytes(xID,false);
                     W = ctx.PAIR.G1mul(W, x);
                     P.add(W);
                 } else {
@@ -533,16 +531,16 @@ var MPIN = function(ctx) {
                 }
 
                 if (xCID != null) {
-                    P.toBytes(xCID);
+                    P.toBytes(xCID,false);
                 }
             } else {
                 if (xID != null) {
                     P = ctx.PAIR.G1mul(P, x);
-                    P.toBytes(xID);
+                    P.toBytes(xID,false);
                 }
             }
 
-            T.toBytes(SEC);
+            T.toBytes(SEC,false);
 
             return 0;
         },
@@ -566,8 +564,7 @@ var MPIN = function(ctx) {
 
             P = ctx.PAIR.G1mul(P, px);
             P.neg();
-            P.toBytes(SEC);
-
+            P.toBytes(SEC,false);
             return 0;
         },
 
@@ -577,12 +574,12 @@ var MPIN = function(ctx) {
                 P = ctx.ECP.mapit(h),
                 R;
 
-            P.toBytes(HID);
+            P.toBytes(HID,false);
             if (date !== 0) {
                 h = this.hashit(sha, date, h);
                 R = ctx.ECP.mapit(h);
                 P.add(R);
-                P.toBytes(HTID);
+                P.toBytes(HTID,false);
             }
         },
 
@@ -635,7 +632,6 @@ var MPIN = function(ctx) {
 
             P = ctx.PAIR.G1mul(P, y);
             P.add(R);
-            P.affine();
             R = ctx.ECP.fromBytes(mSEC);
             if (R.is_infinity()) {
                 return this.INVALID_POINT;
@@ -661,7 +657,6 @@ var MPIN = function(ctx) {
 
                         P = ctx.PAIR.G1mul(P, y);
                         P.add(R);
-                        P.affine();
                     }
                     g = ctx.PAIR.ate(Q, P);
                     g = ctx.PAIR.fexp(g);
@@ -671,7 +666,6 @@ var MPIN = function(ctx) {
 
                 return this.BAD_PIN;
             }
-
             return 0;
         },
 
@@ -960,7 +954,7 @@ var MPIN = function(ctx) {
             h = ctx.BIG.fromBytes(H);
             A = ctx.PAIR.G1mul(A, h);
             R.add(A);
-            R.affine();
+            //R.affine();
 
             U = ctx.PAIR.G1mul(U, w);
             g = ctx.PAIR.ate(sQ, R);

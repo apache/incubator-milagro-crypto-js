@@ -22,10 +22,10 @@ under the License.
 
 var CTX = require("../../index");
 
-var ctx1 = new CTX("BN254");
+var ctx1 = new CTX("BLS383");
 var ctx2 = new CTX("NIST521");
 
-console.log("Start testing BN254");
+console.log("Start testing BLS383");
 
 var pp = "M0ng00se",
     res,

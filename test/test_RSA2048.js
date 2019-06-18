@@ -93,7 +93,7 @@ describe('TEST RSA RSA2048', function() {
         done();
     });
 
-    it('test RSA Enctyption/Decryption', function(done) {
+    it('test RSA Encryption/Decryption', function(done) {
         this.timeout(0);
 
         message = 'Hello World\n';

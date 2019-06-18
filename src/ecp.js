@@ -48,6 +48,7 @@ var ECP = function(ctx) {
     ECP.CURVE_PAIRING_TYPE = ctx.config["@PF"];
     ECP.SEXTIC_TWIST = ctx.config["@ST"];
     ECP.SIGN_OF_X = ctx.config["@SX"];
+    ECP.ATE_BITS = ctx.config["@AB"];
 
     ECP.HASH_TYPE = ctx.config["@HT"];
     ECP.AESKEY = ctx.config["@AK"];
@@ -55,11 +56,14 @@ var ECP = function(ctx) {
     ECP.prototype = {
         /* test this=O point-at-infinity */
         is_infinity: function() {
+  
             this.x.reduce();
             this.z.reduce();
 
             if (ECP.CURVETYPE == ECP.EDWARDS) {
+
                 this.y.reduce();
+
                 return (this.x.iszilch() && this.y.equals(this.z));
             } else if (ECP.CURVETYPE == ECP.WEIERSTRASS) {
                 this.y.reduce();
@@ -73,20 +77,24 @@ var ECP = function(ctx) {
 
         /* conditional swap of this and Q dependant on d */
         cswap: function(Q, d) {
+
             this.x.cswap(Q.x, d);
             if (ECP.CURVETYPE != ECP.MONTGOMERY) {
                 this.y.cswap(Q.y, d);
             }
             this.z.cswap(Q.z, d);
+
         },
 
         /* conditional move of Q to P dependant on d */
         cmove: function(Q, d) {
+
             this.x.cmove(Q.x, d);
             if (ECP.CURVETYPE != ECP.MONTGOMERY) {
                 this.y.cmove(Q.y, d);
             }
             this.z.cmove(Q.z, d);
+
         },
 
         /* Constant time select from pre-computed table */
@@ -191,12 +199,14 @@ var ECP = function(ctx) {
             this.y = new ctx.FP(0);
             this.y.bcopy(iy);
             this.z = new ctx.FP(1);
+			this.x.norm();
             rhs = ECP.RHS(this.x);
 
             if (ECP.CURVETYPE == ECP.MONTGOMERY) {
                 if (rhs.jacobi() != 1) {
                     this.inf();
                 }
+ 
             } else {
                 y2 = new ctx.FP(0);
                 y2.copy(this.y);
@@ -214,6 +224,7 @@ var ECP = function(ctx) {
 
             this.x = new ctx.FP(0);
             this.x.bcopy(ix);
+			this.x.norm();
             rhs = ECP.RHS(this.x);
             this.z = new ctx.FP(1);
 
@@ -234,6 +245,7 @@ var ECP = function(ctx) {
 
             this.x = new ctx.FP(0);
             this.x.bcopy(ix);
+			this.x.norm();
             rhs = ECP.RHS(this.x);
             this.z = new ctx.FP(1);
 
@@ -278,19 +290,18 @@ var ECP = function(ctx) {
 
         /* extract x as ctx.BIG */
         getX: function() {
-            this.affine();
-            return this.x.redc();
+			var W=new ECP(); W.copy(this); W.affine();
+            return W.x.redc();
         },
 
         /* extract y as ctx.BIG */
         getY: function() {
-            this.affine();
-            return this.y.redc();
+			var W=new ECP(); W.copy(this); W.affine();
+            return W.y.redc();
         },
 
         /* get sign of Y */
         getS: function() {
-            this.affine();
             var y = this.getY();
             return y.parity();
         },
@@ -311,42 +322,50 @@ var ECP = function(ctx) {
         },
 
         /* convert to byte array */
-        toBytes: function(b) {
+        toBytes: function(b,compress) {
             var t = [],
                 i;
-
-            if (ECP.CURVETYPE != ECP.MONTGOMERY) {
-                b[0] = 0x04;
-            } else {
-                b[0] = 0x02;
-            }
-
-            this.affine();
-            this.x.redc().toBytes(t);
+			var W=new ECP(); W.copy(this);
+            W.affine();
+            W.x.redc().toBytes(t);
 
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + 1] = t[i];
             }
 
-            if (ECP.CURVETYPE != ECP.MONTGOMERY) {
-                this.y.redc().toBytes(t);
-                for (i = 0; i < ctx.BIG.MODBYTES; i++) {
-                    b[i + ctx.BIG.MODBYTES + 1] = t[i];
+            if (ECP.CURVETYPE == ECP.MONTGOMERY) {
+                b[0] = 0x06;
+                return;
+            }
+
+            if (compress) {
+                b[0]=0x02;
+                if (W.y.redc().parity()==1) {
+                    b[0]=0x03;
                 }
+                return;
+            }
+
+            b[0]=0x04;
+
+            W.y.redc().toBytes(t);
+            for (i = 0; i < ctx.BIG.MODBYTES; i++) {
+                b[i + ctx.BIG.MODBYTES + 1] = t[i];
             }
         },
         /* convert to hex string */
         toString: function() {
-            if (this.is_infinity()) {
+			var W=new ECP(); W.copy(this);
+            if (W.is_infinity()) {
                 return "infinity";
             }
 
-            this.affine();
+            W.affine();
 
             if (ECP.CURVETYPE == ECP.MONTGOMERY) {
-                return "(" + this.x.redc().toString() + ")";
+                return "(" + W.x.redc().toString() + ")";
             } else {
-                return "(" + this.x.redc().toString() + "," + this.y.redc().toString() + ")";
+                return "(" + W.x.redc().toString() + "," + W.y.redc().toString() + ")";
             }
         },
 
@@ -360,13 +379,13 @@ var ECP = function(ctx) {
 
                 if (ctx.ROM_CURVE.CURVE_A == 0) {
                     t0 = new ctx.FP(0);
-                    t0.copy(this.y);
+                    t0.copy(this.y);                    
                     t0.sqr();
                     t1 = new ctx.FP(0);
-                    t1.copy(this.y);
+                    t1.copy(this.y); 
                     t1.mul(this.z);
                     t2 = new ctx.FP(0);
-                    t2.copy(this.z);
+                    t2.copy(this.z); 
                     t2.sqr();
 
                     this.z.copy(t0);
@@ -379,10 +398,10 @@ var ECP = function(ctx) {
                     t2.imul(3 * ctx.ROM_CURVE.CURVE_B_I);
 
                     x3 = new ctx.FP(0);
-                    x3.copy(t2);
+                    x3.copy(t2); 
                     x3.mul(this.z);
                     y3 = new ctx.FP(0);
-                    y3.copy(t0);
+                    y3.copy(t0); 
                     y3.add(t2);
                     y3.norm();
                     this.z.mul(t1);
@@ -405,21 +424,23 @@ var ECP = function(ctx) {
                     this.y.norm();
                 } else {
                     t0 = new ctx.FP(0);
-                    t0.copy(this.x);
+                    t0.copy(this.x); 
                     t1 = new ctx.FP(0);
-                    t1.copy(this.y);
+                    t1.copy(this.y); 
                     t2 = new ctx.FP(0);
-                    t2.copy(this.z);
+                    t2.copy(this.z); 
                     t3 = new ctx.FP(0);
-                    t3.copy(this.x);
+                    t3.copy(this.x); 
                     z3 = new ctx.FP(0);
-                    z3.copy(this.z);
-                    y3 = new ctx.FP(0);
-                    x3 = new ctx.FP(0);
-                    b = new ctx.FP(0);
+                    z3.copy(this.z); 
+                    y3 = new ctx.FP(0); 
+                    x3 = new ctx.FP(0); 
+                    b = new ctx.FP(0); 
+                    
                     if (ctx.ROM_CURVE.CURVE_B_I == 0) {
                         b.rcopy(ctx.ROM_CURVE.CURVE_B);
                     }
+                   
                     t0.sqr(); //1    x^2
                     t1.sqr(); //2    y^2
                     t2.sqr(); //3
@@ -452,8 +473,8 @@ var ECP = function(ctx) {
                     y3.mul(x3); //14
                     x3.mul(t3); //15
                     t3.copy(t2);
-                    t3.add(t2); //16
-                    t2.add(t3); //17
+                    t3.add(t2);  //16
+                    t2.add(t3);  //17
 
                     if (ctx.ROM_CURVE.CURVE_B_I == 0) {
                         z3.mul(b); //18
@@ -489,6 +510,7 @@ var ECP = function(ctx) {
                     t1.norm(); //33
                     z3.copy(t0);
                     z3.mul(t1); //34
+                  
                     this.x.copy(x3);
                     this.x.norm();
                     this.y.copy(y3);
@@ -500,12 +522,13 @@ var ECP = function(ctx) {
 
             if (ECP.CURVETYPE == ECP.EDWARDS) {
                 C = new ctx.FP(0);
-                C.copy(this.x);
+                C.copy(this.x); 
                 D = new ctx.FP(0);
-                D.copy(this.y);
+                D.copy(this.y); 
                 H = new ctx.FP(0);
-                H.copy(this.z);
-                J = new ctx.FP(0);
+                H.copy(this.z); 
+                J = new ctx.FP(0); 
+               
                 this.x.mul(this.y);
                 this.x.add(this.x);
                 this.x.norm();
@@ -536,12 +559,12 @@ var ECP = function(ctx) {
 
             if (ECP.CURVETYPE == ECP.MONTGOMERY) {
                 A = new ctx.FP(0);
-                A.copy(this.x);
+                A.copy(this.x); 
                 B = new ctx.FP(0);
-                B.copy(this.x);
-                AA = new ctx.FP(0);
-                BB = new ctx.FP(0);
-                C = new ctx.FP(0);
+                B.copy(this.x); 
+                AA = new ctx.FP(0); 
+                BB = new ctx.FP(0); 
+                C = new ctx.FP(0); 
 
                 A.add(this.z);
                 A.norm();
@@ -579,20 +602,20 @@ var ECP = function(ctx) {
 
                     b = 3 * ctx.ROM_CURVE.CURVE_B_I;
                     t0 = new ctx.FP(0);
-                    t0.copy(this.x);
+                    t0.copy(this.x); 
                     t0.mul(Q.x);
                     t1 = new ctx.FP(0);
-                    t1.copy(this.y);
+                    t1.copy(this.y); 
                     t1.mul(Q.y);
                     t2 = new ctx.FP(0);
-                    t2.copy(this.z);
+                    t2.copy(this.z); 
                     t2.mul(Q.z);
                     t3 = new ctx.FP(0);
-                    t3.copy(this.x);
+                    t3.copy(this.x); 
                     t3.add(this.y);
                     t3.norm();
                     t4 = new ctx.FP(0);
-                    t4.copy(Q.x);
+                    t4.copy(Q.x); 
                     t4.add(Q.y);
                     t4.norm();
                     t3.mul(t4);
@@ -605,7 +628,7 @@ var ECP = function(ctx) {
                     t4.add(this.z);
                     t4.norm();
                     x3 = new ctx.FP(0);
-                    x3.copy(Q.y);
+                    x3.copy(Q.y); 
                     x3.add(Q.z);
                     x3.norm();
 
@@ -619,7 +642,7 @@ var ECP = function(ctx) {
                     x3.add(this.z);
                     x3.norm();
                     y3 = new ctx.FP(0);
-                    y3.copy(Q.x);
+                    y3.copy(Q.x); 
                     y3.add(Q.z);
                     y3.norm();
                     x3.mul(y3);
@@ -634,7 +657,7 @@ var ECP = function(ctx) {
                     t2.imul(b);
 
                     z3 = new ctx.FP(0);
-                    z3.copy(t1);
+                    z3.copy(t1); 
                     z3.add(t2);
                     z3.norm();
                     t1.sub(t2);
@@ -661,21 +684,21 @@ var ECP = function(ctx) {
                     this.z.norm();
                 } else {
                     t0 = new ctx.FP(0);
-                    t0.copy(this.x);
+                    t0.copy(this.x); 
                     t1 = new ctx.FP(0);
-                    t1.copy(this.y);
+                    t1.copy(this.y); 
                     t2 = new ctx.FP(0);
-                    t2.copy(this.z);
+                    t2.copy(this.z); 
                     t3 = new ctx.FP(0);
-                    t3.copy(this.x);
+                    t3.copy(this.x); 
                     t4 = new ctx.FP(0);
-                    t4.copy(Q.x);
-                    z3 = new ctx.FP(0);
+                    t4.copy(Q.x); 
+                    z3 = new ctx.FP(0); 
                     y3 = new ctx.FP(0);
-                    y3.copy(Q.x);
+                    y3.copy(Q.x); 
                     x3 = new ctx.FP(0);
-                    x3.copy(Q.y);
-                    b = new ctx.FP(0);
+                    x3.copy(Q.y); 
+                    b = new ctx.FP(0); 
 
                     if (ctx.ROM_CURVE.CURVE_B_I == 0) {
                         b.rcopy(ctx.ROM_CURVE.CURVE_B);
@@ -690,7 +713,7 @@ var ECP = function(ctx) {
                     t4.norm(); //5
                     t3.mul(t4); //6
                     t4.copy(t0);
-                    t4.add(t1); //7
+                    t4.add(t1);  //7
                     t3.sub(t4);
                     t3.norm(); //8
                     t4.copy(this.y);
@@ -728,9 +751,9 @@ var ECP = function(ctx) {
                     x3.sub(z3);
                     x3.norm(); //20
                     z3.copy(x3);
-                    z3.add(x3); //21
+                    z3.add(x3);  //21
 
-                    x3.add(z3); //22
+                    x3.add(z3);  //22
                     z3.copy(t1);
                     z3.sub(x3);
                     z3.norm(); //23
@@ -747,7 +770,7 @@ var ECP = function(ctx) {
                     t1.add(t2); //26
                     t2.add(t1); //27
 
-                    y3.sub(t2); //28
+                    y3.sub(t2);  //28
 
                     y3.sub(t0);
                     y3.norm(); //29
@@ -773,7 +796,8 @@ var ECP = function(ctx) {
                     z3.mul(t4); //41
                     t1.copy(t3);
                     t1.mul(t0); //42
-                    z3.add(t1);
+                    z3.add(t1); 
+           
                     this.x.copy(x3);
                     this.x.norm();
                     this.y.copy(y3);
@@ -785,15 +809,15 @@ var ECP = function(ctx) {
 
             if (ECP.CURVETYPE == ECP.EDWARDS) {
                 A = new ctx.FP(0);
-                A.copy(this.z);
-                B = new ctx.FP(0);
+                A.copy(this.z); 
+                B = new ctx.FP(0); 
                 C = new ctx.FP(0);
-                C.copy(this.x);
+                C.copy(this.x); 
                 D = new ctx.FP(0);
-                D.copy(this.y);
-                E = new ctx.FP(0);
-                F = new ctx.FP(0);
-                G = new ctx.FP(0);
+                D.copy(this.y); 
+                E = new ctx.FP(0); 
+                F = new ctx.FP(0); 
+                G = new ctx.FP(0); 
 
                 A.mul(Q.z); //A=2
                 B.copy(A);
@@ -900,13 +924,15 @@ var ECP = function(ctx) {
             this.x.copy(A);
             this.z.copy(W.x);
             this.z.mul(B);
+
+            //  this.x.norm();
         },
 
         /* this-=Q */
         sub: function(Q) {
-            Q.neg();
-            this.add(Q);
-            Q.neg();
+			var NQ = new ECP(); NQ.copy(Q);
+            NQ.neg();
+            this.add(NQ);
         },
 
         /* constant time multiply by small integer of length bts - use ladder */
@@ -947,12 +973,10 @@ var ECP = function(ctx) {
             }
             if (cf==4) {
                 this.dbl(); this.dbl();
-                this.affine();
                 return;
             }
             if (cf==8) {
                 this.dbl(); this.dbl(); this.dbl();
-                this.affine();
                 return;
             }
             c.rcopy(ctx.ROM_CURVE.CURVE_Cof);
@@ -1000,8 +1024,6 @@ var ECP = function(ctx) {
                 C = new ECP();
                 W = [];
                 w = [];
-
-                this.affine();
 
                 // precompute table
                 Q.copy(this);
@@ -1069,9 +1091,6 @@ var ECP = function(ctx) {
                 w = [],
                 i, s, ns, nb,
                 a, b;
-
-            this.affine();
-            Q.affine();
 
             te.copy(e);
             tf.copy(f);
@@ -1205,6 +1224,11 @@ var ECP = function(ctx) {
             return P;
         }
 
+        if (ECP.CURVETYPE == ECP.MONTGOMERY) {
+            P.setx(px);
+            return P;
+        }
+
         if (b[0] == 0x04) {
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 t[i] = b[i + ctx.BIG.MODBYTES + 1];
@@ -1219,10 +1243,14 @@ var ECP = function(ctx) {
             P.setxy(px, py);
 
             return P;
-        } else {
-            P.setx(px);
+        }
+
+        if (b[0]==0x02 || b[0]==0x03) {
+            P.setxi(px,b[0]&1);
             return P;
         }
+
+        return P;
     };
 
     /* Calculate RHS of curve equation */
@@ -1230,7 +1258,7 @@ var ECP = function(ctx) {
         var r = new ctx.FP(0),
             b, cx, one, x3;
 
-        x.norm();
+        //x.norm();
         r.copy(x);
         r.sqr();
 

@@ -73,7 +73,7 @@ ctx.MPIN.RANDOM_GENERATE(rng, S);
 console.log("M-Pin Master Secret s: 0x" + ctx.MPIN.bytestostring(S));
 
 /* Create Client Identity */
-var IDstr = "testUser@miracl.com";
+var IDstr = "testUser@milagro.com";
 var CLIENT_ID = ctx.MPIN.stringtobytes(IDstr);
 HCID = ctx.MPIN.HASH_ID(sha, CLIENT_ID); /* Either Client or TA calculates Hash(ID) - you decide! */
 

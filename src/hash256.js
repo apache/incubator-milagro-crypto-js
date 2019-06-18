@@ -28,9 +28,7 @@ var HASH256 = function() {
     };
 
     HASH256.prototype = {
-
-        /* basic transformation step */
-        transform: function() {
+        transform: function() { /* basic transformation step */
             var a, b, c, d, e, f, g, hh, t1, t2, j;
 
             for (j = 16; j < 64; j++) {
@@ -46,8 +44,7 @@ var HASH256 = function() {
             g = this.h[6];
             hh = this.h[7];
 
-            /* 64 times - mush it up */
-            for (j = 0; j < 64; j++) {
+            for (j = 0; j < 64; j++) { /* 64 times - mush it up */
                 t1 = (hh + HASH256.Sig1(e) + HASH256.Ch(e, f, g) + HASH256.HK[j] + this.w[j]) | 0;
                 t2 = (HASH256.Sig0(a) + HASH256.Maj(a, b, c)) | 0;
                 hh = g;
@@ -71,8 +68,8 @@ var HASH256 = function() {
 
         },
 
-        /* Initialize Hash function */
-        init: function() {
+        /* Initialise Hash function */
+        init: function() { /* initialise */
             var i;
 
             for (i = 0; i < 64; i++) {
@@ -90,7 +87,7 @@ var HASH256 = function() {
         },
 
         /* process a single byte */
-        process: function(byt) {
+        process: function(byt) { /* process the next message byte */
             var cnt;
 
             cnt = (this.length[0] >>> 5) % 16;
@@ -123,8 +120,7 @@ var HASH256 = function() {
             this.process(n & 0xff);
         },
 
-        /* pad message and finish - supply digest */
-        hash: function() {
+        hash: function() { /* pad message and finish - supply digest */
             var digest = [],
                 len0, len1, i;
 
@@ -140,8 +136,7 @@ var HASH256 = function() {
             this.w[15] = len0;
             this.transform();
 
-            /* convert to bytes */
-            for (i = 0; i < HASH256.len; i++) {
+            for (i = 0; i < HASH256.len; i++) { /* convert to bytes */
                 digest[i] = ((this.h[i >>> 2] >> (8 * (3 - i % 4))) & 0xff);
             }
             this.init();

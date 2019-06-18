@@ -57,7 +57,8 @@ var ECDH = function(ctx) {
 
             for (i = 0; i < len; i++) {
                 ch = b[i];
-                s += String.fromCharCode(ch);
+                s += ((ch >>> 4) & 15).toString(16);
+                s += (ch & 15).toString(16);
             }
 
             return s;
@@ -76,7 +77,7 @@ var ECDH = function(ctx) {
 
         hashit: function(sha, A, n, B, pad) {
             var R = [],
-                H, W, i;
+                H, W, i, len;
 
             if (sha == this.SHA256) {
                 H = new ctx.HASH256();
@@ -104,16 +105,18 @@ var ECDH = function(ctx) {
 
             W = [];
 
-            if (sha >= pad) {
-                for (i = 0; i < pad; i++) {
+            len = pad; 
+
+            if (sha >= len) {
+                for (i = 0; i < len; i++) {
                     W[i] = R[i];
                 }
             } else {
                 for (i = 0; i < sha; i++) {
-                    W[i + pad - sha] = R[i];
+                    W[i + len - sha] = R[i];
                 }
 
-                for (i = 0; i < pad - sha; i++) {
+                for (i = 0; i < len - sha; i++) {
                     W[i] = 0;
                 }
             }
@@ -261,6 +264,7 @@ var ECDH = function(ctx) {
 
             K0 = new Array(b);
 
+            //b=K0.length;
             if (olen < 4) {
                 return 0;
             }
@@ -424,6 +428,7 @@ var ECDH = function(ctx) {
         KEY_PAIR_GENERATE: function(RNG, S, W) {
             var res = 0,
                 r, s, G, WP;
+            // var T=[];
 
             G = ctx.ECP.generator();
 
@@ -440,7 +445,7 @@ var ECDH = function(ctx) {
             s.toBytes(S);
 
             WP = G.mul(s);
-            WP.toBytes(W,false);
+            WP.toBytes(W,false);  // To use point compression on public keys, change to true 
 
             return res;
         },
@@ -536,7 +541,7 @@ var ECDH = function(ctx) {
 
             do {
                 u = ctx.BIG.randomnum(r, RNG);
-                w = ctx.BIG.randomnum(r, RNG);
+                w = ctx.BIG.randomnum(r, RNG);  /* side channel masking */
                 V.copy(G);
                 V = V.mul(u);
                 vx = V.getX();
@@ -666,6 +671,16 @@ var ECDH = function(ctx) {
             return C;
         },
 
+		ncomp: function(T1,T2,n) {
+			var res=0;
+			for (var i=0;i<n;i++)
+			{
+				res|=(T1[i]^T2[i]);
+			}
+			if (res==0) return true;
+			return false;
+		},
+
         ECIES_DECRYPT: function(sha, P1, P2, V, C, T, U) {
             var Z = [],
                 VZ = [],
@@ -716,16 +731,9 @@ var ECDH = function(ctx) {
 
             this.HMAC(sha, AC, K2, TAG);
 
-            same = true;
-            for (i = 0; i < T.length; i++) {
-                if (T[i] != TAG[i]) {
-                    same = false;
-                }
-            }
-
-            if (!same) {
-                return [];
-            }
+			if (!this.ncomp(T,TAG,T.length)) {
+				return [];
+			}
 
             return M;
         }
