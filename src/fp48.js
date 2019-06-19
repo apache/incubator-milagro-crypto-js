@@ -26,15 +26,27 @@ var FP48 = function(ctx) {
 
     /* general purpose constructor */
     var FP48 = function(d, e, f) {
-        if (d instanceof FP48) {
-            this.a = new ctx.FP16(d.a);
-            this.b = new ctx.FP16(d.b);
-            this.c = new ctx.FP16(d.c);
-        } else {
-            this.a = new ctx.FP16(d);
-            this.b = new ctx.FP16(e);
-            this.c = new ctx.FP16(f);
-        }
+		if (!isNaN(d))
+		{
+			this.a = new ctx.FP16(d);
+			this.b = new ctx.FP16(0);
+			this.c = new ctx.FP16(0);
+			if (d==1) this.stype=ctx.FP.ONE;
+			else this.stype=ctx.FP.SPARSER;
+		}
+		else
+		{
+	        if (d instanceof FP48) {
+		        this.a = new ctx.FP16(d.a);
+			    this.b = new ctx.FP16(d.b);
+				this.c = new ctx.FP16(d.c);
+			} else {
+				this.a = new ctx.FP16(d);
+				this.b = new ctx.FP16(e);
+				this.c = new ctx.FP16(f);
+			}
+			this.stype=ctx.FP.DENSE;
+		}
     };
 
     FP48.prototype = {
@@ -54,7 +66,6 @@ var FP48 = function(ctx) {
 
         /* test x==0 ? */
         iszilch: function() {
-            this.reduce();
             return (this.a.iszilch() && this.b.iszilch() && this.c.iszilch());
         },
 
@@ -69,6 +80,9 @@ var FP48 = function(ctx) {
             this.a.cmove(g.a, d);
             this.b.cmove(g.b, d);
             this.c.cmove(g.c, d);
+			d=~(d-1);
+			this.stype^=(this.stype^g.stype)&d;
+
         },
 
         /* Constant time select from pre-computed table */
@@ -93,6 +107,14 @@ var FP48 = function(ctx) {
             invf.conj();
             this.cmove(invf, (m & 1));
         },
+
+		settype: function(w) {
+			this.stype=w;
+		},
+
+		gettype: function() {
+			return this.stype;
+		},
 
         /* extract a from this */
         geta: function() {
@@ -119,6 +141,7 @@ var FP48 = function(ctx) {
             this.a.copy(x.a);
             this.b.copy(x.b);
             this.c.copy(x.c);
+			this.stype=x.stype;
         },
 
         /* set this=1 */
@@ -126,6 +149,15 @@ var FP48 = function(ctx) {
             this.a.one();
             this.b.zero();
             this.c.zero();
+			this.stype=ctx.FP.ONE;
+        },
+
+        /* set this=0 */
+        zero: function() {
+            this.a.zero();
+            this.b.zero();
+            this.c.zero();
+			this.stype=ctx.FP.ZERO;
         },
 
         /* this=conj(this) */
@@ -140,6 +172,7 @@ var FP48 = function(ctx) {
             this.a.copy(d);
             this.b.copy(e);
             this.c.copy(f);
+			this.stype=ctx.FP.DENSE;
         },
 
         /* set this from one ctx.FP16 */
@@ -147,11 +180,12 @@ var FP48 = function(ctx) {
             this.a.copy(d);
             this.b.zero();
             this.c.zero();
+			this.stype=ctx.FP.SPARSER
         },
 
         /* Granger-Scott Unitary Squaring */
         usqr: function() {
-            var A = new ctx.FP16(this.a),
+            var A = new ctx.FP16(this.a), 
                 B = new ctx.FP16(this.c),
                 C = new ctx.FP16(this.b),
                 D = new ctx.FP16(0);
@@ -184,19 +218,23 @@ var FP48 = function(ctx) {
             this.c.add(this.c);
             this.b.add(B);
             this.c.add(C);
+			this.stype=ctx.FP.DENSE;
             this.reduce();
         },
 
         /* Chung-Hasan SQR2 method from http://cacr.uwaterloo.ca/techreports/2006/cacr2006-24.pdf */
         sqr: function() {
-            var A = new ctx.FP16(this.a),
-                B = new ctx.FP16(this.b),
-                C = new ctx.FP16(this.c),
-                D = new ctx.FP16(this.a);
+			if (this.stype==ctx.FP.ONE)
+				return;
+
+            var A = new ctx.FP16(this.a), 
+                B = new ctx.FP16(this.b), 
+                C = new ctx.FP16(this.c), 
+                D = new ctx.FP16(this.a); 
 
             A.sqr();
             B.mul(this.c);
-            B.add(B);
+            B.add(B); 
             C.sqr();
             D.mul(this.b);
             D.add(D);
@@ -219,18 +257,21 @@ var FP48 = function(ctx) {
             this.b.copy(C);
             this.b.add(D);
             this.c.add(A);
-
+			if (this.stype==ctx.FP.SPARSER)
+				this.stype=ctx.FP.SPARSE;
+			else
+				this.stype=ctx.FP.DENSE;
             this.norm();
         },
 
         /* FP48 full multiplication this=this*y */
         mul: function(y) {
-            var z0 = new ctx.FP16(this.a),
+            var z0 = new ctx.FP16(this.a), 
                 z1 = new ctx.FP16(0),
-                z2 = new ctx.FP16(this.b),
+                z2 = new ctx.FP16(this.b), 
                 z3 = new ctx.FP16(0),
-                t0 = new ctx.FP16(this.a),
-                t1 = new ctx.FP16(y.a);
+                t0 = new ctx.FP16(this.a), 
+                t1 = new ctx.FP16(y.a); 
 
             z0.mul(y.a);
             z2.mul(y.b);
@@ -287,120 +328,328 @@ var FP48 = function(ctx) {
             z3.add(t1);
             t0.times_i();
             this.b.add(t0);
-            // z3.norm();
+  
             z3.times_i();
             this.a.copy(z0);
             this.a.add(z3);
-
+			this.stype=ctx.FP.DENSE;
             this.norm();
         },
 
-        /* Special case this*=y that arises from special form of ATE pairing line function */
-        smul: function(y, twist) {
-            var z0, z1, z2, z3, t0, t1;
+/* FP48 multiplication w=w*y */
+/* catering for special case that arises from special form of ATE pairing line function */
+/* w and y are both sparser line functions - cost = 6m */ 
+		smul: function(y) {
+			if (ctx.ECP.SEXTIC_TWIST==ctx.ECP.D_TYPE)
+			{	
+				var w1=new ctx.FP8(this.a.geta());
+				var w2=new ctx.FP8(this.a.getb());
+				var w3=new ctx.FP8(this.b.geta());
 
-            if (twist == ctx.ECP.D_TYPE) {
-                z0 = new ctx.FP16(this.a),
-                z2 = new ctx.FP16(this.b),
-                z3 = new ctx.FP16(this.b),
-                t0 = new ctx.FP16(0),
-                t1 = new ctx.FP16(y.a);
+				w1.mul(y.a.geta());
+				w2.mul(y.a.getb());
+				w3.mul(y.b.geta());
 
-                z0.mul(y.a);
-                z2.pmul(y.b.real());
-                this.b.add(this.a);
-                t1.real().add(y.b.real());
+				var ta=new ctx.FP8(this.a.geta());
+				var tb=new ctx.FP8(y.a.geta());
+				ta.add(this.a.getb()); ta.norm();
+				tb.add(y.a.getb()); tb.norm();
+				var tc=new ctx.FP8(ta);
+				tc.mul(tb);
+				var t=new ctx.FP8(w1);
+				t.add(w2);
+				t.neg();
+				tc.add(t);
 
-                this.b.norm();
-                t1.norm();
+				ta.copy(this.a.geta()); ta.add(this.b.geta()); ta.norm();
+				tb.copy(y.a.geta()); tb.add(y.b.geta()); tb.norm();
+				var td=new ctx.FP8(ta);
+				td.mul(tb);
+				t.copy(w1);
+				t.add(w3);
+				t.neg();
+				td.add(t);
 
-                this.b.mul(t1);
-                z3.add(this.c);
-                z3.norm();
-                z3.pmul(y.b.real());
+				ta.copy(this.a.getb()); ta.add(this.b.geta()); ta.norm();
+				tb.copy(y.a.getb()); tb.add(y.b.geta()); tb.norm();
+				var te=new ctx.FP8(ta);
+				te.mul(tb);
+				t.copy(w2);
+				t.add(w3);
+				t.neg();
+				te.add(t);
 
-                t0.copy(z0);
-                t0.neg();
-                t1.copy(z2);
-                t1.neg();
+				w2.times_i();
+				w1.add(w2);
 
-                this.b.add(t0);
+				this.a.geta().copy(w1); this.a.getb().copy(tc);
+				this.b.geta().copy(td); this.b.getb().copy(te);
+				this.c.geta().copy(w3); this.c.getb().zero();
 
-                this.b.add(t1);
-                z3.add(t1);
-                z2.add(t0);
+				this.a.norm();
+				this.b.norm();
 
-                t0.copy(this.a);
-                t0.add(this.c);
-                t0.norm();
-                t0.mul(y.a);
-                this.c.copy(z2);
-                this.c.add(t0);
+			} else {
+				var w1=new ctx.FP8(this.a.geta());
+				var w2=new ctx.FP8(this.a.getb());
+				var w3=new ctx.FP8(this.c.getb());
 
-                z3.times_i();
-                this.a.copy(z0);
-                this.a.add(z3);
-            }
+				w1.mul(y.a.geta());
+				w2.mul(y.a.getb());
+				w3.mul(y.c.getb());
 
-            if (twist == ctx.ECP.M_TYPE) {
-                z0=new ctx.FP16(this.a);
-                z1=new ctx.FP16(0);
-                z2=new ctx.FP16(0);
-                z3=new ctx.FP16(0);
-                t0=new ctx.FP16(this.a);
-                t1=new ctx.FP16(0);
+				var ta=new ctx.FP8(this.a.geta());
+				var tb=new ctx.FP8(y.a.geta());
+				ta.add(this.a.getb()); ta.norm();
+				tb.add(y.a.getb()); tb.norm();
+				var tc=new ctx.FP8(ta);
+				tc.mul(tb);
+				var t=new ctx.FP8(w1);
+				t.add(w2);
+				t.neg();
+				tc.add(t);
 
-                z0.mul(y.a);
-                t0.add(this.b);
-                t0.norm();
+				ta.copy(this.a.geta()); ta.add(this.c.getb()); ta.norm();
+				tb.copy(y.a.geta()); tb.add(y.c.getb()); tb.norm();
+				var td=new ctx.FP8(ta);
+				td.mul(tb);
+				t.copy(w1);
+				t.add(w3);
+				t.neg();
+				td.add(t);
 
-                z1.copy(t0); z1.mul(y.a);
-                t0.copy(this.b); t0.add(this.c);
-                t0.norm();
+				ta.copy(this.a.getb()); ta.add(this.c.getb()); ta.norm();
+				tb.copy(y.a.getb()); tb.add(y.c.getb()); tb.norm();
+				var te=new ctx.FP8(ta);
+				te.mul(tb);
+				t.copy(w2);
+				t.add(w3);
+				t.neg();
+				te.add(t);
 
-                z3.copy(t0);
-                z3.pmul(y.c.getb());
-                z3.times_i();
+				w2.times_i();
+				w1.add(w2);
+				this.a.geta().copy(w1); this.a.getb().copy(tc);
 
-                t0.copy(z0); t0.neg();
+				w3.times_i();
+				w3.norm();
+				this.b.geta().zero(); this.b.getb().copy(w3);
 
-                z1.add(t0);
-                this.b.copy(z1);
-                z2.copy(t0);
+				te.norm();
+				te.times_i();
+				this.c.geta().copy(te);
+				this.c.getb().copy(td);
 
-                t0.copy(this.a); t0.add(this.c);
-                t1.copy(y.a); t1.add(y.c);
+				this.a.norm();
+				this.c.norm();
 
-                t0.norm();
-                t1.norm();
+			}
+			this.stype=ctx.FP.SPARSE;
+		},
 
-                t0.mul(t1);
-                z2.add(t0);
+/* FP48 full multiplication w=w*y */
+/* Supports sparse multiplicands */
+/* Usually w is denser than y */
+		ssmul: function(y) {
+			if (this.stype==ctx.FP.ONE)
+			{
+				this.copy(y);
+				return;
+			}
+			if (y.stype==ctx.FP.ONE)
+				return;
 
-                t0.copy(this.c);
+			if (y.stype>=ctx.FP.SPARSE)
+			{
+				var z0=new ctx.FP16(this.a);
+				var z1=new ctx.FP16(0);
+				var z2=new ctx.FP16(0);
+				var z3=new ctx.FP16(0);
+				z0.mul(y.a);
 
-                t0.pmul(y.c.getb());
-                t0.times_i();
+				if (ctx.ECP.SEXTIC_TWIST==ctx.ECP.M_TYPE)
+				{
+					if (y.stype==ctx.FP.SPARSE || this.stype==ctx.FP.SPARSE)
+					{
+						z2.getb().copy(this.b.getb());
+						z2.getb().mul(y.b.getb());
+						z2.geta().zero();
+						if (y.stype!=ctx.FP.SPARSE)
+						{
+							z2.geta().copy(this.b.getb());
+							z2.geta().mul(y.b.geta());
+						}
+						if (this.stype!=ctx.FP.SPARSE)
+						{
+							z2.geta().copy(this.b.geta());
+							z2.geta().mul(y.b.getb());
+						}
+						z2.times_i();
+					} else {
+						z2.copy(this.b);
+						z2.mul(y.b);
+					}
+				} else {
+					z2.copy(this.b);
+					z2.mul(y.b);
+				}
+				var t0=new ctx.FP16(this.a);
+				var t1=new ctx.FP16(y.a);
+				t0.add(this.b); t0.norm();
+				t1.add(y.b); t1.norm();
 
-                t1.copy(t0); t1.neg();
+				z1.copy(t0); z1.mul(t1);
+				t0.copy(this.b); t0.add(this.c); t0.norm();
+				t1.copy(y.b); t1.add(y.c); t1.norm();
 
-                this.c.copy(z2); this.c.add(t1);
-                z3.add(t1);
-                t0.times_i();
-                this.b.add(t0);
-                z3.norm();
-                z3.times_i();
-                this.a.copy(z0); this.a.add(z3);
-            }
+				z3.copy(t0); z3.mul(t1);
 
-            this.norm();
-        },
+				t0.copy(z0); t0.neg();
+				t1.copy(z2); t1.neg();
+
+				z1.add(t0);
+				this.b.copy(z1); this.b.add(t1);
+
+				z3.add(t1);
+				z2.add(t0);
+
+				t0.copy(this.a); t0.add(this.c); t0.norm();
+				t1.copy(y.a); t1.add(y.c); t1.norm();
+	
+				t0.mul(t1);
+				z2.add(t0);
+
+				if (ctx.ECP.SEXTIC_TWIST==ctx.ECP.D_TYPE)
+				{
+					if (y.stype==ctx.FP.SPARSE || this.stype==ctx.FP.SPARSE)
+					{
+						t0.geta().copy(this.c.geta());
+						t0.geta().mul(y.c.geta());
+						t0.getb().zero();
+						if (y.stype!=ctx.FP.SPARSE)
+						{
+							t0.getb().copy(this.c.geta());
+							t0.getb().mul(y.c.getb());
+						}
+						if (this.stype!=ctx.FP.SPARSE)
+						{
+							t0.getb().copy(this.c.getb());
+							t0.getb().mul(y.c.geta());
+						}
+					} else {
+						t0.copy(this.c);
+						t0.mul(y.c);
+					}
+				} else {
+					t0.copy(this.c);
+					t0.mul(y.c);
+				}
+				t1.copy(t0); t1.neg();
+
+				this.c.copy(z2); this.c.add(t1);
+				z3.add(t1);
+				t0.times_i();
+				this.b.add(t0);
+				z3.norm();
+				z3.times_i();
+				this.a.copy(z0); this.a.add(z3);
+			} else {
+				if (this.stype==ctx.FP.SPARSER)
+				{
+					this.smul(y);
+					return;
+				}
+				if (ctx.ECP.SEXTIC_TWIST==ctx.ECP.D_TYPE)
+				{ // dense by sparser - 13m 
+					var z0=new ctx.FP16(this.a);
+					var z2=new ctx.FP16(this.b);
+					var z3=new ctx.FP16(this.b);
+					var t0=new ctx.FP16(0);
+					var t1=new ctx.FP16(y.a);
+					z0.mul(y.a);
+					z2.pmul(y.b.real());
+					this.b.add(this.a);
+					t1.real().add(y.b.real());
+
+					t1.norm();
+					this.b.norm();
+					this.b.mul(t1);
+					z3.add(this.c);
+					z3.norm();
+					z3.pmul(y.b.real());
+
+					t0.copy(z0); t0.neg();
+					t1.copy(z2); t1.neg();
+
+					this.b.add(t0);
+
+					this.b.add(t1);
+					z3.add(t1);
+					z2.add(t0);
+
+					t0.copy(this.a); t0.add(this.c); t0.norm();
+					z3.norm();
+					t0.mul(y.a);
+					this.c.copy(z2); this.c.add(t0);
+
+					z3.times_i();
+					this.a.copy(z0); this.a.add(z3);
+				}
+				if (ctx.ECP.SEXTIC_TWIST==ctx.ECP.M_TYPE)
+				{
+					var z0=new ctx.FP16(this.a);
+					var z1=new ctx.FP16(0);
+					var z2=new ctx.FP16(0);
+					var z3=new ctx.FP16(0);
+					var t0=new ctx.FP16(this.a);
+					var t1=new ctx.FP16(0);
+		
+					z0.mul(y.a);
+					t0.add(this.b); t0.norm();
+
+					z1.copy(t0); z1.mul(y.a);
+					t0.copy(this.b); t0.add(this.c);
+					t0.norm();
+
+					z3.copy(t0); 
+					z3.pmul(y.c.getb());
+					z3.times_i();
+
+					t0.copy(z0); t0.neg();
+					z1.add(t0);
+					this.b.copy(z1); 
+					z2.copy(t0);
+
+					t0.copy(this.a); t0.add(this.c); t0.norm();
+					t1.copy(y.a); t1.add(y.c); t1.norm();
+
+					t0.mul(t1);
+					z2.add(t0);
+					t0.copy(this.c); 
+			
+					t0.pmul(y.c.getb());
+					t0.times_i();
+					t1.copy(t0); t1.neg();
+
+					this.c.copy(z2); this.c.add(t1);
+					z3.add(t1);
+					t0.times_i();
+					this.b.add(t0);
+					z3.norm();
+					z3.times_i();
+					this.a.copy(z0); this.a.add(z3);
+				}	
+			}
+			this.stype=ctx.FP.DENSE;
+			this.norm();
+		},
+
 
         /* this=1/this */
         inverse: function() {
-            var f0 = new ctx.FP16(this.a),
-                f1 = new ctx.FP16(this.b),
-                f2 = new ctx.FP16(this.a),
+            var f0 = new ctx.FP16(this.a), 
+                f1 = new ctx.FP16(this.b), 
+                f2 = new ctx.FP16(this.a), 
                 f3 = new ctx.FP16(0);
 
             f0.sqr();
@@ -440,6 +689,7 @@ var FP48 = function(ctx) {
             this.b.mul(f3);
             this.c.copy(f2);
             this.c.mul(f3);
+			this.stype=ctx.FP.DENSE;
         },
 
         /* this=this^p, where p=Modulus, using Frobenius */
@@ -462,6 +712,7 @@ var FP48 = function(ctx) {
                 this.b.qmul(f); this.b.times_i4(); this.b.times_i2();
                 this.c.qmul(f2); this.c.times_i4(); this.c.times_i4(); this.c.times_i4();
             }
+			this.stype=ctx.FP.DENSE;
         },
 
         /* trace function */
@@ -692,29 +943,31 @@ var FP48 = function(ctx) {
 
         /* set this=this^e */
         pow: function(e) {
-            var e3, w, nb, i, bt;
+            var e1, e3, w, nb, i, bt, sf;
 
-            this.norm();
-            e.norm();
+			sf = new FP48(this);
+            sf.norm();
+			e1 = new ctx.BIG(e);
+            e1.norm();
 
-            e3 = new ctx.BIG(e);
+            e3 = new ctx.BIG(e1);
             e3.pmul(3);
             e3.norm();
 
-            w = new FP48(this);
+            w = new FP48(sf); //w.copy(this);
             nb = e3.nbits();
 
             for (i = nb - 2; i >= 1; i--) {
                 w.usqr();
-                bt = e3.bit(i) - e.bit(i);
+                bt = e3.bit(i) - e1.bit(i);
 
                 if (bt == 1) {
-                    w.mul(this);
+                    w.mul(sf);
                 }
                 if (bt == -1) {
-                    this.conj();
-                    w.mul(this);
-                    this.conj();
+                    sf.conj();
+                    w.mul(sf);
+                    sf.conj();
                 }
             }
             w.reduce();
@@ -799,7 +1052,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 2 * ctx.BIG.MODBYTES];
@@ -809,9 +1062,9 @@ var FP48 = function(ctx) {
             t[i] = w[i + 3 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        d = new ctx.FP2(a, b);
+        d = new ctx.FP2(a, b); //d.bset(a,b);
 
-        ea = new ctx.FP4(c, d);
+        ea = new ctx.FP4(c, d); //e.set(c,d);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 4 * ctx.BIG.MODBYTES];
@@ -821,7 +1074,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 5 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 6 * ctx.BIG.MODBYTES];
@@ -831,9 +1084,9 @@ var FP48 = function(ctx) {
             t[i] = w[i + 7 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        d = new ctx.FP2(a, b);
+        d = new ctx.FP2(a, b); //d.bset(a,b);
 
-        eb = new ctx.FP4(c, d);
+        eb = new ctx.FP4(c, d); //e.set(c,d);
 
         fa = new ctx.FP8(ea,eb);
 
@@ -845,7 +1098,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 9 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 10 * ctx.BIG.MODBYTES];
@@ -855,9 +1108,9 @@ var FP48 = function(ctx) {
             t[i] = w[i + 11 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        d = new ctx.FP2(a, b);
+        d = new ctx.FP2(a, b); //d.bset(a,b);
 
-        ea = new ctx.FP4(c, d);
+        ea = new ctx.FP4(c, d); //e.set(c,d);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 12 * ctx.BIG.MODBYTES];
@@ -867,7 +1120,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 13 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 14 * ctx.BIG.MODBYTES];
@@ -877,9 +1130,9 @@ var FP48 = function(ctx) {
             t[i] = w[i + 15 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        d = new ctx.FP2(a, b);
+        d = new ctx.FP2(a, b); //d.bset(a,b);
 
-        eb = new ctx.FP4(c, d);
+        eb = new ctx.FP4(c, d); //e.set(c,d);
 
         fb = new ctx.FP8(ea,eb);
 
@@ -893,7 +1146,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 17 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 18 * ctx.BIG.MODBYTES];
@@ -905,7 +1158,7 @@ var FP48 = function(ctx) {
         b = ctx.BIG.fromBytes(t);
         d = new ctx.FP2(a, b);
 
-        ea = new ctx.FP4(c, d);
+        ea = new ctx.FP4(c, d); //e.set(c,d);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 20 * ctx.BIG.MODBYTES];
@@ -915,7 +1168,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 21 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 22 * ctx.BIG.MODBYTES];
@@ -927,7 +1180,7 @@ var FP48 = function(ctx) {
         b = ctx.BIG.fromBytes(t);
         d = new ctx.FP2(a, b);
 
-        eb = new ctx.FP4(c, d);
+        eb = new ctx.FP4(c, d); //e.set(c,d);
 
         fa = new ctx.FP8(ea,eb);
 
@@ -939,7 +1192,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 25 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 26 * ctx.BIG.MODBYTES];
@@ -951,7 +1204,7 @@ var FP48 = function(ctx) {
         b = ctx.BIG.fromBytes(t);
         d = new ctx.FP2(a, b);
 
-        ea = new ctx.FP4(c, d);
+        ea = new ctx.FP4(c, d); //e.set(c,d);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 28 * ctx.BIG.MODBYTES];
@@ -961,7 +1214,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 29 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 30 * ctx.BIG.MODBYTES];
@@ -973,11 +1226,11 @@ var FP48 = function(ctx) {
         b = ctx.BIG.fromBytes(t);
         d = new ctx.FP2(a, b);
 
-        eb = new ctx.FP4(c, d);
+        eb = new ctx.FP4(c, d); //e.set(c,d);
 
         fb = new ctx.FP8(ea,eb);
 
-        f = new ctx.FP16(fa, fb);
+        f = new ctx.FP16(fa, fb); //f.set(c,d);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 32 * ctx.BIG.MODBYTES];
@@ -987,7 +1240,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 33 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 34 * ctx.BIG.MODBYTES];
@@ -997,9 +1250,9 @@ var FP48 = function(ctx) {
             t[i] = w[i + 35 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        d = new ctx.FP2(a, b);
+        d = new ctx.FP2(a, b); //d.bset(a,b);
 
-        ea = new ctx.FP4(c, d);
+        ea = new ctx.FP4(c, d); //e.set(c,d);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 36 * ctx.BIG.MODBYTES];
@@ -1009,7 +1262,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 37 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 38 * ctx.BIG.MODBYTES];
@@ -1019,9 +1272,9 @@ var FP48 = function(ctx) {
             t[i] = w[i + 39 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        d = new ctx.FP2(a, b);
+        d = new ctx.FP2(a, b); //d.bset(a,b);
 
-        eb = new ctx.FP4(c, d);
+        eb = new ctx.FP4(c, d); //e.set(c,d);
 
         fa = new ctx.FP8(ea,eb);
 
@@ -1033,7 +1286,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 41 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 42 * ctx.BIG.MODBYTES];
@@ -1043,9 +1296,9 @@ var FP48 = function(ctx) {
             t[i] = w[i + 43 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        d = new ctx.FP2(a, b);
+        d = new ctx.FP2(a, b); //d.bset(a,b);
 
-        ea = new ctx.FP4(c, d);
+        ea = new ctx.FP4(c, d); //e.set(c,d);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 44 * ctx.BIG.MODBYTES];
@@ -1055,7 +1308,7 @@ var FP48 = function(ctx) {
             t[i] = w[i + 45 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        c = new ctx.FP2(a, b);
+        c = new ctx.FP2(a, b); //c.bset(a,b);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = w[i + 46 * ctx.BIG.MODBYTES];
@@ -1065,15 +1318,15 @@ var FP48 = function(ctx) {
             t[i] = w[i + 47 * ctx.BIG.MODBYTES];
         }
         b = ctx.BIG.fromBytes(t);
-        d = new ctx.FP2(a, b);
+        d = new ctx.FP2(a, b); //d.bset(a,b);
 
-        eb = new ctx.FP4(c, d);
+        eb = new ctx.FP4(c, d); //e.set(c,d);
 
         fb = new ctx.FP8(ea,eb);
 
-        g = new ctx.FP16(fa, fb);
+        g = new ctx.FP16(fa, fb); //g.set(c,d);
 
-        r = new FP48(e, f, g);
+        r = new FP48(e, f, g); //r.set(e,f,g);
 
         return r;
     };
@@ -1114,14 +1367,14 @@ var FP48 = function(ctx) {
             t[i] = new ctx.BIG(u[i]); t[i].norm();
         }
 
-        g1[0] = new FP48(q[0]);
-        g1[1] = new FP48(g1[0]); g1[1].mul(q[1]);
-        g1[2] = new FP48(g1[0]); g1[2].mul(q[2]);
-        g1[3] = new FP48(g1[1]); g1[3].mul(q[2]);
-        g1[4] = new FP48(q[0]);  g1[4].mul(q[3]);
-        g1[5] = new FP48(g1[1]); g1[5].mul(q[3]);
-        g1[6] = new FP48(g1[2]); g1[6].mul(q[3]);
-        g1[7] = new FP48(g1[3]); g1[7].mul(q[3]);
+        g1[0] = new FP48(q[0]);  // q[0]
+        g1[1] = new FP48(g1[0]); g1[1].mul(q[1]);   // q[0].q[1]
+        g1[2] = new FP48(g1[0]); g1[2].mul(q[2]);   // q[0].q[2]
+        g1[3] = new FP48(g1[1]); g1[3].mul(q[2]);   // q[0].q[1].q[2]
+        g1[4] = new FP48(q[0]);  g1[4].mul(q[3]);   // q[0].q[3]
+        g1[5] = new FP48(g1[1]); g1[5].mul(q[3]);   // q[0].q[1].q[3]
+        g1[6] = new FP48(g1[2]); g1[6].mul(q[3]);   // q[0].q[2].q[3]
+        g1[7] = new FP48(g1[3]); g1[7].mul(q[3]);   // q[0].q[1].q[2].q[3]
 
         //  Use Frobenius
         fa.rcopy(ctx.ROM_FIELD.Fra);

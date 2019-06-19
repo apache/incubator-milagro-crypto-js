@@ -24,37 +24,24 @@ var CTX = function(input_parameter) {
         CTXLIST,
         prepareModule;
 
-    /**
-     * Config fields:
-     *  NB   : Number of bytes in Modulus
-     *  BASE : Number base as power of 2
-     *  NBT  : Number of bits in Modulus
-     *  M8   : Modulus mod 8
-     *  MT   : Modulus Type (Pseudo-Mersenne,...)
-     *  CT   : Curve Type (Weierstrass,...)
-     *  PF   : Pairing Friendly
-     *  ST   : Sextic Twist Type
-     *  SX   : Sign of x parameter
-     *  HT   : Hash output size
-     *  AK   : AES key size
-     */
-
     CTXLIST = {
         "ED25519": {
             "BITS": "256",
             "FIELD": "25519",
             "CURVE": "ED25519",
-            "@NB": 32,
-            "@BASE": 24,
-            "@NBT": 255,
-            "@M8": 5,
-            "@MT": 1,
-            "@CT": 1,
-            "@PF": 0,
-            "@ST": 0,
-            "@SX": 0,
-            "@HT": 32,
-            "@AK": 16
+            "@NB": 32,      /* Number of bytes in Modulus */
+            "@BASE": 24,    /* Number base as power of 2 */
+            "@NBT": 255,    /* Number of bits in modulus */
+            "@M8": 5,       /* Modulus mod 8 */
+            "@MT": 1,       /* Modulus Type (pseudo-mersenne,...) */
+            "@CT": 1,       /* Curve Type (Weierstrass,...) */
+            "@PF": 0,       /* Pairing Friendly */
+            "@ST": 0,       /* Sextic Twist Type */
+            "@SX": 0,       /* Sign of x parameter */
+            "@AB": 0,       /* ATE parameter size */
+            "@HT": 32,      /* Hash output size */
+            "@SH": 9,       /* Maximum field excess */
+            "@AK": 16       /* AES key size */
         },
 
         "C25519": {
@@ -70,7 +57,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 32,
+	    "@SH": 9, 
             "@AK": 16
         },
 
@@ -88,7 +77,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 32,
+	    "@SH": 8, 
             "@AK": 16
         },
 
@@ -105,7 +96,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 32,
+	    "@SH": 8, 
             "@AK": 16
         },
 
@@ -122,7 +115,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 48,
+	    "@SH": 7, 
             "@AK": 24
         },
 
@@ -139,7 +134,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 32,
+	    "@SH": 8, 
             "@AK": 16
         },
 
@@ -156,7 +153,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 32,
+	    "@SH": 8, 
             "@AK": 16
         },
 
@@ -173,7 +172,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 48,
+	    "@SH": 9, 
             "@AK": 24
         },
 
@@ -190,7 +191,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 64,
+	    "@SH": 11, 
             "@AK": 32
         },
 
@@ -207,7 +210,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 64,
+	    "@SH": 4, 
             "@AK": 32
         },
 
@@ -224,7 +229,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 64,
+	    "@SH": 8, 
             "@AK": 32
         },
 
@@ -241,7 +248,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 32,
+	    "@SH": 8, 
             "@AK": 16
         },
 
@@ -258,7 +267,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 32,
+	    "@SH": 8, 
             "@AK": 16
         },
 
@@ -275,7 +286,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 48,
+	    "@SH": 7, 
             "@AK": 24
         },
 
@@ -292,7 +305,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 48,
+	    "@SH": 7, 
             "@AK": 24
         },
 
@@ -309,7 +324,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 64,
+	    "@SH": 11, 
             "@AK": 32
         },
 
@@ -326,7 +343,9 @@ var CTX = function(input_parameter) {
             "@PF": 0,
             "@ST": 0,
             "@SX": 0,
+            "@AB": 0,
             "@HT": 64,
+	    "@SH": 11, 
             "@AK": 32
         },
 
@@ -343,7 +362,9 @@ var CTX = function(input_parameter) {
             "@PF": 1,
             "@ST": 1,
             "@SX": 1,
+            "@AB": 66,
             "@HT": 32,
+	    "@SH": 8, 
             "@AK": 16
         },
 
@@ -360,7 +381,9 @@ var CTX = function(input_parameter) {
             "@PF": 1,
             "@ST": 1,
             "@SX": 0,
+            "@AB": 130,
             "@HT": 32,
+	    "@SH": 11, 
             "@AK": 16
         },
 
@@ -377,7 +400,9 @@ var CTX = function(input_parameter) {
             "@PF": 1,
             "@ST": 0,
             "@SX": 1,
+            "@AB": 66,
             "@HT": 32,
+	    "@SH": 10, 
             "@AK": 16
         },
 
@@ -394,7 +419,9 @@ var CTX = function(input_parameter) {
             "@PF": 1,
             "@ST": 0,
             "@SX": 1,
+            "@AB": 66,
             "@HT": 32,
+	    "@SH": 10, 
             "@AK": 16
         },
 
@@ -411,7 +438,9 @@ var CTX = function(input_parameter) {
             "@PF": 2,
             "@ST": 1,
             "@SX": 0,
+            "@AB": 65,
             "@HT": 32,
+	    "@SH": 8, 
             "@AK": 16
         },
 
@@ -428,7 +457,9 @@ var CTX = function(input_parameter) {
             "@PF": 3,
             "@ST": 1,
             "@SX": 0,
+            "@AB": 49,
             "@HT": 48,
+	    "@SH": 4, 
             "@AK": 24
         },
 
@@ -445,7 +476,9 @@ var CTX = function(input_parameter) {
             "@PF": 4,
             "@ST": 1,
             "@SX": 0,
+            "@AB": 32,
             "@HT": 64,
+	    "@SH": 11, 
             "@AK": 32
         },
 
@@ -462,7 +495,9 @@ var CTX = function(input_parameter) {
             "@PF": 2,
             "@ST": 1,
             "@SX": 1,
+            "@AB": 65,
             "@HT": 32,
+	    "@SH": 10, 
             "@AK": 16
         },
 
@@ -479,7 +514,9 @@ var CTX = function(input_parameter) {
             "@PF": 2,
             "@ST": 1,
             "@SX": 1,
+            "@AB": 78,
             "@HT": 32,
+	    "@SH": 11, 
             "@AK": 16
         },
 
@@ -532,7 +569,6 @@ var CTX = function(input_parameter) {
     prepareModule("HASH512");
     prepareModule("SHA3");
     prepareModule("RAND");
-    prepareModule("NHS");
 
     if (typeof input_parameter === "undefined") {
         return;
@@ -570,6 +606,8 @@ var CTX = function(input_parameter) {
             prepareModule("ECP2");
             prepareModule("PAIR");
             prepareModule("MPIN");
+	    prepareModule("BLS");
+
         }
 
         if (ctx.config["@PF"] == 3) {
@@ -580,6 +618,7 @@ var CTX = function(input_parameter) {
             prepareModule("ECP4");
             prepareModule("PAIR192");
             prepareModule("MPIN192");
+            prepareModule("BLS192");
         }
 
         if (ctx.config["@PF"] == 4) {
@@ -591,6 +630,7 @@ var CTX = function(input_parameter) {
             prepareModule("ECP8");
             prepareModule("PAIR256");
             prepareModule("MPIN256");
+            prepareModule("BLS256");
         }
 
         return;

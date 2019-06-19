@@ -275,7 +275,7 @@ var MPIN256 = function(ctx) {
                 u.dec(1);
                 u.norm();
                 r++;
-                R.setxi(u, s); //=new ECP(u,s);
+                R.setxi(u, s); 
                 if (!R.is_infinity()) {
                     break;
                 }
@@ -544,7 +544,6 @@ var MPIN256 = function(ctx) {
 
             r.rcopy(ctx.ROM_CURVE.CURVE_Order);
 
-            //  var q=new ctx.BIG(0); q.rcopy(ctx.ROM_FIELD.Modulus);
             if (rng !== null) {
                 x = ctx.BIG.randomnum(r, rng);
                 x.toBytes(X);
@@ -619,7 +618,7 @@ var MPIN256 = function(ctx) {
             P = ctx.PAIR256.G1mul(P, px);
             P.neg();
             P.toBytes(SEC,false);
-
+ 
             return 0;
         },
 
@@ -687,7 +686,6 @@ var MPIN256 = function(ctx) {
 
             P = ctx.PAIR256.G1mul(P, y);
             P.add(R);
-            P.affine();
             R = ctx.ECP.fromBytes(mSEC);
             if (R.is_infinity()) {
                 return this.INVALID_POINT;
@@ -713,7 +711,6 @@ var MPIN256 = function(ctx) {
 
                         P = ctx.PAIR256.G1mul(P, y);
                         P.add(R);
-                        P.affine();
                     }
                     g = ctx.PAIR256.ate(Q, P);
                     g = ctx.PAIR256.fexp(g);
@@ -958,7 +955,6 @@ var MPIN256 = function(ctx) {
 
             r = new ctx.BIG(0);
             r.rcopy(ctx.ROM_CURVE.CURVE_Order);
-
             z.add(h);
             z.mod(r);
 
@@ -1012,7 +1008,6 @@ var MPIN256 = function(ctx) {
             h = ctx.BIG.fromBytes(H);
             A = ctx.PAIR256.G1mul(A, h);
             R.add(A);
-            R.affine();
 
             U = ctx.PAIR256.G1mul(U, w);
             g = ctx.PAIR256.ate(sQ, R);

@@ -1,23 +1,13 @@
 language: node_js
 
 node_js:
-  - "node"
+  - "8"
 
-sudo: required
-dist: trusty
+before_install:
+  - npm update
 
-group: edge
-
-branches:
-  except:
-    - release
-
-before_script:
-    - npm install chai
-    - npm install -g mocha
-    - npm install -g coveralls
-    - npm install -g istanbul
-    - npm install -g nyc
+install:
+  - npm install
 
 script:
   - npm run coverage

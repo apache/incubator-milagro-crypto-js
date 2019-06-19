@@ -121,51 +121,121 @@ var PAIR192 = function(ctx) {
             }
 
             r.set(a, b, c);
-
+			r.settype(ctx.FP.SPARSER);
             return r;
         },
 
+/* prepare for multi-pairing */
+		initmp: function() {
+			var r=[];
+			for (var i=0;i<ctx.ECP.ATE_BITS;i++)
+				r[i] = new ctx.FP24(1);
+			return r;
+		},
+
+/* basic Miller loop */
+		miller: function(r) {
+			var res=new ctx.FP24(1);
+			for (var i=ctx.ECP.ATE_BITS-1; i>=1; i--)
+			{
+				res.sqr();
+				res.ssmul(r[i]); 
+			}
+
+			if (ctx.ECP.SIGN_OF_X==ctx.ECP.NEGATIVEX)
+				res.conj();
+			res.ssmul(r[0]);
+
+			return res;
+		},
+
+/* Accumulate another set of line functions for n-pairing */
+		another: function(r,P1,Q1) {
+
+			var f;
+			var n=new ctx.BIG(0);
+			var n3=new ctx.BIG(0);
+			var lv,lv2;
+			var bt;
+
+// P is needed in affine form for line function, Q for (Qx,Qy) extraction
+			var P=new ctx.ECP4(); P.copy(P1); P.affine();
+			var Q=new ctx.ECP(); Q.copy(Q1); Q.affine();
+
+			P.affine();
+			Q.affine();
+
+			var Qx=new ctx.FP(Q.getx());
+			var Qy=new ctx.FP(Q.gety());
+
+			var A=new ctx.ECP4();
+			A.copy(P);
+
+			var MP=new ctx.ECP4();
+			MP.copy(P); MP.neg();
+
+			var nb=PAIR192.lbits(n3,n);
+
+			for (var i=nb-2;i>=1;i--)
+			{
+				lv=PAIR192.line(A,A,Qx,Qy);
+
+				bt=n3.bit(i)-n.bit(i); 
+				if (bt==1)
+				{
+					lv2=PAIR192.line(A,P,Qx,Qy);
+					lv.smul(lv2);
+				}
+				if (bt==-1)
+				{
+					lv2=PAIR192.line(A,MP,Qx,Qy);
+					lv.smul(lv2);
+				}
+				r[i].ssmul(lv);
+			} 
+		},
+
+
         /* Optimal R-ate pairing */
-        ate: function(P, Q) {
-            var x, n, n3, lv,
-                Qx, Qy, A, r, nb, bt,
+        ate: function(P1, Q1) {
+            var x, n, n3, lv, lv2,
+                Qx, Qy, A, NP, r, nb, bt,
                 i;
 
-            x = new ctx.BIG(0);
-            x.rcopy(ctx.ROM_CURVE.CURVE_Bnx);
-            n = new ctx.BIG(x);
+            n = new ctx.BIG(0);
+			n3 = new ctx.BIG(0);
 
-            n3 = new ctx.BIG(n);
-            n3.pmul(3);
-            n3.norm();
+			var P=new ctx.ECP4(); P.copy(P1); P.affine();
+			var Q=new ctx.ECP(); Q.copy(Q1); Q.affine();
 
-            Qx = new ctx.FP(Q.getx());
-            Qy = new ctx.FP(Q.gety());
+            Qx = new ctx.FP(Q.getx()); 
+            Qy = new ctx.FP(Q.gety()); 
 
             A = new ctx.ECP4();
             r = new ctx.FP24(1);
 
             A.copy(P);
-            nb = n3.nbits();
+			NP = new ctx.ECP4();
+			NP.copy(P);
+			NP.neg();
+
+
+            nb = PAIR192.lbits(n3,n);
 
             for (i = nb - 2; i >= 1; i--) {
                 r.sqr();
                 lv = PAIR192.line(A, A, Qx, Qy);
-
-                r.smul(lv,ctx.ECP.SEXTIC_TWIST);
-
                 bt=n3.bit(i)-n.bit(i);
 
                 if (bt == 1) {
-                    lv = PAIR192.line(A, P, Qx, Qy);
-                    r.smul(lv,ctx.ECP.SEXTIC_TWIST);
+                    lv2 = PAIR192.line(A, P, Qx, Qy);
+                    lv.smul(lv2);
                 }
                 if (bt == -1) {
-                    P.neg();
-                    lv = PAIR192.line(A, P, Qx, Qy);
-                    r.smul(lv,ctx.ECP.SEXTIC_TWIST);
-                    P.neg();
+                    lv2 = PAIR192.line(A, NP, Qx, Qy);
+                    lv.smul(lv2);
                 }
+                r.ssmul(lv);
             }
 
             if (ctx.ECP.SIGN_OF_X == ctx.ECP.NEGATIVEX) {
@@ -176,19 +246,20 @@ var PAIR192 = function(ctx) {
         },
 
         /* Optimal R-ate double pairing e(P,Q).e(R,S) */
-        ate2: function(P, Q, R, S) {
-            var x, n, n3, lv,
-                Qx, Qy, Sx, Sy, A, B, r, nb, bt,
+        ate2: function(P1, Q1, R1, S1) {
+            var x, n, n3, lv, lv2,
+                Qx, Qy, Sx, Sy, A, B, NP, NR, r, nb, bt,
                 i;
 
 
-            x = new ctx.BIG(0);
-            x.rcopy(ctx.ROM_CURVE.CURVE_Bnx);
+            n = new ctx.BIG(0);
+			n3 = new ctx.BIG(0);
 
-            n = new ctx.BIG(x);
-            n3 = new ctx.BIG(n);
-            n3.pmul(3);
-            n3.norm();
+			var P=new ctx.ECP4(); P.copy(P1); P.affine();
+			var Q=new ctx.ECP(); Q.copy(Q1); Q.affine();
+			var R=new ctx.ECP4(); R.copy(R1); R.affine();
+			var S=new ctx.ECP(); S.copy(S1); S.affine();
+
 
             Qx = new ctx.FP(Q.getx());
             Qy = new ctx.FP(Q.gety());
@@ -202,32 +273,35 @@ var PAIR192 = function(ctx) {
 
             A.copy(P);
             B.copy(R);
-            nb = n3.nbits();
+			NP = new ctx.ECP4();
+			NP.copy(P);
+			NP.neg();
+			NR = new ctx.ECP4();
+			NR.copy(R);
+			NR.neg();
+
+            nb = PAIR192.lbits(n3,n);
 
             for (i = nb - 2; i >= 1; i--) {
                 r.sqr();
                 lv = PAIR192.line(A, A, Qx, Qy);
-                r.smul(lv,ctx.ECP.SEXTIC_TWIST);
-                lv = PAIR192.line(B, B, Sx, Sy);
-                r.smul(lv,ctx.ECP.SEXTIC_TWIST);
+                lv2 = PAIR192.line(B, B, Sx, Sy);
+				lv.smul(lv2);
+                r.ssmul(lv);
 
                 bt=n3.bit(i)-n.bit(i);
 
                 if (bt == 1) {
                     lv = PAIR192.line(A, P, Qx, Qy);
-                    r.smul(lv,ctx.ECP.SEXTIC_TWIST);
-                    lv = PAIR192.line(B, R, Sx, Sy);
-                    r.smul(lv,ctx.ECP.SEXTIC_TWIST);
+                    lv2 = PAIR192.line(B, R, Sx, Sy);
+					lv.smul(lv2);
+                    r.ssmul(lv);
                 }
                 if (bt == -1) {
-                    P.neg();
-                    lv = PAIR192.line(A, P, Qx, Qy);
-                    r.smul(lv,ctx.ECP.SEXTIC_TWIST);
-                    P.neg();
-                    R.neg();
-                    lv = PAIR192.line(B, R, Sx, Sy);
-                    r.smul(lv,ctx.ECP.SEXTIC_TWIST);
-                    R.neg();
+                    lv = PAIR192.line(A, NP, Qx, Qy);
+                    lv2 = PAIR192.line(B, NR, Sx, Sy);
+					lv.smul(lv2);
+                    r.ssmul(lv);
                 }
             }
 
@@ -251,17 +325,21 @@ var PAIR192 = function(ctx) {
             x = new ctx.BIG(0);
             x.rcopy(ctx.ROM_CURVE.CURVE_Bnx);
 
-            r = new ctx.FP24(m);
+            r = new ctx.FP24(m); //r.copy(m);
 
             /* Easy part of final exp */
-            lv = new ctx.FP24(r);
+            lv = new ctx.FP24(r); //lv.copy(r);
             lv.inverse();
             r.conj();
             r.mul(lv);
             lv.copy(r);
             r.frob(f,4);
             r.mul(lv);
-
+			if (r.isunity())
+			{
+				r.zero();
+				return r;
+			}
             /* Hard part of final exp */
             // Ghamman & Fouotsa Method
             t7=new ctx.FP24(r); t7.usqr();
@@ -337,6 +415,16 @@ var PAIR192 = function(ctx) {
         }
     };
 
+/* prepare ate parameter, n=6u+2 (BN) or n=u (BLS), n3=3*n */
+	PAIR192.lbits = function(n3,n)
+	{
+		n.rcopy(ctx.ROM_CURVE.CURVE_Bnx);
+		n3.copy(n);
+		n3.pmul(3);
+		n3.norm();
+		return n3.nbits();
+	},
+
     /* GLV method */
     PAIR192.glv = function(e) {
         var u = [],
@@ -391,11 +479,10 @@ var PAIR192 = function(ctx) {
         var R, Q, q, bcru, cru, t, u, np, nn;
 
         if (ctx.ROM_CURVE.USE_GLV) {
-            P.affine();
             R = new ctx.ECP();
             R.copy(P);
             Q = new ctx.ECP();
-            Q.copy(P);
+            Q.copy(P); Q.affine();
             q = new ctx.BIG(0);
             q.rcopy(ctx.ROM_CURVE.CURVE_Order);
             bcru = new ctx.BIG(0);
@@ -444,7 +531,7 @@ var PAIR192 = function(ctx) {
 
             u = PAIR192.gs(e);
             t = new ctx.BIG(0);
-            P.affine();
+          
             Q[0] = new ctx.ECP4();
             Q[0].copy(P);
 

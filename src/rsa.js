@@ -119,8 +119,7 @@ RSA = function(ctx) {
             return R;
         },
 
-        /* IEEE1363 A16.11/A16.12 more or less */
-        KEY_PAIR: function(rng, e, PRIV, PUB) {
+        KEY_PAIR: function(rng, e, PRIV, PUB) { /* IEEE1363 A16.11/A16.12 more or less */
             var n = PUB.n.length >> 1,
                 t = new ctx.FF(n),
                 p1 = new ctx.FF(n),

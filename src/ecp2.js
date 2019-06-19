@@ -32,6 +32,7 @@ var ECP2 = function(ctx) {
     ECP2.prototype = {
         /* Test this=O? */
         is_infinity: function() {
+
             this.x.reduce();
             this.y.reduce();
             this.z.reduce();
@@ -149,14 +150,14 @@ var ECP2 = function(ctx) {
 
         /* extract affine x as ctx.FP2 */
         getX: function() {
-            this.affine();
-            return this.x;
+			var W=new ECP2(); W.copy(this); W.affine();
+            return W.x;
         },
 
         /* extract affine y as ctx.FP2 */
         getY: function() {
-            this.affine();
-            return this.y;
+			var W=new ECP2(); W.copy(this); W.affine();
+            return W.y;
         },
 
         /* extract projective x */
@@ -178,22 +179,22 @@ var ECP2 = function(ctx) {
         toBytes: function(b) {
             var t = [],
                 i;
-
-            this.affine();
-            this.x.getA().toBytes(t);
+			var W=new ECP2(); W.copy(this);
+            W.affine();
+            W.x.getA().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i] = t[i];
             }
-            this.x.getB().toBytes(t);
+            W.x.getB().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + ctx.BIG.MODBYTES] = t[i];
             }
 
-            this.y.getA().toBytes(t);
+            W.y.getA().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + 2 * ctx.BIG.MODBYTES] = t[i];
             }
-            this.y.getB().toBytes(t);
+            W.y.getB().toBytes(t);
             for (i = 0; i < ctx.BIG.MODBYTES; i++) {
                 b[i + 3 * ctx.BIG.MODBYTES] = t[i];
             }
@@ -201,11 +202,12 @@ var ECP2 = function(ctx) {
 
         /* convert this to hex string */
         toString: function() {
-            if (this.is_infinity()) {
+			var W=new ECP2(); W.copy(this);
+            if (W.is_infinity()) {
                 return "infinity";
             }
-            this.affine();
-            return "(" + this.x.toString() + "," + this.y.toString() + ")";
+            W.affine();
+            return "(" + W.x.toString() + "," + W.y.toString() + ")";
         },
 
         /* set this=(x,y) */
@@ -215,10 +217,11 @@ var ECP2 = function(ctx) {
             this.x.copy(ix);
             this.y.copy(iy);
             this.z.one();
+			this.x.norm();
 
             rhs = ECP2.RHS(this.x);
 
-            y2 = new ctx.FP2(this.y);
+            y2 = new ctx.FP2(this.y); 
             y2.sqr();
 
             if (!y2.equals(rhs)) {
@@ -232,6 +235,7 @@ var ECP2 = function(ctx) {
 
             this.x.copy(ix);
             this.z.one();
+			this.x.norm();
 
             rhs = ECP2.RHS(this.x);
 
@@ -246,7 +250,7 @@ var ECP2 = function(ctx) {
         frob: function(X) {
             var X2;
 
-            X2 = new ctx.FP2(X);
+            X2 = new ctx.FP2(X); //X2.copy(X);
             X2.sqr();
             this.x.conj();
             this.y.conj();
@@ -262,20 +266,20 @@ var ECP2 = function(ctx) {
             var iy, t0, t1, t2, x3, y3;
 
             iy = new ctx.FP2(0);
-            iy.copy(this.y);
+            iy.copy(this.y); 
             if (ctx.ECP.SEXTIC_TWIST == ctx.ECP.D_TYPE) {
                 iy.mul_ip();
                 iy.norm();
             }
 
             t0 = new ctx.FP2(0);
-            t0.copy(this.y);
+            t0.copy(this.y); 
             t0.sqr();
             if (ctx.ECP.SEXTIC_TWIST == ctx.ECP.D_TYPE) {
                 t0.mul_ip();
             }
             t1 = new ctx.FP2(0);
-            t1.copy(iy);
+            t1.copy(iy); 
             t1.mul(this.z);
             t2 = new ctx.FP2(0);
             t2.copy(this.z);
@@ -295,11 +299,11 @@ var ECP2 = function(ctx) {
             }
 
             x3 = new ctx.FP2(0);
-            x3.copy(t2);
+            x3.copy(t2); 
             x3.mul(this.z);
 
             y3 = new ctx.FP2(0);
-            y3.copy(t0);
+            y3.copy(t0); 
 
             y3.add(t2);
             y3.norm();
@@ -313,7 +317,7 @@ var ECP2 = function(ctx) {
             y3.mul(t0);
             y3.add(x3); //(y^2+3z*2)(y^2-9z^2)+3b.z^2.8y^2
             t1.copy(this.x);
-            t1.mul(iy);
+            t1.mul(iy); //
             this.x.copy(t0);
             this.x.norm();
             this.x.mul(t1);
@@ -333,21 +337,21 @@ var ECP2 = function(ctx) {
 
             b = 3 * ctx.ROM_CURVE.CURVE_B_I;
             t0 = new ctx.FP2(0);
-            t0.copy(this.x);
+            t0.copy(this.x); 
             t0.mul(Q.x); // x.Q.x
             t1 = new ctx.FP2(0);
-            t1.copy(this.y);
+            t1.copy(this.y); 
             t1.mul(Q.y); // y.Q.y
 
             t2 = new ctx.FP2(0);
-            t2.copy(this.z);
+            t2.copy(this.z); 
             t2.mul(Q.z);
             t3 = new ctx.FP2(0);
-            t3.copy(this.x);
+            t3.copy(this.x); 
             t3.add(this.y);
             t3.norm(); //t3=X1+Y1
             t4 = new ctx.FP2(0);
-            t4.copy(Q.x);
+            t4.copy(Q.x); 
             t4.add(Q.y);
             t4.norm(); //t4=X2+Y2
             t3.mul(t4); //t3=(X1+Y1)(X2+Y2)
@@ -365,7 +369,7 @@ var ECP2 = function(ctx) {
             t4.add(this.z);
             t4.norm(); //t4=Y1+Z1
             x3 = new ctx.FP2(0);
-            x3.copy(Q.y);
+            x3.copy(Q.y); 
             x3.add(Q.z);
             x3.norm(); //x3=Y2+Z2
 
@@ -384,7 +388,7 @@ var ECP2 = function(ctx) {
             x3.add(this.z);
             x3.norm(); // x3=X1+Z1
             y3 = new ctx.FP2(0);
-            y3.copy(Q.x);
+            y3.copy(Q.x); 
             y3.add(Q.z);
             y3.norm(); // y3=X2+Z2
             x3.mul(y3); // x3=(X1+Z1)(X2+Z2)
@@ -406,11 +410,11 @@ var ECP2 = function(ctx) {
             t0.norm();
             t2.imul(b);
             if (ctx.ECP.SEXTIC_TWIST == ctx.ECP.M_TYPE) {
-                t2.mul_ip();
+                t2.mul_ip(); t2.norm();
             }
 
             z3 = new ctx.FP2(0);
-            z3.copy(t1);
+            z3.copy(t1); 
             z3.add(t2);
             z3.norm();
             t1.sub(t2);
@@ -446,11 +450,9 @@ var ECP2 = function(ctx) {
         /* this-=Q */
         sub: function(Q) {
             var D;
-
-            Q.neg();
-            D = this.add(Q);
-            Q.neg();
-
+			var NQ=new ECP2(); NQ.copy(Q);
+            NQ.neg();
+            D = this.add(NQ);
             return D;
         },
 
@@ -469,8 +471,6 @@ var ECP2 = function(ctx) {
             if (this.is_infinity()) {
                 return new ECP2();
             }
-
-            this.affine();
 
             // precompute table
             Q.copy(this);
@@ -557,7 +557,7 @@ var ECP2 = function(ctx) {
         }
         rb = ctx.BIG.fromBytes(t);
 
-        rx = new ctx.FP2(ra, rb);
+        rx = new ctx.FP2(ra, rb); //rx.bset(ra,rb);
 
         for (i = 0; i < ctx.BIG.MODBYTES; i++) {
             t[i] = b[i + 2 * ctx.BIG.MODBYTES];
@@ -568,7 +568,7 @@ var ECP2 = function(ctx) {
         }
         rb = ctx.BIG.fromBytes(t);
 
-        ry = new ctx.FP2(ra, rb);
+        ry = new ctx.FP2(ra, rb); //ry.bset(ra,rb);
 
         P = new ECP2();
         P.setxy(rx, ry);
@@ -580,13 +580,13 @@ var ECP2 = function(ctx) {
     ECP2.RHS = function(x) {
         var r, c, b;
 
-        x.norm();
-        r = new ctx.FP2(x);
+        //x.norm();
+        r = new ctx.FP2(x); //r.copy(x);
         r.sqr();
 
         c = new ctx.BIG(0);
         c.rcopy(ctx.ROM_CURVE.CURVE_B);
-        b = new ctx.FP2(c);
+        b = new ctx.FP2(c); //b.bseta(c);
 
         if (ctx.ECP.SEXTIC_TWIST == ctx.ECP.D_TYPE) {
             b.div_ip();
@@ -621,7 +621,7 @@ var ECP2 = function(ctx) {
 
         for (i = 0; i < 4; i++) {
             t[i] = new ctx.BIG(u[i]); t[i].norm();
-            Q[i].affine();
+            //Q[i].affine();
         }
 
         T[0] = new ECP2(); T[0].copy(Q[0]); // Q[0]
@@ -683,6 +683,7 @@ var ECP2 = function(ctx) {
         return P;
     };
 
+
     /* return 1 if b==c, no branching */
     ECP2.teq = function(b, c) {
         var x = b ^ c;
@@ -734,7 +735,7 @@ var ECP2 = function(ctx) {
             K = new ECP2();
             K.copy(T);
             K.dbl();
-            K.add(T);
+            K.add(T); //K.affine();
 
             K.frob(X);
             Q.frob(X);
@@ -748,6 +749,7 @@ var ECP2 = function(ctx) {
         }
 
         if (ctx.ECP.CURVE_PAIRING_TYPE == ctx.ECP.BLS) {
+
             xQ = Q.mul(x);
             x2Q = xQ.mul(x);
 

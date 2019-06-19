@@ -202,8 +202,7 @@ BIG = function(ctx) {
         fshr: function(k) {
             var r, i;
 
-            /* shifted out part */
-            r = this.w[0] & ((1 << k) - 1);
+            r = this.w[0] & ((1 << k) - 1); /* shifted out part */
 
             for (i = 0; i < BIG.NLEN - 1; i++) {
                 this.w[i] = (this.w[i] >> k) | ((this.w[i + 1] << (BIG.BASEBITS - k)) & BIG.BMASK);
@@ -245,8 +244,7 @@ BIG = function(ctx) {
 
             this.w[0] = (this.w[0] << k) & BIG.BMASK;
 
-            /* return excess - only used in ff.js */
-            return (this.w[BIG.NLEN - 1] >> ((8 * BIG.MODBYTES) % BIG.BASEBITS));
+            return (this.w[BIG.NLEN - 1] >> ((8 * BIG.MODBYTES) % BIG.BASEBITS)); /* return excess - only used in FF.java */
         },
 
         /* General shift left by k bits */
@@ -279,9 +277,10 @@ BIG = function(ctx) {
             var k = BIG.NLEN - 1,
                 bts, c;
 
-            this.norm();
+			var t=new BIG(0); t.copy(this);
+            t.norm();
 
-            while (k >= 0 && this.w[k] === 0) {
+            while (k >= 0 && t.w[k] === 0) {
                 k--;
             }
 
@@ -290,7 +289,7 @@ BIG = function(ctx) {
             }
 
             bts = BIG.BASEBITS * k;
-            c = this.w[k];
+            c = t.w[k];
 
             while (c !== 0) {
                 c = Math.floor(c / 2);
@@ -427,8 +426,8 @@ BIG = function(ctx) {
             var c = new BIG(0),
                 i;
 
-            this.norm();
             c.copy(this);
+			c.norm();
 
             for (i = BIG.MODBYTES - 1; i >= 0; i--) {
                 b[i + n] = c.w[0] & 0xff;
@@ -550,9 +549,10 @@ BIG = function(ctx) {
         },
 
         /* reduce this mod m */
-        mod: function(m) {
+        mod: function(m1) {
             var k = 0,
                 r = new BIG(0);
+			var m=new BIG(0); m.copy(m1);
 
             this.norm();
 
@@ -577,12 +577,13 @@ BIG = function(ctx) {
             }
         },
         /* this/=m */
-        div: function(m) {
+        div: function(m1) {
             var k = 0,
                 d = 0,
                 e = new BIG(1),
                 b = new BIG(0),
                 r = new BIG(0);
+			var m=new BIG(0); m.copy(m1);
 
             this.norm();
             b.copy(this);
@@ -761,12 +762,13 @@ BIG = function(ctx) {
         },
 
         /* return this^e mod m */
-        powmod: function(e, m) {
+        powmod: function(e1, m) {
             var a = new BIG(1),
                 z = new BIG(0),
                 s = new BIG(0),
                 bt;
 
+			var e=new BIG(0); e.copy(e1);
             this.norm();
             e.norm();
             z.copy(e);
@@ -789,6 +791,23 @@ BIG = function(ctx) {
             return a;
         }
     };
+
+	BIG.ssn = function(r,a,m) {
+		var n=BIG.NLEN-1;
+		m.w[0]=(m.w[0]>>1)|((m.w[1]<<(BIG.BASEBITS-1))&BIG.BMASK);
+		r.w[0]=a.w[0]-m.w[0];
+		var carry=r.w[0]>>BIG.BASEBITS;
+		r.w[0]&=BIG.BMASK;
+		for (var i=1;i<n;i++) {
+			m.w[i]=(m.w[i]>>1)|((m.w[i+1]<<(BIG.BASEBITS-1))&BIG.BMASK);
+			r.w[i]=a.w[i]-m.w[i]+carry;
+			carry=r.w[i]>>BIG.BASEBITS;
+			r.w[i]&=BIG.BMASK;
+		}
+		m.w[n]>>=1;
+		r.w[n]=a.w[n]-m.w[n]+carry;
+		return ((r.w[n]>>(BIG.CHUNK-1))&1);
+	};
 
     /* convert from byte array to BIG */
     BIG.frombytearray = function(b, n) {
@@ -861,7 +880,7 @@ BIG = function(ctx) {
 
             b = r & 1;
             m.shl(1);
-            m.w[0] += b;
+            m.w[0] += b; // m.inc(b);
             j++;
             j &= 7;
         }
@@ -897,7 +916,7 @@ BIG = function(ctx) {
     /* return a*b as ctx.DBIG */
     BIG.mul = function(a, b) {
         var c = new ctx.DBIG(0),
-            d = [],
+            d = new Array(BIG.NLEN), //[],
             n, s, t, i, k, co;
 
         for (i = 0; i < BIG.NLEN; i++) {
@@ -940,7 +959,7 @@ BIG = function(ctx) {
     BIG.sqr = function(a) {
         var c = new ctx.DBIG(0),
             n, t, j, i, co;
-
+ 
         c.w[0] = a.w[0] * a.w[0];
 
         for (j = 1; j < BIG.NLEN - 1;) {
@@ -999,8 +1018,8 @@ BIG = function(ctx) {
 
     BIG.monty = function(m, nd, d) {
         var b = new BIG(0),
-            v = [],
-            dd = [],
+            v = new Array(BIG.NLEN),
+            dd = new Array(BIG.NLEN),
             s, c, t, i, k;
 
         t = d.w[0];
@@ -1039,9 +1058,10 @@ BIG = function(ctx) {
     };
 
     /* return a*b mod m */
-    BIG.modmul = function(a, b, m) {
+    BIG.modmul = function(a1, b1, m) {
         var d;
-
+		var a=new BIG(0); a.copy(a1);
+		var b=new BIG(0); b.copy(b1);
         a.mod(m);
         b.mod(m);
         d = BIG.mul(a, b);
@@ -1050,9 +1070,9 @@ BIG = function(ctx) {
     };
 
     /* return a^2 mod m */
-    BIG.modsqr = function(a, m) {
+    BIG.modsqr = function(a1, m) {
         var d;
-
+		var a=new BIG(0); a.copy(a1);
         a.mod(m);
         d = BIG.sqr(a);
 
@@ -1060,7 +1080,8 @@ BIG = function(ctx) {
     };
 
     /* return -a mod m */
-    BIG.modneg = function(a, m) {
+    BIG.modneg = function(a1, m) {
+		var a=new BIG(0); a.copy(a1);
         a.mod(m);
         return m.minus(a);
     };
@@ -1114,7 +1135,7 @@ DBIG = function(ctx) {
 
     /* constructor */
     var DBIG = function(x) {
-        this.w = [];
+        this.w = new Array(BIG.DNLEN);
         this.zero();
         this.w[0] = x;
     };
@@ -1266,9 +1287,10 @@ DBIG = function(ctx) {
             var k = ctx.BIG.DNLEN - 1,
                 bts, c;
 
-            this.norm();
+			var t=new DBIG(0); t.copy(this);
+            t.norm();
 
-            while (k >= 0 && this.w[k] === 0) {
+            while (k >= 0 && t.w[k] === 0) {
                 k--;
             }
 
@@ -1277,7 +1299,7 @@ DBIG = function(ctx) {
             }
 
             bts = ctx.BIG.BASEBITS * k;
-            c = this.w[k];
+            c = t.w[k];
 
             while (c !== 0) {
                 c = Math.floor(c / 2);
@@ -1337,7 +1359,6 @@ DBIG = function(ctx) {
                 dr.sub(m);
                 dr.norm();
                 this.cmove(dr, (1 - ((dr.w[ctx.BIG.DNLEN - 1] >> (ctx.BIG.CHUNK - 1)) & 1)));
-
                 k--;
             }
 
