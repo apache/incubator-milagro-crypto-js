@@ -114,7 +114,7 @@ var BLS256 = function(ctx) {
 			if (v.isunity())
 				return this.BLS_OK;
 			return this.BLS_FAIL;
-		}
+		},
 
 
 	        /* R=R1+R2 in group G1 */
