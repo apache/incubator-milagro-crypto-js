@@ -115,6 +115,40 @@ var BLS256 = function(ctx) {
 				return this.BLS_OK;
 			return this.BLS_FAIL;
 		}
+
+
+	        /* R=R1+R2 in group G1 */
+                add_G1(R1, R2, R) {
+                       var P = ctx.ECP.fromBytes(R1),
+                       Q = ctx.ECP.fromBytes(R2);
+
+                       if (P.is_infinity() || Q.is_infinity()) {
+                           return this.INVALID_POINT;
+		       }
+
+                       P.add(Q);
+
+                       P.toBytes(R,true);
+
+                       return 0;
+                },
+
+                /* W=W1+W2 in group G2 */
+                add_G2(W1, W2, W) {
+                       var P = ctx.ECP8.fromBytes(W1),
+                           Q = ctx.ECP8.fromBytes(W2);
+
+                       if (P.is_infinity() || Q.is_infinity()) {
+                           return this.INVALID_POINT;
+                       }
+
+                       P.add(Q);
+
+                       P.toBytes(W);
+
+                       return 0;
+                }
+	
     };
 
     return BLS256;

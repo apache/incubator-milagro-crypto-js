@@ -21,7 +21,7 @@ under the License.
 
 var CTX = require("../../index");
 
-var ctx = new CTX("BN254CX");
+var ctx = new CTX("BLS383");
 
 var RAW = [];
 var rng = new ctx.RAND();
