@@ -1,38 +1,3 @@
-<!DOCTYPE HTML PUBLIC -//W3C//DTD HTML 4.01 Transitional//EN>
-<html>
-<head>
-<title>Browser test</title>
-<script src="src/rand.js"></script>
-<script src="src/rom_curve.js"></script>
-<script src="src/rom_field.js"></script>
-<script src="src/uint64.js"></script>
-<script src="src/aes.js"></script>
-<script src="src/big.js"></script>
-<script src="src/gcm.js"></script>
-<script src="src/hash256.js"></script>
-<script src="src/hash384.js"></script>
-<script src="src/hash512.js"></script>
-<script src="src/sha3.js"></script>
-<script src="src/newhope.js"></script>
-<script src="src/nhs.js"></script>
-<script src="src/fp.js"></script>
-<script src="src/fp2.js"></script>
-<script src="src/fp4.js"></script>
-<script src="src/fp12.js"></script>
-<script src="src/ff.js"></script>
-<script src="src/rsa.js"></script>
-<script src="src/ecp.js"></script>
-<script src="src/ecp2.js"></script>
-<script src="src/ecdh.js"></script>
-<script src="src/pair.js"></script>
-<script src="src/mpin.js"></script>
-<script src="src/ctx.js"></script>
-</head>
-
-<body>
-<h1>Browser test</h1>
-
-<script type="text/javascript">
 /*
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -55,11 +20,12 @@ under the License.
 
 /* Test ECC - test driver and function exerciser for ECDH/ECIES/ECDSA API Functions */
 
+var CTX = require("../../index");
 
-var ctx1 = new CTX("BLS383");
+var ctx1 = new CTX("BLS381");
 var ctx2 = new CTX("NIST521");
 
-console.log("Start testing BLS383");
+console.log("Start testing BLS381");
 
 var pp = "M0ng00se",
     res,
@@ -102,6 +68,7 @@ ctx1.ECDH.KEY_PAIR_GENERATE(null, S0, W0);
 res = ctx1.ECDH.PUBLIC_KEY_VALIDATE(W0);
 if (res != 0) {
     console.error("ECP_ZZZ Public Key is invalid!");
+    return (-1);
 }
 // Random private key for other party
 ctx1.ECDH.KEY_PAIR_GENERATE(rng, S1, W1);
@@ -112,6 +79,7 @@ console.log("Servers private key= 0x" + ctx1.ECDH.bytestostring(S1));
 res = ctx1.ECDH.PUBLIC_KEY_VALIDATE(W1);
 if (res != 0) {
     console.error("ECP_ZZZ Public Key is invalid!");
+    return (-1);
 }
 
 // Calculate common key using DH - IEEE 1363 method
@@ -128,6 +96,7 @@ for (i = 0; i < ctx1.ECDH.EFS; i++) {
 
 if (!same) {
     console.error("ECP_ZZZSVDP-DH Failed");
+    return (-1);
 }
 
 var KEY = ctx1.ECDH.KDF2(ctx1.ECP.HASH_TYPE, Z0, null, ctx1.ECP.AESKEY);
@@ -178,6 +147,7 @@ ctx2.ECDH.KEY_PAIR_GENERATE(null, S0, W0);
 res = ctx2.ECDH.PUBLIC_KEY_VALIDATE(W0);
 if (res != 0) {
     console.error("ECP_ZZZ Public Key is invalid!");
+    return (-1);
 }
 // Random private key for other party
 ctx2.ECDH.KEY_PAIR_GENERATE(rng, S1, W1);
@@ -188,6 +158,7 @@ console.log("Servers private key= 0x" + ctx2.ECDH.bytestostring(S1));
 res = ctx2.ECDH.PUBLIC_KEY_VALIDATE(W1);
 if (res != 0) {
     console.error("ECP_ZZZ Public Key is invalid!");
+    return (-1);
 }
 
 // Calculate common key using DH - IEEE 1363 method
@@ -204,6 +175,7 @@ for (i = 0; i < ctx2.ECDH.EFS; i++) {
 
 if (!same) {
     console.error("ECP_ZZZSVDP-DH Failed");
+    return (-1);
 }
 
 var KEY = ctx2.ECDH.KDF2(ctx2.ECP.HASH_TYPE, Z0, null, ctx2.ECP.AESKEY);
@@ -212,6 +184,3 @@ console.log("Alice's ECDH Key= 0x" + ctx2.ECDH.bytestostring(KEY));
 console.log("Servers ECDH Key= 0x" + ctx2.ECDH.bytestostring(KEY));
 
 console.log("SUCCESS");
-</script>
-</body>
-</html>
