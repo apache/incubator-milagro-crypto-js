@@ -1,11 +1,10 @@
 /* Test BLS - test driver and function exerciser for BLS API Functions */
 
 var CTX = require("../../index");
-var ctx = new CTX('BLS383');
+var ctx = new CTX('BLS381');
 
 var i,res;
 
-var BGS=ctx.BLS.BGS;
 var BFS=ctx.BLS.BFS;
 
 /* Group 1 Size */
@@ -60,19 +59,56 @@ if (res==0)
 else
     console.log("Error User 2 invalid Signature");
 
+// User 3
+var sk3=[];
+var pk3=[];
+var sig3=[];
+
+ctx.BLS.KeyPairGenerate(rng,sk3,pk3);
+console.log("Private key user 3: 0x"+ctx.BLS.bytestostring(sk3));
+console.log("Public key user 3: 0x"+ctx.BLS.bytestostring(pk3));
+
+console.log("Message : "+message);
+ctx.BLS.sign(sig3,message,sk3);
+console.log("Signature user 3: 0x"+ctx.BLS.bytestostring(sig3));
+
+var res=ctx.BLS.verify(sig3,message,pk3);
+if (res==0)
+    console.log("Success User 3 valid Signature");
+else
+    console.log("Error User 3 invalid Signature");
+
 // Combined
+var pk12=[];
+var sig12=[];
 var pk=[];
 var sig=[];
 
 // Add signatures
-ctx.BLS.add_G1(sig1,sig2,sig);
+ctx.BLS.add_G1(sig1,sig2,sig12);
+console.log("Signature combined: 0x"+ctx.BLS.bytestostring(sig12));
+ctx.BLS.add_G1(sig3,sig12,sig);
 console.log("Signature combined: 0x"+ctx.BLS.bytestostring(sig));
 
 // Add public keys
-ctx.BLS.add_G2(pk1,pk2,pk);
+ctx.BLS.add_G2(pk1,pk2,pk12);
+console.log("Public key combined: 0x"+ctx.BLS.bytestostring(pk12));
+ctx.BLS.add_G2(pk3,pk12,pk);
 console.log("Public key combined: 0x"+ctx.BLS.bytestostring(pk));
 
 var res=ctx.BLS.verify(sig,message,pk);
+if (res==0)
+    console.log("Success combined valid Signature");
+else
+    console.log("Error combined invalid Signature");
+
+var res=ctx.BLS.verify(sig12,message,pk);
+if (res==0)
+    console.log("Success combined valid Signature");
+else
+    console.log("Error combined invalid Signature");
+
+var res=ctx.BLS.verify(sig,message,pk12);
 if (res==0)
     console.log("Success combined valid Signature");
 else
