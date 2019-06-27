@@ -602,7 +602,7 @@ function bls381() {
 	mywindow.document.write("M-Pin Master Secret s: 0x"+ctx.MPIN.bytestostring(S) + "<br>");
  
  /* Create Client Identity */
- 	var IDstr = "testUser@miracl.com";
+ 	var IDstr = "alice@milagro.com";
 	var CLIENT_ID = ctx.MPIN.stringtobytes(IDstr);  
 	HCID=ctx.MPIN.HASH_ID(sha,CLIENT_ID);  /* Either Client or TA calculates Hash(ID) - you decide! */
 		
@@ -848,7 +848,7 @@ function bls24() {
 	mywindow.document.write("M-Pin Master Secret s: 0x"+ctx.MPIN192.bytestostring(S) + "<br>");
  
  /* Create Client Identity */
- 	var IDstr = "testUser@miracl.com";
+ 	var IDstr = "alice@milagro.com";
 	var CLIENT_ID = ctx.MPIN192.stringtobytes(IDstr);  
 	HCID=ctx.MPIN192.HASH_ID(sha,CLIENT_ID);  /* Either Client or TA calculates Hash(ID) - you decide! */
 		
@@ -1092,7 +1092,7 @@ function bls48() {
 
 	mywindow.document.write("M-Pin Master Secret s: 0x"+ctx.MPIN256.bytestostring(S) + "<br>");
  // Create Client Identity 
- 	var IDstr = "testUser@miracl.com";
+ 	var IDstr = "alice@milagro.com";
 	var CLIENT_ID = ctx.MPIN256.stringtobytes(IDstr);  
 	HCID=ctx.MPIN256.HASH_ID(sha,CLIENT_ID);  // Either Client or TA calculates Hash(ID) - you decide! 
 		
