@@ -46,7 +46,9 @@ npm test
 ```
 
 ## Quick Start
+
 #### Elliptic Curves
+
 Suppose you want to implement ECDH with NIST256 elliptic curve. First you need
 to initialize the context:
 
@@ -55,39 +57,54 @@ var CTX = require("milagro-crypto-js");
 
 var ctx = new CTX("NIST256");
 ```
+
 then you can call the functions as follows:
+
 ```
 ctx.ECDH.KEY_PAIR_GENERATE(...);
 ctx.ECDH.ECPSVDP_DH(...);
 ```
+
 If you need to use more than one elliptic curve in the same script you only
 need to initialize two different contexts, for example
+
 ```
 var ctx1 = new CTX("NIST256");
 var ctx2 = new CTX("C25519");
 ```
+
 The following is the list of all elliptic curves supported by MCJS
+
 ```
 ['ED25519', 'C25519', 'SECP256K1', 'NIST256', 'NIST384', 'BRAINPOOL', 'ANSSI', 'HIFIVE', 'GOLDILOCKS', 'C41417', 'NIST521', 'NUMS256W', 'NUMS256E', 'NUMS384W', 'NUMS384E', 'NUMS512W', 'NUMS512E', 'FP256BN', 'FP512BN', 'BN254', 'BN254CX', 'BLS383', 'BLS24', 'BLS48', 'BLS381', 'BLS461'];
 ```
+
 #### RSA
+
 This library supports also RSA encryption/decryption and RSA signature. The following is a quick example on how to use RSA. First initialize the context
+
 ```
 var CTX = require("milagro-crypto-js");
 
 var ctx = new CTX("RSA2048");
 ```
 then you can call the RSA functions as follows:
+
 ```
 ctx.RSA.ENCRYPT(...);
 ctx.RSA.DECRYPT(...);
 ```
+
 The following is the list of all the RSA security level supported by *MCJS*
+
 ```
 ['RSA2048','RSA3072','RSA4096'];
 ```
+
 #### Other functions
+
 MCJS supports SHA256, SHA384, SHA512, AES-GCM encryption and Marsaglia & Zaman random number generator. Those functions are contained in every context initialized with RSA or with an elliptic curve. If you want to create a context supporting only those general functions then initialize it with no parameter as follows:
+
 ```
 var CTX = require("milagro-crypto-js");
 
@@ -103,10 +120,19 @@ var ctx = new CTX();
 node ./examples/node/example_ECC_NIST256.js
 ```
 
-#### Browsers
+## Browsers
 
 The library source code is browser compatible. The browser examples are locates
 in `./examples/browser`.
+
+## Docker
+
+The tests can be run using Docker:
+
+```
+docker build -t mcjs:builder .
+docker run --rm mcjs:builder 
+```
 
 ## Contributors 
 

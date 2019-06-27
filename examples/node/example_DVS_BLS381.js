@@ -1,38 +1,3 @@
-<!DOCTYPE HTML PUBLIC -//W3C//DTD HTML 4.01 Transitional//EN>
-<html>
-<head>
-<title>Browser test</title>
-<script src="src/rand.js"></script>
-<script src="src/rom_curve.js"></script>
-<script src="src/rom_field.js"></script>
-<script src="src/uint64.js"></script>
-<script src="src/aes.js"></script>
-<script src="src/big.js"></script>
-<script src="src/gcm.js"></script>
-<script src="src/hash256.js"></script>
-<script src="src/hash384.js"></script>
-<script src="src/hash512.js"></script>
-<script src="src/sha3.js"></script>
-<script src="src/newhope.js"></script>
-<script src="src/nhs.js"></script>
-<script src="src/fp.js"></script>
-<script src="src/fp2.js"></script>
-<script src="src/fp4.js"></script>
-<script src="src/fp12.js"></script>
-<script src="src/ff.js"></script>
-<script src="src/rsa.js"></script>
-<script src="src/ecp.js"></script>
-<script src="src/ecp2.js"></script>
-<script src="src/ecdh.js"></script>
-<script src="src/pair.js"></script>
-<script src="src/mpin.js"></script>
-<script src="src/ctx.js"></script>
-</head>
-
-<body>
-<h1>Browser test</h1>
-
-<script type="text/javascript">
 /*
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
@@ -54,8 +19,9 @@ under the License.
 
 /* Test DVS - test driver and function exerciser for Designated Verifier Signature API Functions */
 
+var CTX = require("../../index");
 
-var ctx = new CTX("BLS383");
+var ctx = new CTX("BLS381");
 
 var RAW = [];
 var rng = new ctx.RAND();
@@ -96,6 +62,7 @@ console.log("Client ID= " + ctx.MPIN.bytestostring(CLIENT_ID));
 res = ctx.MPIN.GET_DVS_KEYPAIR(rng, Z, Pa);
 if (res != 0) {
     console.log("Can't generate DVS keypair, error ", res);
+    return (-1);
 }
 
 console.log("Z: 0x" + ctx.MPIN.bytestostring(Z));
@@ -120,6 +87,7 @@ console.log("Client Secret CS: 0x" + ctx.MPIN.bytestostring(TOKEN));
 res = ctx.MPIN.GET_G1_MULTIPLE(null, 0, Z, TOKEN, TOKEN);
 if (res != 0) {
     console.log("Failed to compute z.CS, error ", res);
+    return (-1);
 }
 console.log("z.CS: 0x" + ctx.MPIN.bytestostring(TOKEN));
 
@@ -140,6 +108,7 @@ var message = "Message to sign";
 res = ctx.MPIN.CLIENT(sha, 0, CLIENT_ID, rng, X, pin, TOKEN, SEC, U, null, null, timeValue, Y1, message);
 if (res != 0) {
     console.log("Failed to extract PIN, error ", res);
+    return (-1);
 }
 
 console.log("U: 0x" + ctx.MPIN.bytestostring(U));
@@ -153,10 +122,8 @@ console.log("Y2: 0x" + ctx.MPIN.bytestostring(Y2));
 
 if (res != 0) {
     console.log("FAILURE Signature Verification, error", res);
+    return (-1);
 } else {
     console.log("SUCCESS Error Code ", res);
 }
 
-</script>
-</body>
-</html>
