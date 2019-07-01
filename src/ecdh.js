@@ -20,6 +20,12 @@
 var ECDH = function(ctx) {
     "use strict";
 
+    /**
+     * Creates an instance of ECDH
+     *
+     * @constructor
+     * @this {ECDH}
+    */    
     var ECDH = {
 
         INVALID_PUBLIC_KEY: -2,
