@@ -24,7 +24,12 @@
 var FP2 = function(ctx) {
     "use strict";
 
-    /* general purpose constructor */
+    /**
+      * Creates an instance of FP2.
+      *
+      * @constructor
+      * @this {FP2}
+      */
     var FP2 = function(c, d) {
         if (c instanceof FP2) {
             this.a = new ctx.FP(c.a);
@@ -36,93 +41,170 @@ var FP2 = function(ctx) {
     };
 
     FP2.prototype = {
-        /* reduce components mod Modulus */
+
+	/**
+         * Reduces all components of possibly unreduced FP2 mod Modulus
+         *
+         * @this {FP2}
+         */
         reduce: function() {
             this.a.reduce();
             this.b.reduce();
         },
 
-        /* normalise components of w */
+	/**
+         * Normalises the components of an FP2
+         *
+         * @this {FP2}
+         */
         norm: function() {
             this.a.norm();
             this.b.norm();
         },
 
-        /* test this=0 ? */
+	/**
+         * Tests for FP2 equal to zero
+         *
+         * @this {FP2}
+         */
         iszilch: function() {
             return (this.a.iszilch() && this.b.iszilch());
         },
 
-        /* test this=1 ? */
+	/**
+         * Tests for FP2 equal to unity
+         *
+         * @this {FP2}
+         */
         isunity: function() {
             var one = new ctx.FP(1);
             return (this.a.equals(one) && this.b.iszilch());
         },
 
-        /* conditional copy of g to this depending on d */
+	/**
+         * Conditional copy of FP2 number
+         *
+         * @this {FP2}
+         * @param g FP2 instance
+         * @param d copy depends on this value
+         */
         cmove: function(g, d) {
             this.a.cmove(g.a, d);
             this.b.cmove(g.b, d);
         },
 
-        /* test this=x */
+	/**
+         * Tests for equality of two FP2 instances
+         *
+         * @this {FP2}
+         * @param x FP2 instance to compare
+         */
         equals: function(x) {
             return (this.a.equals(x.a) && this.b.equals(x.b));
         },
 
-        /* extract a */
+	/**
+         * extract a from this
+         *
+         * @this {FP2}
+         */	
         getA: function() {
             return this.a.redc();
         },
 
-        /* extract b */
+	/**
+         * extract b from this
+         *
+         * @this {FP2}
+         */	
         getB: function() {
             return this.b.redc();
         },
 
-        /* set from pair of FPs */
+	/**
+         * Set FP2 from two FP values
+         *
+         * @this {FP2}
+         * @param c FP instance
+         * @param d FP instance
+         */
         set: function(c, d) {
             this.a.copy(c);
             this.b.copy(d);
         },
 
-        /* set a */
+	/**
+         * Set FP2 from one FP value
+         *
+         * @this {FP2}
+         * @param c FP instance
+         */
         seta: function(c) {
             this.a.copy(c);
             this.b.zero();
         },
 
-        /* set from two BIGs */
+	/**
+         * Set FP2 from two BIG values
+         *
+         * @this {FP2}
+         * @param c BIG instance
+         * @param d BIG instance
+         */
         bset: function(c, d) {
             this.a.bcopy(c);
             this.b.bcopy(d);
         },
 
-        /* set from one ctx.BIG */
+	/**
+         * Set FP2 from one BIG value
+         *
+         * @this {FP2}
+         * @param c BIG instance
+         */
         bseta: function(c) {
             this.a.bcopy(c);
             this.b.zero();
         },
 
-        /* copy this=x */
+	/**
+         * Copy FP2 to another FP2
+         *
+         * @this {FP2}
+         * @param x FP2 instance to be copied
+         */
         copy: function(x) {
             this.a.copy(x.a);
             this.b.copy(x.b);
         },
 
-        /* set this=0 */
+	/**
+         * Set FP2 to zero
+         *
+         * @this {FP2}
+         */
         zero: function() {
             this.a.zero();
             this.b.zero();
         },
 
-        /* set this=1 */
+	/**
+         * Set FP2 to unity
+         *
+         * @this {FP2}
+         * @param x FP2 instance to be set to one
+         */
         one: function() {
             this.a.one();
             this.b.zero();
         },
 
-        /* negate this */
+	/**
+         * negate this
+         *
+         * @this {FP2}
+         * @param x FP2 instance to be set to one
+         */
         neg: function() {
             var m = new ctx.FP(this.a),
                 t = new ctx.FP(0);
@@ -136,19 +218,33 @@ var FP2 = function(ctx) {
             this.a.copy(t);
         },
 
-        /* conjugate this */
+	/**
+         * Conjugation of FP2
+         *
+         * @this {FP2}
+         */
         conj: function() {
             this.b.neg();
             this.b.norm();
         },
 
-        /* this+=a */
+	/**
+         * addition of two FP2s
+         *
+         * @this {FP2}
+         * @param x FP2 instance
+         */
         add: function(x) {
             this.a.add(x.a);
             this.b.add(x.b);
         },
 
-        /* this-=x */
+	/**
+         * subtraction of two FP2s
+         *
+         * @this {FP2}
+         * @param x FP2 instance
+         */
         sub: function(x) {
             var m = new FP2(x); 
             m.neg();
@@ -160,19 +256,33 @@ var FP2 = function(ctx) {
             this.add(x);
         },
 
-        /* this*=s, where s is FP */
+	/**
+         * Multiplication of an FP2 by an FP8
+         *
+         * @this {FP2}
+         * @param s FP8 instance
+         */
         pmul: function(s) {
             this.a.mul(s);
             this.b.mul(s);
         },
 
-        /* this*=c, where s is int */
+	/**
+         * Multiplication of an FP2 by a small integer
+         *
+         * @this {FP2}
+         * @param s integer
+         */
         imul: function(c) {
             this.a.imul(c);
             this.b.imul(c);
         },
 
-        /* this*=this */
+	/**
+         * Fast Squaring of an FP2
+         *
+         * @this {FP2}
+         */
         sqr: function() {
             var w1 = new ctx.FP(this.a),
                 w3 = new ctx.FP(this.a),
@@ -192,8 +302,12 @@ var FP2 = function(ctx) {
             this.a.mul(w1);
         },
 
-        /* this*=y */
-        /* Now using Lazy reduction - inputs must be normed */
+	/**
+         * Full unconditional Multiplication of two FP2s
+         *
+         * @this {FP2}
+         * @param y FP2 instance, the multiplier
+         */
         mul: function(y) {
             var p = new ctx.BIG(0),
                 pR = new ctx.DBIG(0),
@@ -240,8 +354,12 @@ var FP2 = function(ctx) {
             this.b.XES = 2;
         },
 
-        /* sqrt(a+ib) = sqrt(a+sqrt(a*a-n*b*b)/2)+ib/(2*sqrt(a+sqrt(a*a-n*b*b)/2)) */
-        /* returns true if this is QR */
+	/**
+         * sqrt(a+ib) = sqrt(a+sqrt(a*a-n*b*b)/2)+ib/(2*sqrt(a+sqrt(a*a-n*b*b)/2)) 
+         *
+         * @this {FP2}
+         * @return true if this is QR 
+         */	
         sqrt: function() {
             var w1, w2;
 
@@ -283,12 +401,20 @@ var FP2 = function(ctx) {
             return true;
         },
 
-        /* convert this to hex string */
+	/**
+         * convert this to hex string
+         *
+         * @this {FP2}
+         */
         toString: function() {
             return ("[" + this.a.toString() + "," + this.b.toString() + "]");
         },
 
-        /* this=1/this */
+	/**
+         * Inverting an FP2
+         *
+         * @this {FP2}
+         */
         inverse: function() {
             var w1, w2;
 
@@ -307,13 +433,21 @@ var FP2 = function(ctx) {
             this.b.mul(w1);
         },
 
-        /* this/=2 */
+	/**
+         * Divide an FP2 by 2
+         *
+         * @this {FP2}
+         */
         div2: function() {
             this.a.div2();
             this.b.div2();
         },
 
-        /* this*=sqrt(-1) */
+	/**
+         * Multiply an FP2 by sqrt(-1)
+         *
+         * @this {FP2}
+         */
         times_i: function() {
             var z = new ctx.FP(this.a); //z.copy(this.a);
             this.a.copy(this.b);
@@ -321,8 +455,11 @@ var FP2 = function(ctx) {
             this.b.copy(z);
         },
 
-        /* w*=(1+sqrt(-1)) */
-        /* where X*2-(1+sqrt(-1)) is irreducible for FP4, assumes p=3 mod 8 */
+	/**
+         * Multiply an FP2 by (1+sqrt(-1))
+         *
+         * @this {FP2}
+         */	
         mul_ip: function() {
             var t = new FP2(this), 
                 z = new ctx.FP(this.a);
@@ -334,6 +471,11 @@ var FP2 = function(ctx) {
             //      this.norm();
         },
 
+	/**
+         * Divide an FP2 by (1+sqrt(-1))/2 
+         *
+         * @this {FP2}
+         */	
         div_ip2: function() {
             var t = new FP2(0);
             this.norm();
@@ -345,7 +487,11 @@ var FP2 = function(ctx) {
             this.norm();
         },
 
-        /* w/=(1+sqrt(-1)) */
+	/**
+         * Divide an FP2 by (1+sqrt(-1))
+         *
+         * @this {FP2}
+         */	
         div_ip: function() {
             var t = new FP2(0);
             this.norm();
@@ -358,7 +504,12 @@ var FP2 = function(ctx) {
             this.div2();
         },
 
-        /* this=this^e */
+	/**
+         * Raises an FP2 to the power of a BIG
+         *
+         * @this {FP2}
+         * @param e BIG instance exponent
+         */
         pow: function(e) {
             this.norm();
 

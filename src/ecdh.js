@@ -37,7 +37,14 @@ var ECDH = function(ctx) {
         SHA384: 48,
         SHA512: 64,
 
-        /* Convert Integer to n-byte array */
+	/**
+         * Convert Integer to n-byte array 
+         *
+         * @this {ECDH}
+         * @parameter n integer
+         * @parameter len integer length
+         * @return byte array
+         */		
         inttobytes: function(n, len) {
             var b = [],
                 i;
@@ -56,6 +63,13 @@ var ECDH = function(ctx) {
             return b;
         },
 
+        /**
+          * Convert byte array to string
+          *
+          * @this {ECDH}
+          * @parameter b byte array
+          * @return string
+          */			
         bytestostring: function(b) {
             var s = "",
                 len = b.length,
@@ -70,6 +84,13 @@ var ECDH = function(ctx) {
             return s;
         },
 
+       /**
+         * Convert string to byte array 
+         *
+         * @this {ECDH}
+         * @parameter s string
+         * @return byte array
+         */				
         stringtobytes: function(s) {
             var b = [],
                 i;
@@ -81,6 +102,16 @@ var ECDH = function(ctx) {
             return b;
         },
 
+        /**
+          *  general purpose hash function w=hash(B|n)
+          *
+          * @this {ECDH}
+          * @parameter sha is the hash type
+	  * @parameter A byte array involved in the hash
+	  * @parameter n integer involved in the hash
+          * @parameter pad padding
+  	  * @return w output
+          */		
         hashit: function(sha, A, n, B, pad) {
             var R = [],
                 H, W, i, len;
@@ -130,6 +161,7 @@ var ECDH = function(ctx) {
             return W;
         },
 
+	
         KDF1: function(sha, Z, olen) {
             /* NOTE: the parameter olen is the length of the output K in bytes */
             var hlen = sha,
@@ -164,6 +196,16 @@ var ECDH = function(ctx) {
             return K;
         },
 
+        /**
+          * IEEE-1363 Key Derivation Function - generates key K from inputs Z and P
+          *
+          * @this {ECDH}
+          * @parameter sha is the hash type
+	  * @parameter Z input byte array
+	  * @parameter P input key derivation parameters - can be NULL
+          * @parameter 0len is output desired length of key
+  	  * @return K derived key
+          */			
         KDF2: function(sha, Z, P, olen) {
             /* NOTE: the parameter olen is the length of the output k in bytes */
             var hlen = sha,
@@ -198,10 +240,17 @@ var ECDH = function(ctx) {
             return K;
         },
 
-        /* Password based Key Derivation Function */
-        /* Input password p, salt s, and repeat count */
-        /* Output key of length olen */
-
+	/**
+          * Password Based Key Derivation Function - generates key K from password, salt and repeat counter
+          *
+          * @this {ECDH}
+          * @parameter sha is the hash type
+	  * @parameter Pass input password
+	  * @parameter Salt salt value
+          * @parameter rep Number of times to be iterated.
+          * @parameter 0len is output desired length of key
+  	  * @return key derived key
+          */			
         PBKDF2: function(sha, Pass, Salt, rep, olen) {
             var F = new Array(sha),
                 U = [],
@@ -255,6 +304,16 @@ var ECDH = function(ctx) {
             return key;
         },
 
+	/**
+          * HMAC of message M using key K to create tag of length tag.length
+          *
+          * @this {ECDH}
+          * @parameter sha is the hash type
+	  * @parameter M input message
+	  * @parameter K input encryption key
+          * @parameter tag is the output HMAC
+  	  * @return error code
+          */				
         HMAC: function(sha, M, K, tag) {
             /* Input is from an octet m        *
              * olen is requested output length in bytes. k is the key  *
@@ -309,8 +368,14 @@ var ECDH = function(ctx) {
             return 1;
         },
 
-        /* ctx.AES encryption/decryption */
-
+	/**
+          * AES encrypts a plaintext to a ciphtertext
+          *
+          * @this {ECDH}
+	  * @parameter M input message
+	  * @parameter K AES key
+  	  * @return C Ciphertext
+          */				
         AES_CBC_IV0_ENCRYPT: function(K, M) { /* ctx.AES CBC encryption, with Null IV and key K */
             /* Input is from an octet string M, output is to an octet string C */
             /* Input is padded as necessary to make up a full final block */
@@ -360,6 +425,14 @@ var ECDH = function(ctx) {
             return C;
         },
 
+	/**
+          * AES encrypts a plaintext to a ciphtertext
+          *
+          * @this {ECDH}
+	  * @parameter C Ciphertext
+	  * @parameter K AES key
+  	  * @return P Plaintext
+          */					
         AES_CBC_IV0_DECRYPT: function(K, C) { /* padding is removed */
             var a = new ctx.AES(),
                 buff = [],
@@ -431,6 +504,15 @@ var ECDH = function(ctx) {
             return M;
         },
 
+	/**
+          * Generate an ECC public/private key pair
+          *
+          * @this {ECDH}
+          * @parameter rng Cryptographically Secure Random Number Generator
+	  * @parameter S the private key
+	  * @parameter W the output public key, which is s.G, where G is a fixed generator
+  	  * @return 0 or an error code
+          */						
         KEY_PAIR_GENERATE: function(RNG, S, W) {
             var res = 0,
                 r, s, G, WP;
@@ -456,6 +538,13 @@ var ECDH = function(ctx) {
             return res;
         },
 
+	/**
+          * Generate an ECC public/private key pair
+          *
+          * @this {ECDH}
+	  * @parameter W the input public key to be validated
+  	  * @return 0 or an error code
+          */					
         PUBLIC_KEY_VALIDATE: function(W) {
             var WP = ctx.ECP.fromBytes(W),
                 res = 0,
@@ -494,6 +583,15 @@ var ECDH = function(ctx) {
             return res;
         },
 
+	/**
+          * Generate Diffie-Hellman shared key
+          *
+          * @this {ECDH}
+	  * @parameter S the private key
+	  * @parameter W the output public key, which is s.G, where G is a fixed generator
+	  * @parameter K the output shared key, in fact the x-coordinate of s.W
+  	  * @return 0 or an error code
+          */							
         ECPSVDP_DH: function(S, WD, Z) {
             var T = [],
                 res = 0,
@@ -526,6 +624,18 @@ var ECDH = function(ctx) {
             return res;
         },
 
+	/**
+          * ECDSA Signature
+          *
+          * @this {ECDH}
+          * @parameter sha is the hash type
+          * @parameter RNG Cryptographically Secure Random Number Generator
+	  * @parameter S the private key
+	  * @parameter F the input message to be signed
+	  * @parameter C component of the output signature
+	  * @parameter D component of the output signature
+  	  * @return 0 or an error code
+          */								
         ECPSP_DSA: function(sha, RNG, S, F, C, D) {
             var T = [],
                 i, r, s, f, c, d, u, vx, w,
@@ -576,6 +686,17 @@ var ECDH = function(ctx) {
             return 0;
         },
 
+	/**
+          * ECDSA Signature Verification
+          *
+          * @this {ECDH}
+          * @parameter sha is the hash type
+	  * @parameter W the public key
+	  * @parameter F the input message to be signed
+	  * @parameter C component of the output signature
+	  * @parameter D component of the output signature
+  	  * @return 0 or an error code
+          */									
         ECPVP_DSA: function(sha, W, F, C, D) {
             var B = [],
                 res = 0,
@@ -625,6 +746,20 @@ var ECDH = function(ctx) {
             return res;
         },
 
+	/**
+          * ECIES Encryption
+          *
+          * @this {ECDH}
+          * @parameter sha is the hash type
+	  * @parameter P1 input Key Derivation parameters
+	  * @parameter P2 input Encoding parameters
+          * @parameter RNG Cryptographically Secure Random Number Generator
+	  * @parameter W the public key
+	  * @parameter M the input message to be encrypted
+	  * @parameter V component of the output ciphertext
+	  * @parameter T the output HMAC tag, part of the ciphertext
+  	  * @return C ciphertext
+          */										
         ECIES_ENCRYPT: function(sha, P1, P2, RNG, W, M, V, T) {
             var Z = [],
                 VZ = [],
@@ -687,6 +822,19 @@ var ECDH = function(ctx) {
 			return false;
 		},
 
+	/**
+          * ECIES Encryption
+          *
+          * @this {ECDH}
+          * @parameter sha is the hash type
+	  * @parameter P1 input Key Derivation parameters
+	  * @parameter P2 input Encoding parameters
+	  * @parameter V component of the output ciphertext
+          * @parameter C Ciphertext
+	  * @parameter T the output HMAC tag, part of the ciphertext
+	  * @parameter U the private key
+  	  * @return M plaintext
+          */											
         ECIES_DECRYPT: function(sha, P1, P2, V, C, T, U) {
             var Z = [],
                 VZ = [],

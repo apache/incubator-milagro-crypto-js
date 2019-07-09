@@ -672,7 +672,7 @@ BIG = function(ctx) {
         },
 
 	/**
-         * set x = x mod 2^m */
+         * set x = x mod 2^m
          *
          * @this {BIG}
          * @parameter m Exponent

@@ -22,7 +22,12 @@
 var ECP = function(ctx) {
     "use strict";
 
-    /* Constructor */
+    /**
+     * Creates an instance of ECP
+     *
+     * @constructor
+     * @this {ECP}
+     */    
     var ECP = function(input) {
         if (input instanceof ECP) {
             // copy constructor
@@ -62,7 +67,13 @@ var ECP = function(ctx) {
     ECP.AESKEY = ctx.config["@AK"];
 
     ECP.prototype = {
-        /* test this=O point-at-infinity */
+	
+	/**
+         * Tests for ECP point equal to infinity
+         *
+         * @this {ECP}
+         * @param 1 if infinity, else returns 0
+         */	
         is_infinity: function() {
   
             this.x.reduce();
@@ -83,7 +94,12 @@ var ECP = function(ctx) {
             return true;
         },
 
-        /* conditional swap of this and Q dependant on d */
+
+	/**
+         * conditional swap of this and Q dependant on dCopy ECP point to another ECP point
+         *
+         * @this {ECP}
+         */	
         cswap: function(Q, d) {
 
             this.x.cswap(Q.x, d);
@@ -94,7 +110,11 @@ var ECP = function(ctx) {
 
         },
 
-        /* conditional move of Q to P dependant on d */
+	/**
+         * conditional move of Q to P dependant on d 
+         *
+         * @this {ECP}
+         */	
         cmove: function(Q, d) {
 
             this.x.cmove(Q.x, d);
@@ -105,7 +125,11 @@ var ECP = function(ctx) {
 
         },
 
-        /* Constant time select from pre-computed table */
+	/**
+         * Constant time select from pre-computed table 
+         *
+         * @this {ECP}
+         */	
         select: function(W, b) {
             var MP = new ECP(),
                 m = b >> 31,
@@ -160,7 +184,12 @@ var ECP = function(ctx) {
             return true;
         },
 
-        /* copy this=P */
+	/**
+         * Copy ECP point to another ECP point
+         *
+         * @this {ECP}
+         * @param P ECP instance
+         */	
         copy: function(P) {
             this.x.copy(P.x);
             if (ECP.CURVETYPE != ECP.MONTGOMERY) {
@@ -169,7 +198,11 @@ var ECP = function(ctx) {
             this.z.copy(P.z);
         },
 
-        /* this=-this */
+	/**
+         * set this=-this 
+         *
+         * @this {ECP}
+         */	
         neg: function() {
             if (ECP.CURVETYPE == ECP.WEIERSTRASS) {
                 this.y.neg();
@@ -182,7 +215,11 @@ var ECP = function(ctx) {
             return;
         },
 
-        /* set this=O */
+	/**
+         * Set ECP to point-at-infinity
+         *
+         * @this {ECP}
+         */	
         inf: function() {
             this.x.zero();
 
@@ -197,7 +234,13 @@ var ECP = function(ctx) {
             }
         },
 
-        /* set this=(x,y) where x and y are BIGs */
+	/**
+         * set this=(x,y)
+         *
+         * @this {ECP}
+         * @param ix x-value
+         * @param iy y-value
+         */	
         setxy: function(ix, iy) {
             var rhs, y2;
 
@@ -226,7 +269,13 @@ var ECP = function(ctx) {
             }
         },
 
-        /* set this=x, where x is ctx.BIG, y is derived from sign s */
+	/**
+         * set this=x, where x is ctx.BIG, y is derived from sign s 
+         *
+         * @this {ECP}
+         * @param ix x-value
+         * @param s sign to derive y
+         */	
         setxi: function(ix, s) {
             var rhs, ny;
 
@@ -247,7 +296,13 @@ var ECP = function(ctx) {
             }
         },
 
-        /* set this=x, y calculated from curve equation */
+	/**
+         * 	
+         * set this=x, y calculated from curve equation 
+         *
+         * @this {ECP}
+         * @param ix x-value
+         */	
         setx: function(ix) {
             var rhs;
 
@@ -266,7 +321,11 @@ var ECP = function(ctx) {
             }
         },
 
-        /* set this to affine - from (x,y,z) to (x,y) */
+	/**
+         * convert this to affine, from (x,y,z) to (x,y) 
+         *
+         * @this {ECP}
+         */	
         affine: function() {
             var one;
 
@@ -296,40 +355,69 @@ var ECP = function(ctx) {
             }
         },
 
-        /* extract x as ctx.BIG */
+	/**
+         * extract affine x as ctx.FP2 
+         *
+         * @this {ECP}
+         */	
         getX: function() {
 			var W=new ECP(); W.copy(this); W.affine();
             return W.x.redc();
         },
 
-        /* extract y as ctx.BIG */
+	/**
+         * extract affine y as ctx.FP2
+         *
+         * @this {ECP}
+         */	
         getY: function() {
 			var W=new ECP(); W.copy(this); W.affine();
             return W.y.redc();
         },
 
-        /* get sign of Y */
+	/**
+         * get sign of Y 
+         *
+         * @this {ECP}
+         */	
         getS: function() {
             var y = this.getY();
             return y.parity();
         },
 
-        /* extract x as ctx.FP */
+	/**
+         * extract x as ctx.FP 
+         *
+         * @this {ECP}
+         */	
         getx: function() {
             return this.x;
         },
 
-        /* extract y as ctx.FP */
+	/**
+         * extract y as ctx.FP
+         *
+         * @this {ECP}
+         */	
         gety: function() {
             return this.y;
         },
 
-        /* extract z as ctx.FP */
+	/**
+         * extract z as ctx.FP
+         *
+         * @this {ECP}
+         */	
         getz: function() {
             return this.z;
         },
 
-        /* convert to byte array */
+	/**
+         * convert this to byte arrayextract projective x
+         *
+         * @this {ECP}
+         * @param b byte array output
+         */	
         toBytes: function(b,compress) {
             var t = [],
                 i;
@@ -361,7 +449,13 @@ var ECP = function(ctx) {
                 b[i + ctx.BIG.MODBYTES + 1] = t[i];
             }
         },
-        /* convert to hex string */
+
+	/**
+         * convert this to hex string 
+         *
+         * @this {ECP}
+         * @return hex string
+         */	
         toString: function() {
 			var W=new ECP(); W.copy(this);
             if (W.is_infinity()) {
@@ -377,7 +471,11 @@ var ECP = function(ctx) {
             }
         },
 
-        /* this+=this */
+	/**
+         * this+=this 
+         *
+         * @this {ECP}
+         */	
         dbl: function() {
             var t0, t1, t2, t3, x3, y3, z3, b,
                 C, D, H, J,
@@ -600,7 +698,12 @@ var ECP = function(ctx) {
             return;
         },
 
-        /* this+=Q */
+	/**
+         * Adds ECP instances
+         *
+         * param Q ECP instance
+         * @this {ECP}
+         */		
         add: function(Q) {
             var b, t0, t1, t2, t3, t4, x3, y3, z3,
                 A, B, C, D, E, F, G;
@@ -936,14 +1039,25 @@ var ECP = function(ctx) {
             //  this.x.norm();
         },
 
-        /* this-=Q */
+	/**
+         * Subtracts ECP instance Q  from this
+         *
+         * @this {ECP}
+         * @param Q ECP instance
+         */	
         sub: function(Q) {
 			var NQ = new ECP(); NQ.copy(Q);
             NQ.neg();
             this.add(NQ);
         },
 
-        /* constant time multiply by small integer of length bts - use ladder */
+	/**
+         * constant time multiply by small integer of length bts - use ladder 
+         *
+         * @this {ECP}
+         * @param e small integer
+         * @param bts e bit length
+         */	
         pinmul: function(e, bts) {
             var i, b, P, R0, R1;
 
@@ -972,7 +1086,11 @@ var ECP = function(ctx) {
             }
         },
 
-        // multiply this by the curves cofactor
+	/**
+         * multiply this by the curves cofactor
+         *
+         * @this {ECP}
+         */	
         cfp: function() {
             var cf=ctx.ROM_CURVE.CURVE_Cof_I,
                 c = new ctx.BIG(0);
@@ -992,7 +1110,12 @@ var ECP = function(ctx) {
         },
 
 
-        /* return e.this - SPA immune, using Ladder */
+	/**
+         * Multiplies an ECP instance P by a BIG, side-channel resistant
+         *
+         * @this {ECP}
+         * @param e BIG number multiplier
+         */		
         mul: function(e) {
             var P, D, R0, R1, mt, t, Q, C, W, w,
                 i, b, nb, s, ns;
@@ -1086,8 +1209,14 @@ var ECP = function(ctx) {
             return P;
         },
 
-        /* Return e.this+f.Q */
-
+	/**
+         * Return e.this+f.Q 
+         *
+         * @this {ECP}
+         * @param e BIG number multiplier
+         * @param Q ECP instance
+         * @param f BIG number multiplier
+         */		
         mul2: function(e, Q, f) {
             var te = new ctx.BIG(),
                 tf = new ctx.BIG(),
@@ -1190,7 +1319,11 @@ var ECP = function(ctx) {
         }
     };
 
-    // set to group generator
+    /**
+      * Set group generator
+      *
+      * @this {ECP}
+      */	
     ECP.generator = function() {
         var G=new ECP(),
             gx = new ctx.BIG(0),
@@ -1214,7 +1347,12 @@ var ECP = function(ctx) {
         return ((x >> 31) & 1);
     };
 
-    /* convert from byte array to ECP */
+    /**
+      * convert from byte array to point 
+      *
+      * @this {ECP}
+      * @param b input byte array
+      */	    
     ECP.fromBytes = function(b) {
         var t = [],
             P = new ECP(),
@@ -1261,7 +1399,12 @@ var ECP = function(ctx) {
         return P;
     };
 
-    /* Calculate RHS of curve equation */
+    /**
+      * Calculate RHS of the curve equation 
+      *
+      * @this {ECP}
+      * @param x x-value
+      */	    
     ECP.RHS = function(x) {
         var r = new ctx.FP(0),
             b, cx, one, x3;
