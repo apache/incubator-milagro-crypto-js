@@ -24,10 +24,10 @@ var FP = function(ctx) {
     "use strict";
 
     /**
-      * Creates an instance of FP2.
+      * Creates an instance of FP.
       *
       * @constructor
-      * @this {FP2}
+      * @this {FP}
       * @param x FP / BIG instance
       */
     var FP = function(x) {
@@ -65,9 +65,9 @@ var FP = function(ctx) {
     FP.prototype = {
 	
 	/**
-         * Set FP2 to zero
+         * Set FP to zero
          *
-         * @this {FP2}
+         * @this {FP}
          */
         zero: function() {
             this.XES = 1;
@@ -77,8 +77,8 @@ var FP = function(ctx) {
 	/**
          * copy from a ctx.BIG in ROM 
          *
-         * @this {FP2}
-         * @param x FP2 instance to be copied
+         * @this {FP}
+         * @param x FP instance to be copied
          */
         rcopy: function(y) {
             this.f.rcopy(y);
@@ -88,8 +88,8 @@ var FP = function(ctx) {
 	/**
          * copy from another ctx.BIG 
          *
-         * @this {FP2}
-         * @param x FP2 instance to be copied
+         * @this {FP}
+         * @param x FP instance to be copied
          */
         bcopy: function(y) {
             this.f.copy(y);
@@ -97,10 +97,10 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Copy FP2 to another FP2
+         * Copy FP to another FP
          *
-         * @this {FP2}
-         * @param x FP2 instance to be copied
+         * @this {FP}
+         * @param x FP instance to be copied
          */
         copy: function(y) {
             this.XES = y.XES;
@@ -124,10 +124,10 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Conditional copy of FP2 number
+         * Conditional copy of FP number
          *
-         * @this {FP2}
-         * @param g FP2 instance
+         * @this {FP}
+         * @param g FP instance
          * @param d copy depends on this value
          */
         cmove: function(b, d) {
@@ -142,7 +142,7 @@ var FP = function(ctx) {
 	/**
          * Converts from BIG integer to residue form mod Modulus
          *
-         * @this {FP2}
+         * @this {FP}
          */
         nres: function() {
             var r, d;
@@ -164,7 +164,7 @@ var FP = function(ctx) {
 	/**
          * Converts from residue form back to BIG integer form
          *
-         * @this {FP2}
+         * @this {FP}
          */
         redc: function() {
             var r = new ctx.BIG(0),
@@ -185,7 +185,7 @@ var FP = function(ctx) {
 	/**
          * convert to hex string
          *
-         * @this {FP2}
+         * @this {FP}
          */
         toString: function() {
             var s = this.redc().toString();
@@ -193,9 +193,9 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Tests for FP2 equal to zero
+         * Tests for FP equal to zero
          *
-         * @this {FP2}
+         * @this {FP}
          */
         iszilch: function() {
 			var c=new FP(0); c.copy(this);
@@ -204,9 +204,9 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Reduces all components of possibly unreduced FP2 mod Modulus
+         * Reduces all components of possibly unreduced FP mod Modulus
          *
-         * @this {FP2}
+         * @this {FP}
          */
         reduce: function() {
             var q,carry,sr,sb,m = new ctx.BIG(0);
@@ -241,9 +241,9 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Set FP2 to unity
+         * Set FP to unity
          *
-         * @this {FP2}
+         * @this {FP}
          */
         one: function() {
             this.f.one();
@@ -251,9 +251,9 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Normalises the components of an FP2
+         * Normalises the components of an FP
          *
-         * @this {FP2}
+         * @this {FP}
          */
         norm: function() {
             return this.f.norm();
@@ -262,7 +262,7 @@ var FP = function(ctx) {
 	/**
          * Fast Modular multiplication of two FPs, mod Modulus
          *
-         * @this {FP2}
+         * @this {FP}
          * @param b FP number, the multiplier
          */
         mul: function(b) {
@@ -280,9 +280,9 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Multiplication of an FP2 by a small integer
+         * Multiplication of an FP by a small integer
          *
-         * @this {FP2}
+         * @this {FP}
          * @param s integer
          */
         imul: function(c) {
@@ -316,9 +316,9 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Fast Squaring of an FP2
+         * Fast Squaring of an FP
          *
-         * @this {FP2}
+         * @this {FP}
          */
         sqr: function() {
             var d, t;
@@ -350,8 +350,8 @@ var FP = function(ctx) {
 	/**
          * negate this
          *
-         * @this {FP2}
-         * @param x FP2 instance to be set to one
+         * @this {FP}
+         * @param x FP instance to be set to one
          */
         neg: function() {
             var m = new ctx.BIG(0),
@@ -373,10 +373,10 @@ var FP = function(ctx) {
         },
 
 	/**
-         * subtraction of two FP2s
+         * subtraction of two FPs
          *
-         * @this {FP2}
-         * @param x FP2 instance
+         * @this {FP}
+         * @param x FP instance
          */
         sub: function(b) {
             var n = new FP(0);
@@ -398,9 +398,9 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Divide an FP2 by 2
+         * Divide an FP by 2
          *
-         * @this {FP2}
+         * @this {FP}
          */
         div2: function() {
             var p;
@@ -425,7 +425,7 @@ var FP = function(ctx) {
 	/**
          * return this^(p-3)/4 or this^(p-5)/8
          *
-         * @this {FP2}
+         * @this {FP}
          */	
 	fpow: function() {
 			var i,j,k,bw,w,c,nw,lo,m,n;
@@ -529,9 +529,9 @@ var FP = function(ctx) {
 		},
 
 	/**
-         * Inverting an FP2
+         * Inverting an FP
          *
-         * @this {FP2}
+         * @this {FP}
          */
         inverse: function() {
 
@@ -560,10 +560,10 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Tests for equality of two FP2 instances
+         * Tests for equality of two FP instances
          *
-         * @this {FP2}
-         * @param x FP2 instance to compare
+         * @this {FP}
+         * @param x FP instance to compare
          */
         equals: function(a) {
 			var ft=new FP(0); ft.copy(this);
@@ -579,9 +579,9 @@ var FP = function(ctx) {
         },
 
 	/**
-         * Raises an FP2 to the power of a BIG
+         * Raises an FP to the power of a BIG
          *
-         * @this {FP2}
+         * @this {FP}
          * @param e BIG instance exponent
          */
         pow: function(e) {
@@ -621,7 +621,7 @@ var FP = function(ctx) {
 	/**
          * return jacobi symbol (this/Modulus)
          *
-         * @this {FP2}
+         * @this {FP}
          */
         jacobi: function() {
             var p = new ctx.BIG(0),
@@ -635,7 +635,7 @@ var FP = function(ctx) {
 	/**
          * Fast Modular square root of a an FP, mod Modulus
          *
-         * @this {FP2}
+         * @this {FP}
          */
         sqrt: function() {
             var i, v, r;
@@ -716,7 +716,7 @@ var FP = function(ctx) {
     /**
       * reduce a ctx.DBIG to a ctx.BIG using a "special" modulus 
       *
-      * @this {FP2}
+      * @this {FP}
       */    
     FP.mod = function(d) {
         var b = new ctx.BIG(0),

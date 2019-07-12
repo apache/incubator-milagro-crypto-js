@@ -39,6 +39,12 @@
 var GCM = function(ctx) {
     "use strict";
 
+    /**
+      * Creates an instance of GCM
+      *
+      * @constructor
+      * @this {GCM}
+      */    
     var GCM = function() {
         this.table = new Array(128);
         for (var i = 0; i < 128; i++) {
@@ -63,6 +69,7 @@ var GCM = function(ctx) {
     GCM.DECRYPTING = 1;
 
     GCM.prototype = {
+	
         precompute: function(H) {
             var b = [],
                 i, j, c;
@@ -148,7 +155,15 @@ var GCM = function(ctx) {
             this.gf2mul();
         },
 
-        /* Initialize GCM mode */
+	/**
+         * Initialize GCM mode 
+         *
+         * @this {GCM}
+	 * @param nk is the key length in bytes, 16, 24 or 32
+	 * @param key the AES key as an array of 16 bytes
+	 * @param niv the number of bytes in the Initialisation Vector (IV)
+	 * @param iv the IV
+         */
         init: function(nk, key, niv, iv) { /* iv size niv is usually 12 bytes (96 bits). ctx.AES key size nk can be 16,24 or 32 bytes */
             var H = [],
                 b = [],
@@ -196,7 +211,13 @@ var GCM = function(ctx) {
             this.status = GCM.ACCEPTING_HEADER;
         },
 
-        /* Add Header data - included but not encrypted */
+	/**
+         * Add header (material to be authenticated but not encrypted)
+         *
+         * @this {GCM}
+	 * @param header is the header material to be added
+	 * @param len the number of bytes in the header
+         */
         add_header: function(header, len) { /* Add some header. Won't be encrypted, but will be authenticated. len is length of header */
             var i, j = 0;
 
@@ -256,7 +277,14 @@ var GCM = function(ctx) {
             return true;
         },
 
-        /* Add Plaintext - included and encrypted */
+	/**
+         * Add plaintext and extract ciphertext
+         *
+         * @this {GCM}
+	 * @param plain is the plaintext material to be added
+	 * @param len the number of bytes in the plaintext
+         * @return cipher is the ciphertext generated
+         */
         add_plain: function(plain, len) {
             var B = [],
                 b = [],
@@ -311,7 +339,14 @@ var GCM = function(ctx) {
             return cipher;
         },
 
-        /* Add Ciphertext - decrypts to plaintext */
+	/**
+         * Add Ciphertext - decrypts to plaintext
+         *
+         * @this {GCM}
+	 * @param cipher is the ciphertext to be added
+	 * @param len the number of bytes in the plaintext
+         * @return plain is the plaintext material generated
+         */
         add_cipher: function(cipher, len) {
             var B = [],
                 b = [],
@@ -369,6 +404,12 @@ var GCM = function(ctx) {
             return plain;
         },
 
+	/**
+         * Finish off and extract authentication tag (HMAC)
+         *
+         * @this {GCM}
+         * @return tag is the output 16 byte authentication tag
+         */
         /* Finish and extract Tag */
         finish: function(extract) { /* Finish off GHASH and extract tag (MAC) */
             var tag = [],
