@@ -31,6 +31,12 @@
 var RAND = function(ctx) {
     "use strict";
 
+    /**
+      * Creates an instance of MPIN256
+      *
+      * @constructor
+      * @this {MPIN256}
+      */            
     var RAND = function() {
         /* Cryptographically strong pseudo-random number generator */
         this.ira = []; /* random number...   */
@@ -46,7 +52,11 @@ var RAND = function(ctx) {
         NJ: 6,
         NV: 8,
 
-        /* Terminate and clean up */
+	/**
+         * Delete all internal state of a random number generator
+         *
+         * @this {MPIN256}
+         */			
         clean: function() {
             var i;
 
@@ -63,7 +73,12 @@ var RAND = function(ctx) {
             this.pool_ptr = 0;
         },
 
-        sbrand: function() { /* Marsaglia & Zaman random number generator */
+	/**
+         * Marsaglia & Zaman random number generator
+         *
+         * @this {MPIN256}
+         */				
+        sbrand: function() {
             var i, k, pdiff, t;
 
             this.rndptr++;
@@ -131,7 +146,13 @@ var RAND = function(ctx) {
             this.pool_ptr = 0;
         },
 
-        /* Initialize RNG with some real entropy from some external source */
+	/**
+         * Initialize RNG with some real entropy from some external source
+         *
+         * @this {MPIN256}
+	 * @param rawlen the number of seed bytes provided
+	 * @param raw an array of seed bytes
+         */
         seed: function(rawlen, raw) { /* initialise from at least 128 byte string of raw random entropy */
             var sh = new ctx.HASH256(),
                 digest = [],
@@ -164,7 +185,11 @@ var RAND = function(ctx) {
             this.fill_pool();
         },
 
-        /* get random byte */
+	/**
+         * Get random byte
+         *
+         * @this {MPIN256}
+         */
         getByte: function() {
             var r = this.pool[this.pool_ptr++];
 
@@ -176,7 +201,12 @@ var RAND = function(ctx) {
         }
     };
 
-    RAND.pack = function(b) { /* pack 4 bytes into a 32-bit Word */
+    /**
+      * Pack 4 bytes into a 32-bit Word
+      *
+      * @this {MPIN256}
+      */    
+    RAND.pack = function(b) { 
         return (((b[3]) & 0xff) << 24) | ((b[2] & 0xff) << 16) | ((b[1] & 0xff) << 8) | (b[0] & 0xff);
     };
 
