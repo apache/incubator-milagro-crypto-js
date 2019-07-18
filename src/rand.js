@@ -32,10 +32,10 @@ var RAND = function(ctx) {
     "use strict";
 
     /**
-      * Creates an instance of MPIN256
+      * Creates an instance of RAND
       *
       * @constructor
-      * @this {MPIN256}
+      * @this {RAND}
       */            
     var RAND = function() {
         /* Cryptographically strong pseudo-random number generator */
@@ -55,7 +55,7 @@ var RAND = function(ctx) {
 	/**
          * Delete all internal state of a random number generator
          *
-         * @this {MPIN256}
+         * @this {RAND}
          */			
         clean: function() {
             var i;
@@ -76,7 +76,7 @@ var RAND = function(ctx) {
 	/**
          * Marsaglia & Zaman random number generator
          *
-         * @this {MPIN256}
+         * @this {RAND}
          */				
         sbrand: function() {
             var i, k, pdiff, t;
@@ -149,7 +149,7 @@ var RAND = function(ctx) {
 	/**
          * Initialize RNG with some real entropy from some external source
          *
-         * @this {MPIN256}
+         * @this {RAND}
 	 * @param rawlen the number of seed bytes provided
 	 * @param raw an array of seed bytes
          */
@@ -188,7 +188,7 @@ var RAND = function(ctx) {
 	/**
          * Get random byte
          *
-         * @this {MPIN256}
+         * @this {RAND}
          */
         getByte: function() {
             var r = this.pool[this.pool_ptr++];
@@ -204,7 +204,7 @@ var RAND = function(ctx) {
     /**
       * Pack 4 bytes into a 32-bit Word
       *
-      * @this {MPIN256}
+      * @this {RAND}
       */    
     RAND.pack = function(b) { 
         return (((b[3]) & 0xff) << 24) | ((b[2] & 0xff) << 16) | ((b[1] & 0xff) << 8) | (b[0] & 0xff);
