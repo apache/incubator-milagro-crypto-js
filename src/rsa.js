@@ -25,6 +25,12 @@ var RSA,
 RSA = function(ctx) {
     "use strict";
 
+    /**
+      * Creates an instance of RSA
+      *
+      * @constructor
+      * @this {RSA}
+      */            
     var RSA = {
         RFS: ctx.BIG.MODBYTES * ctx.FF.FFLEN,
         SHA256: 32,
@@ -38,6 +44,13 @@ RSA = function(ctx) {
         SHA384ID: [0x30, 0x41, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x02, 0x05, 0x00, 0x04, 0x30],
         SHA512ID: [0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03, 0x05, 0x00, 0x04, 0x40],
 
+	/**
+         * Convert byte array to hex string
+         *
+         * @this {RSA}
+         * @param b byte array
+         * @return s hex string
+         */			
         bytestohex: function(b) {
             var s = "",
                 len = b.length,
@@ -52,6 +65,13 @@ RSA = function(ctx) {
             return s;
         },
 
+	/**
+         * Convert byte array to string
+         *
+         * @this {RSA}
+         * @param b byte array
+         * @return s string
+         */			
         bytestostring: function(b) {
             var s = "",
                 i;
@@ -63,6 +83,13 @@ RSA = function(ctx) {
             return s;
         },
 
+	/**
+         * Convert a string to byte array
+         *
+         * @this {RSA}
+         * @param s string
+         * @return b byte array
+         */				
         stringtobytes: function(s) {
             var b = [],
                 i;
@@ -74,6 +101,15 @@ RSA = function(ctx) {
             return b;
         },
 
+	/**
+         * General purpose hash function
+         *
+         * @this {RSA}
+         * @param sha is the hash type
+         * @param A byte array
+         * @param n Integer
+         * @return R hash value
+         */					
         hashit: function(sha, A, n) {
             var R = [],
                 H;
@@ -119,6 +155,15 @@ RSA = function(ctx) {
             return R;
         },
 
+	/**
+         * RSA Key Pair Generator
+         *
+         * @this {RSA}
+	 * @param rng is a pointer to a cryptographically secure random number generator
+	 * @param e the encryption exponent
+	 * @param PRIV the output RSA private key
+	 * @param PUB the output RSA public key
+         */						
         KEY_PAIR: function(rng, e, PRIV, PUB) { /* IEEE1363 A16.11/A16.12 more or less */
             var n = PUB.n.length >> 1,
                 t = new ctx.FF(n),
@@ -225,6 +270,16 @@ RSA = function(ctx) {
             }
         },
 
+	/**
+         * PKCS V1.5 padding of a message prior to RSA signature
+         *
+         * @this {RSA}
+	 * @param rng is a pointer to a cryptographically secure random number generator
+	 * @param e the encryption exponent
+	 * @param PRIV the output RSA private key
+	 * @param PUB the output RSA public key
+         * @return true or false
+         */							
         PKCS15: function(sha, m, w) {
             var olen = ctx.FF.FF_BITS / 8,
                 hlen = sha,
@@ -270,7 +325,16 @@ RSA = function(ctx) {
             return true;
         },
 
-        /* OAEP Message Encoding for Encryption */
+	/**
+         * OAEP padding of a message prior to RSA encryption
+         *
+         * @this {RSA}
+	 * @param sha is the hash type
+	 * @param m is the input message
+	 * @param rng is a pointer to a cryptographically secure random number generator
+	 * @param P are input encoding parameter string (could be NULL)
+         * @return f is the output encoding, ready for RSA encryption
+         */							
         OAEP_ENCODE: function(sha, m, rng, p) {
             var olen = RSA.RFS - 1,
                 mlen = m.length,
@@ -333,7 +397,15 @@ RSA = function(ctx) {
             return f;
         },
 
-        /* OAEP Message Decoding for Decryption */
+	/**
+         * OAEP unpadding of a message after RSA decryption
+         *
+         * @this {RSA}
+	 * @param sha is the hash type
+	 * @param P are input encoding parameter string (could be NULL)
+         * @param f is the padded message
+         * @return r is the unpadded message
+         */
         OAEP_DECODE: function(sha, p, f) {
             var olen = RSA.RFS - 1,
                 SEED = [],
@@ -431,7 +503,12 @@ RSA = function(ctx) {
             return r;
         },
 
-        /* destroy the Private Key structure */
+	/**
+         * Destroy an RSA private Key
+         *
+         * @this {RSA}
+	 * @param PRIV the input RSA private key. Destroyed on output.
+         */
         PRIVATE_KEY_KILL: function(PRIV) {
             PRIV.p.zero();
             PRIV.q.zero();
@@ -440,7 +517,14 @@ RSA = function(ctx) {
             PRIV.c.zero();
         },
 
-        /* RSA encryption with the public key */
+	/**
+         * RSA encryption of suitably padded plaintext
+         *
+         * @this {RSA}
+         * @param PUB the input RSA public key
+	 * @param F is input padded message
+	 * @param G is the output ciphertext
+         */
         ENCRYPT: function(PUB, F, G) {
             var n = PUB.n.getlen(),
                 f = new ctx.FF(n);
@@ -452,7 +536,14 @@ RSA = function(ctx) {
             f.toBytes(G);
         },
 
-        /* RSA decryption with the private key */
+	/**
+         * RSA decryption of ciphertext
+         *
+         * @this {RSA}
+	 * @param PRIV the input RSA private key
+	 * @param G is the input ciphertext
+	 * @param F is output plaintext (requires unpadding)
+         */
         DECRYPT: function(PRIV, G, F) {
             var n = PRIV.p.getlen(),
                 g = new ctx.FF(2 * n),
@@ -492,6 +583,13 @@ RSA = function(ctx) {
 rsa_private_key = function(ctx) {
     "use strict";
 
+    /**
+      * Creates an instance of rsa_private_key
+      *
+      * @constructor
+      * @this {rsa_private_key}
+      * @param n FF length
+      */                
     var rsa_private_key = function(n) {
         this.p = new ctx.FF(n);
         this.q = new ctx.FF(n);
@@ -506,6 +604,13 @@ rsa_private_key = function(ctx) {
 rsa_public_key = function(ctx) {
     "use strict";
 
+    /**
+      * Creates an instance of rsa_public_key
+      *
+      * @constructor
+      * @this {rsa_private_key}
+      * @param m FF length
+      */                    
     var rsa_public_key = function(m) {
         this.e = 0;
         this.n = new ctx.FF(m);

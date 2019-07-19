@@ -24,7 +24,14 @@
 var FP8 = function(ctx) {
     "use strict";
 
-    /* general purpose constructor */
+    /**
+      * Creates an instance of FP8
+      *
+      * @constructor
+      * @this {FP4}
+      * @param c FP8 / FP4 instance
+      * @param d FP4 instance
+      */
     var FP8 = function(c, d) {
         if (c instanceof FP8) {
             this.a = new ctx.FP4(c.a);
@@ -36,90 +43,164 @@ var FP8 = function(ctx) {
     };
 
     FP8.prototype = {
-        /* reduce all components of this mod Modulus */
+	
+	/**
+         * Reduces all components of possibly unreduced FP8 mod Modulus
+         *
+         * @this {FP8}
+         */
         reduce: function() {
             this.a.reduce();
             this.b.reduce();
         },
 
-        /* normalise all components of this mod Modulus */
+	/**
+         * Normalises the components of an FP8
+         *
+         * @this {FP8}
+         */
         norm: function() {
             this.a.norm();
             this.b.norm();
         },
 
-        /* test this==0 ? */
+	/**
+         * Tests for FP8 equal to zero
+         *
+         * @this {FP8}
+         */
         iszilch: function() {
             return (this.a.iszilch() && this.b.iszilch());
         },
 
-        /* test this==1 ? */
+	/**
+         * Tests for FP8 equal to unity
+         *
+         * @this {FP8}
+         */
         isunity: function() {
             var one = new ctx.FP4(1);
             return (this.a.equals(one) && this.b.iszilch());
         },
 
-        /* conditional copy of g to this depending on d */
+	/**
+         * Conditional copy of FP8 number
+         *
+         * @this {FP8}
+         * @param g FP8 instance
+         * @param d copy depends on this value
+         */
         cmove: function(g, d) {
             this.a.cmove(g.a, d);
             this.b.cmove(g.b, d);
         },
 
-        /* test is w real? That is in a+ib test b is zero */
+	/**
+         * test is w real? That is in a+ib test b is zero 
+         *
+         * @this {FP8}
+         */
         isreal: function() {
             return this.b.iszilch();
         },
 
-        /* extract real part a */
+	/**
+         * extract real part a
+         *
+         * @this {FP8}
+         */
         real: function() {
             return this.a;
         },
 
+	/**
+         * extract a from this
+         *
+         * @this {FP8}
+         */		
         geta: function() {
             return this.a;
         },
 
-        /* extract imaginary part b */
+	/**
+         * extract b from this
+         *
+         * @this {FP8}
+         */	
         getb: function() {
             return this.b;
         },
 
-        /* test this=x? */
+	/**
+         * Tests for equality of two FP8s
+         *
+         * @this {FP8}
+         * @param x FP8 instance to compare
+         */
         equals: function(x) {
             return (this.a.equals(x.a) && this.b.equals(x.b));
         },
 
-        /* copy this=x */
+	/**
+         * Copy FP8 to another FP8
+         *
+         * @this {FP8}
+         * @param x FP8 instance to be copied
+         */
         copy: function(x) {
             this.a.copy(x.a);
             this.b.copy(x.b);
         },
 
-        /* this=0 */
+	/**
+         * Set FP8 to zero
+         *
+         * @this {FP8}
+         */
         zero: function() {
             this.a.zero();
             this.b.zero();
         },
 
-        /* this=1 */
+	/**
+         * Set FP8 to unity
+         *
+         * @this {FP8}
+         * @param x FP8 instance to be set to one
+         */
         one: function() {
             this.a.one();
             this.b.zero();
         },
 
-        /* set from two FP4s */
+	/**
+         * Set FP8 from two FP4 values
+         *
+         * @this {FP8}
+         * @param c FP4 instance
+         * @param d FP4 instance
+         */
         set: function(c, d) {
             this.a.copy(c);
             this.b.copy(d);
         },
 
-        /* set a */
+	/**
+         * Set FP8 from one FP4 value
+         *
+         * @this {FP8}
+         * @param c FP4 instance
+         */
         seta: function(c) {
             this.a.copy(c);
             this.b.zero();
         },
 
-        /* this=-this */
+	/**
+         * Negation of FP8
+         *
+         * @this {FP8}
+         */
         neg: function() {
             this.norm();
             var m = new ctx.FP4(this.a), 
@@ -135,25 +216,43 @@ var FP8 = function(ctx) {
             this.norm();
         },
 
-        /* this=conjugate(this) */
+	/**
+         * Conjugation of FP8
+         *
+         * @this {FP8}
+         */
         conj: function() {
             this.b.neg();
             this.norm();
         },
 
-        /* this=-conjugate(this) */
+	/**
+         * Negative conjugation of FP8
+         *
+         * @this {FP8}
+         */
         nconj: function() {
             this.a.neg();
             this.norm();
         },
 
-        /* this+=x */
+	/**
+         * addition of two FP8s
+         *
+         * @this {FP8}
+         * @param x FP8 instance
+         */
         add: function(x) {
             this.a.add(x.a);
             this.b.add(x.b);
         },
 
-        /* this-=x */
+	/**
+         * subtraction of two FP8s
+         *
+         * @this {FP8}
+         * @param x FP8 instance
+         */
         sub: function(x) {
             var m = new FP8(x); 
             m.neg();
@@ -165,19 +264,33 @@ var FP8 = function(ctx) {
             this.add(x);
         },
 
-        /* this*=s where s is FP4 */
+	/**
+         * Multiplication of an FP8 by an FP8
+         *
+         * @this {FP8}
+         * @param s FP8 instance
+         */
         pmul: function(s) {
             this.a.mul(s);
             this.b.mul(s);
         },
 
-        /* this*=c where s is int */
+	/**
+         * Multiplication of an FP8 by a small integer
+         *
+         * @this {FP8}
+         * @param s integer
+         */
         imul: function(c) {
             this.a.imul(c);
             this.b.imul(c);
         },
 
-        /* this*=this */
+	/**
+         * Fast Squaring of an FP8
+         *
+         * @this {FP8}
+         */
         sqr: function() {
             var t1 = new ctx.FP4(this.a), 
                 t2 = new ctx.FP4(this.b), 
@@ -208,7 +321,12 @@ var FP8 = function(ctx) {
             this.norm();
         },
 
-        /* this*=y */
+	/**
+         * Full unconditional Multiplication of two FP8s
+         *
+         * @this {FP8}
+         * @param y FP8 instance, the multiplier
+         */
         mul: function(y) {
             var t1 = new ctx.FP4(this.a), 
                 t2 = new ctx.FP4(this.b), 
@@ -242,12 +360,20 @@ var FP8 = function(ctx) {
             this.norm();
         },
 
-        /* convert to hex string */
+	/**
+         * convert to hex string
+         *
+         * @this {FP8}
+         */
         toString: function() {
             return ("[" + this.a.toString() + "," + this.b.toString() + "]");
         },
 
-        /* this=1/this */
+	/**
+         * Inverting an FP8
+         *
+         * @this {FP8}
+         */
         inverse: function() {
             this.norm();
 
@@ -266,7 +392,11 @@ var FP8 = function(ctx) {
             this.b.mul(t1);
         },
 
-        /* this*=i where i = sqrt(-1+sqrt(-1)) */
+	/**
+         * multiplies an FP8 instance by irreducible polynomial sqrt(1+sqrt(-1))
+         *
+         * @this {FP8}
+         */
         times_i: function() {
             var s = new ctx.FP4(this.b),
                 t = new ctx.FP4(this.a);
@@ -278,12 +408,22 @@ var FP8 = function(ctx) {
             this.norm();
         },
 
+	/**
+         * multiplies an FP8 instance by irreducible polynomial (1+sqrt(-1))
+         *
+         * @this {FP8}
+         */	
         times_i2: function() {
             this.a.times_i();
             this.b.times_i();
         },
 
-        /* this=this^q using Frobenius, where q is Modulus */
+	/**
+         * Raises an FP8 to the power of the internal modulus p, using the Frobenius
+         *
+         * @this {FP8}
+         * @param f Modulus
+         */
         frob: function(f) {
             var ff=new ctx.FP2(f); ff.sqr(); ff.mul_ip(); ff.norm();
             this.a.frob(ff);
@@ -292,7 +432,12 @@ var FP8 = function(ctx) {
             this.b.times_i();
         },
 
-        /* this=this^e */
+	/**
+         * Raises an FP8 to the power of a BIG
+         *
+         * @this {FP8}
+         * @param e BIG instance exponent
+         */
         pow: function(e) {
             var w = new FP8(this), 
                 z = new ctx.BIG(e), 
@@ -319,7 +464,14 @@ var FP8 = function(ctx) {
             return r;
         },
 
-        /* XTR xtr_a function */
+	/**
+         * Calculates the XTR addition function r=w*x-conj(x)*y+z
+         *
+         * @this {FP8}
+         * @param w FP8 instance
+         * @param y FP8 instance
+         * @param z FP8 instance
+         */
         xtr_A: function(w, y, z) {
             var r = new FP8(w), 
                 t = new FP8(w); 
@@ -339,7 +491,11 @@ var FP8 = function(ctx) {
             this.reduce();
         },
 
-        /* XTR xtr_d function */
+	/**
+         * Calculates the XTR doubling function r=x^2-2*conj(x)
+         *
+         * @this {FP8}
+         */
         xtr_D: function() {
             var w = new FP8(this); //w.copy(this);
             this.sqr();
@@ -349,7 +505,12 @@ var FP8 = function(ctx) {
             this.reduce();
         },
 
-        /* r=x^n using XTR method on traces of FP12s */
+	/**
+         * Calculates FP8 trace of an FP8 raised to the power of a BIG number
+         *
+         * @this {FP8}
+         * @param n Big number
+         */
         xtr_pow: function(n) {
 			var sf = new FP8(this);
 			sf.norm();
@@ -404,7 +565,11 @@ var FP8 = function(ctx) {
             return r;
         },
 
-        /* r=ck^a.cl^n using XTR double exponentiation method on traces of FP12s. See Stam thesis. */
+	/**
+         * Calculates FP8 trace of c^a.d^b, where c and d are derived from FP8 traces of FP8s
+         *
+         * @this {FP8}
+         */
         xtr_pow2: function(ck, ckml, ckm2l, a, b) {
 
             var e = new ctx.BIG(a), 
@@ -554,11 +719,21 @@ var FP8 = function(ctx) {
 
         /* New stuff for ecp4.js */
 
+	/**
+         * Divide an FP8 by 2
+         *
+         * @this {FP8}
+         */		
         div2: function() {
             this.a.div2();
             this.b.div2();
         },
 
+	/**
+         * Divide FP8 number by QNR
+         *
+         * @this {FP8}
+         */			
         div_i: function() {
             var u=new ctx.FP4(this.a),
                 v=new ctx.FP4(this.b);
@@ -567,11 +742,21 @@ var FP8 = function(ctx) {
             this.b.copy(u);
         },
 
+	/**
+         * Divide an FP8 by QNR twice
+         *
+         * @this {FP8}
+         */						
         div_i2: function() {
             this.a.div_i();
             this.b.div_i();
         },
 
+	/**
+         * Divide an FP8 by QNR/2
+         *
+         * @this {FP8}
+         */					
         div_2i: function() {
             var u=new ctx.FP4(this.a),
                 v=new ctx.FP4(this.b);
@@ -581,16 +766,33 @@ var FP8 = function(ctx) {
             this.b.copy(u);
         },
 
+	/**
+         * Multiplication of an FP8 by an FP2
+         *
+         * @this {FP8}
+         * @param s FP2 multiplier
+         */					
         qmul: function(s) {
             this.a.pmul(s);
             this.b.pmul(s);
         },
 
+	/**
+         * Multiplication of an FP8 by an FP
+         *
+         * @this {FP8}
+         * @param s FP multiplier
+         */						
         tmul: function(s) {
             this.a.qmul(s);
             this.b.qmul(s);
         },
 
+	/**
+         * Calculate square root of an FP8
+         *
+         * @this {FP8}
+         */						
         sqrt: function() {
             if (this.iszilch()) {
                 return true;

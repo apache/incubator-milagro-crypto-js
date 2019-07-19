@@ -20,6 +20,12 @@
 var HASH384 = function(ctx) {
     "use strict";
 
+    /**
+      * Creates an instance of HASH384
+      *
+      * @constructor
+      * @this {HASH384}
+      */        
     var HASH384 = function() {
         this.length = [];
         this.h = [];
@@ -73,7 +79,11 @@ var HASH384 = function(ctx) {
             this.h[7].add(hh);
         },
 
-        /* Initialise Hash function */
+	/**
+         * Initialise Hash function
+         *
+         * @this {HASH384}
+         */	
         init: function() { /* initialise */
             var i;
 
@@ -92,7 +102,12 @@ var HASH384 = function(ctx) {
             this.h[7] = HASH384.H[7].copy();
         },
 
-        /* process a single byte */
+	/**
+         * Process a single byte
+         *
+         * @this {HASH384}
+         * @param byt byte to be included in hash
+         */	
         process: function(byt) { /* process the next message byte */
             var cnt, e;
 
@@ -113,14 +128,24 @@ var HASH384 = function(ctx) {
             }
         },
 
-        /* process an array of bytes */
+	/**
+         * Process an array of bytes
+         *
+         * @this {HASH384}
+         * @param b byte arrray to be included in hash
+         */	
         process_array: function(b) {
             for (var i = 0; i < b.length; i++) {
                 this.process(b[i]);
             }
         },
 
-        /* process a 32-bit integer */
+	/**
+         * Process a 32-bit integer 
+         *
+         * @this {HASH384}
+         * @param n Integer to be included in hash
+         */	
         process_num: function(n) {
             this.process((n >> 24) & 0xff);
             this.process((n >> 16) & 0xff);
@@ -128,6 +153,12 @@ var HASH384 = function(ctx) {
             this.process(n & 0xff);
         },
 
+	/**
+         * Generate 32-byte hash
+         *
+         * @this {HASH384}
+         * @return digest 32-byte hash
+         */			
         hash: function() { /* pad message and finish - supply digest */
             var digest = [],
                 len0, len1,

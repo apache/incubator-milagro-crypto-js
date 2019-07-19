@@ -24,7 +24,12 @@
 var FP4 = function(ctx) {
     "use strict";
 
-    /* general purpose constructor */
+    /**
+      * Creates an instance of FP4
+      *
+      * @constructor
+      * @this {FP4}
+      */
     var FP4 = function(c, d) {
         if (c instanceof FP4) {
             this.a = new ctx.FP2(c.a);
@@ -36,90 +41,164 @@ var FP4 = function(ctx) {
     };
 
     FP4.prototype = {
-        /* reduce all components of this mod Modulus */
+	
+	/**
+         * Reduces all components of possibly unreduced FP4 mod Modulus
+         *
+         * @this {FP4}
+         */
         reduce: function() {
             this.a.reduce();
             this.b.reduce();
         },
 
-        /* normalise all components of this mod Modulus */
+	/**
+         * Normalises the components of an FP4
+         *
+         * @this {FP4}
+         */
         norm: function() {
             this.a.norm();
             this.b.norm();
         },
 
-        /* test this==0 ? */
+	/**
+         * Tests for FP4 equal to zero
+         *
+         * @this {FP4}
+         */
         iszilch: function() {
             return (this.a.iszilch() && this.b.iszilch());
         },
 
-        /* test this==1 ? */
+	/**
+         * Tests for FP4 equal to unity
+         *
+         * @this {FP4}
+         */
         isunity: function() {
             var one = new ctx.FP2(1);
             return (this.a.equals(one) && this.b.iszilch());
         },
 
-        /* conditional copy of g to this depending on d */
+	/**
+         * Conditional copy of FP4 number
+         *
+         * @this {FP4}
+         * @param g FP4 instance
+         * @param d copy depends on this value
+         */
         cmove: function(g, d) {
             this.a.cmove(g.a, d);
             this.b.cmove(g.b, d);
         },
 
-        /* test is w real? That is in a+ib test b is zero */
+	/**
+         * test is w real? That is in a+ib test b is zero 
+         *
+         * @this {FP4}
+         */
         isreal: function() {
             return this.b.iszilch();
         },
 
-        /* extract real part a */
+	/**
+         * extract real part a
+         *
+         * @this {FP4}
+         */
         real: function() {
             return this.a;
         },
 
+	/**
+         * extract a from this
+         *
+         * @this {FP4}
+         */		
         geta: function() {
             return this.a;
         },
 
-        /* extract imaginary part b */
+	/**
+         * extract b from this
+         *
+         * @this {FP4}
+         */	
         getb: function() {
             return this.b;
         },
 
-        /* test this=x? */
+	/**
+         * Tests for equality of two FP4s
+         *
+         * @this {FP4}
+         * @param x FP4 instance to compare
+         */
         equals: function(x) {
             return (this.a.equals(x.a) && this.b.equals(x.b));
         },
 
-        /* copy this=x */
+	/**
+         * Copy FP4 to another FP4
+         *
+         * @this {FP4}
+         * @param x FP4 instance to be copied
+         */
         copy: function(x) {
             this.a.copy(x.a);
             this.b.copy(x.b);
         },
 
-        /* this=0 */
+	/**
+         * Set FP4 to zero
+         *
+         * @this {FP4}
+         */
         zero: function() {
             this.a.zero();
             this.b.zero();
         },
 
-        /* this=1 */
+	/**
+         * Set FP4 to unity
+         *
+         * @this {FP4}
+         * @param x FP4 instance to be set to one
+         */
         one: function() {
             this.a.one();
             this.b.zero();
         },
 
-        /* set from two FP2s */
+	/**
+         * Set FP4 from two FP2 values
+         *
+         * @this {FP4}
+         * @param c FP2 instance
+         * @param d FP2 instance
+         */
         set: function(c, d) {
             this.a.copy(c);
             this.b.copy(d);
         },
 
-        /* set a */
+	/**
+         * Set FP4 from one FP2 value
+         *
+         * @this {FP4}
+         * @param c FP2 instance
+         */
         seta: function(c) {
             this.a.copy(c);
             this.b.zero();
         },
 
-        /* this=-this */
+	/**
+         * Negation of FP4
+         *
+         * @this {FP4}
+         */
         neg: function() {
             this.norm();
             var m = new ctx.FP2(this.a), 
@@ -135,25 +214,43 @@ var FP4 = function(ctx) {
             this.norm();
         },
 
-        /* this=conjugate(this) */
+	/**
+         * Conjugation of FP4
+         *
+         * @this {FP4}
+         */
         conj: function() {
             this.b.neg();
             this.norm();
         },
 
-        /* this=-conjugate(this) */
+	/**
+         * Negative conjugation of FP4
+         *
+         * @this {FP4}
+         */
         nconj: function() {
             this.a.neg();
             this.norm();
         },
 
-        /* this+=x */
+	/**
+         * addition of two FP4s
+         *
+         * @this {FP4}
+         * @param x FP4 instance
+         */
         add: function(x) {
             this.a.add(x.a);
             this.b.add(x.b);
         },
 
-        /* this-=x */
+	/**
+         * subtraction of two FP4s
+         *
+         * @this {FP4}
+         * @param x FP4 instance
+         */
         sub: function(x) {
             var m = new FP4(x); 
             m.neg();
@@ -165,19 +262,33 @@ var FP4 = function(ctx) {
             this.add(x);
         },
 
-        /* this*=s where s is FP2 */
+	/**
+         * Multiplication of an FP4 by an FP8
+         *
+         * @this {FP4}
+         * @param s FP8 instance
+         */
         pmul: function(s) {
             this.a.mul(s);
             this.b.mul(s);
         },
 
-        /* this*=c where s is int */
+	/**
+         * Multiplication of an FP4 by an integer
+         *
+         * @this {FP4}
+         * @param s integer multiplier
+         */
         imul: function(c) {
             this.a.imul(c);
             this.b.imul(c);
         },
 
-        /* this*=this */
+	/**
+         * Fast Squaring of an FP4
+         *
+         * @this {FP4}
+         */
         sqr: function() {
             // this.norm();
 
@@ -211,7 +322,12 @@ var FP4 = function(ctx) {
             this.norm();
         },
 
-        /* this*=y */
+	/**
+         * Full unconditional Multiplication of two FP4s
+         *
+         * @this {FP4}
+         * @param y FP4 instance, the multiplier
+         */
         mul: function(y) {
             // this.norm();
 
@@ -247,12 +363,20 @@ var FP4 = function(ctx) {
             this.norm();
         },
 
-        /* convert to hex string */
+	/**
+         * convert to hex string
+         *
+         * @this {FP4}
+         */
         toString: function() {
             return ("[" + this.a.toString() + "," + this.b.toString() + "]");
         },
 
-        /* this=1/this */
+	/**
+         * Inverting an FP4
+         *
+         * @this {FP4}
+         */
         inverse: function() {
             this.norm();
 
@@ -271,7 +395,11 @@ var FP4 = function(ctx) {
             this.b.mul(t1);
         },
 
-        /* this*=i where i = sqrt(-1+sqrt(-1)) */
+	/**
+         * multiplies an FP4 instance by irreducible polynomial sqrt(1+sqrt(-1))
+         *
+         * @this {FP4}
+         */
         times_i: function() {
             var s = new ctx.FP2(this.b), //s.copy(this.b);
                 t = new ctx.FP2(this.b); //t.copy(this.b);
@@ -283,14 +411,24 @@ var FP4 = function(ctx) {
             this.norm();
         },
 
-        /* this=this^q using Frobenius, where q is Modulus */
+	/**
+         * Raises an FP4 to the power of the internal modulus p, using the Frobenius
+         *
+         * @this {FP4}
+         * @param f Modulus
+         */
         frob: function(f) {
             this.a.conj();
             this.b.conj();
             this.b.mul(f);
         },
 
-        /* this=this^e */
+	/**
+         * Raises an FP4 to the power of a BIG
+         *
+         * @this {FP4}
+         * @param e BIG instance exponent
+         */
         pow: function(e) {
             var w = new FP4(this), 
                 z = new ctx.BIG(e), 
@@ -317,7 +455,14 @@ var FP4 = function(ctx) {
             return r;
         },
 
-        /* XTR xtr_a function */
+	/**
+         * Calculates the XTR addition function r=w*x-conj(x)*y+z
+         *
+         * @this {FP4}
+         * @param w FP4 instance
+         * @param y FP4 instance
+         * @param z FP4 instance
+         */
         xtr_A: function(w, y, z) {
             var r = new FP4(w), 
                 t = new FP4(w); 
@@ -338,7 +483,11 @@ var FP4 = function(ctx) {
             this.reduce();
         },
 
-        /* XTR xtr_d function */
+	/**
+         * Calculates the XTR doubling function r=x^2-2*conj(x)
+         *
+         * @this {FP4}
+         */
         xtr_D: function() {
             var w = new FP4(this); 
             this.sqr();
@@ -348,7 +497,12 @@ var FP4 = function(ctx) {
             this.reduce();
         },
 
-        /* r=x^n using XTR method on traces of FP12s */
+	/**
+         * Calculates FP4 trace of an FP4 raised to the power of a BIG number
+         *
+         * @this {FP4}
+         * @param n Big number
+         */
         xtr_pow: function(n) {
 			var sf = new FP4(this);
 			sf.norm();
@@ -404,7 +558,11 @@ var FP4 = function(ctx) {
             return r;
         },
 
-        /* r=ck^a.cl^n using XTR double exponentiation method on traces of FP12s. See Stam thesis. */
+	/**
+         * Calculates FP4 trace of c^a.d^b, where c and d are derived from FP4 traces of FP4s
+         *
+         * @this {FP4}
+         */
         xtr_pow2: function(ck, ckml, ckm2l, a, b) {
  
             var e = new ctx.BIG(a), 
@@ -554,11 +712,21 @@ var FP4 = function(ctx) {
 
         /* New stuff for ecp4.js */
 
+	/**
+         * Divide an FP4 by 2
+         *
+         * @this {FP4}
+         */	
         div2: function() {
             this.a.div2();
             this.b.div2();
         },
 
+	/**
+         * Divide FP4 number by QNR
+         *
+         * @this {FP4}
+         */		
         div_i: function() {
             var u=new ctx.FP2(this.a),
                 v=new ctx.FP2(this.b);
@@ -567,6 +735,11 @@ var FP4 = function(ctx) {
             this.b.copy(u);
         },
 
+	/**
+         * Divide an FP4 by QNR/2
+         *
+         * @this {FP4}
+         */			
         div_2i: function() {
             var u=new ctx.FP2(this.a),
                 v=new ctx.FP2(this.b);
@@ -576,11 +749,22 @@ var FP4 = function(ctx) {
             this.b.copy(u);
         },
 
+	/**
+         * Multiplication of an FP4 by an FP
+         *
+         * @this {FP4}
+         * @param s FP multiplier
+         */				
         qmul: function(s) {
             this.a.pmul(s);
             this.b.pmul(s);
         },
 
+	/**
+         * Calculate square root of an FP4
+         *
+         * @this {FP4}
+         */					
         sqrt: function() {
             if (this.iszilch()) {
                 return true;

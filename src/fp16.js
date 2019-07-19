@@ -24,7 +24,12 @@
 var FP16 = function(ctx) {
     "use strict";
 
-    /* general purpose constructor */
+    /**
+      * Creates an instance of FP16.
+      *
+      * @constructor
+      * @this {FP16}
+      */
     var FP16 = function(c, d) {
         if (c instanceof FP16) {
             this.a = new ctx.FP8(c.a);
@@ -36,90 +41,164 @@ var FP16 = function(ctx) {
     };
 
     FP16.prototype = {
-        /* reduce all components of this mod Modulus */
+	
+	/**
+         * Reduces all components of possibly unreduced FP16 mod Modulus
+         *
+         * @this {FP16}
+         */
         reduce: function() {
             this.a.reduce();
             this.b.reduce();
         },
 
-        /* normalise all components of this mod Modulus */
+	/**
+         * Normalises the components of an FP16
+         *
+         * @this {FP16}
+         */
         norm: function() {
             this.a.norm();
             this.b.norm();
         },
 
-        /* test this==0 ? */
+	/**
+         * Tests for FP16 equal to zero
+         *
+         * @this {FP16}
+         */
         iszilch: function() {
             return (this.a.iszilch() && this.b.iszilch());
         },
 
-        /* test this==1 ? */
+	/**
+         * Tests for FP16 equal to unity
+         *
+         * @this {FP16}
+         */
         isunity: function() {
             var one = new ctx.FP8(1);
             return (this.a.equals(one) && this.b.iszilch());
         },
 
-        /* conditional copy of g to this depending on d */
+	/**
+         * Conditional copy of FP16 number
+         *
+         * @this {FP16}
+         * @param g FP16 instance
+         * @param d copy depends on this value
+         */
         cmove: function(g, d) {
             this.a.cmove(g.a, d);
             this.b.cmove(g.b, d);
         },
 
-        /* test is w real? That is in a+ib test b is zero */
+	/**
+         * test is w real? That is in a+ib test b is zero 
+         *
+         * @this {FP16}
+         */
         isreal: function() {
             return this.b.iszilch();
         },
 
-        /* extract real part a */
+	/**
+         * extract real part a
+         *
+         * @this {FP16}
+         */
         real: function() {
             return this.a;
         },
 
+	/**
+         * extract a from this
+         *
+         * @this {FP16}
+         */	
         geta: function() {
             return this.a;
         },
 
-        /* extract imaginary part b */
+	/**
+         * extract b from this
+         *
+         * @this {FP16}
+         */
         getb: function() {
             return this.b;
         },
 
-        /* test this=x? */
+	/**
+         * Tests for equality of two FP16s
+         *
+         * @this {FP16}
+         * @param x FP16 instance to compare
+         */
         equals: function(x) {
             return (this.a.equals(x.a) && this.b.equals(x.b));
         },
 
-        /* copy this=x */
+	/**
+         * Copy FP16 to another FP16
+         *
+         * @this {FP16}
+         * @param x FP16 instance to be copied
+         */
         copy: function(x) {
             this.a.copy(x.a);
             this.b.copy(x.b);
         },
 
-        /* this=0 */
+	/**
+         * Set FP16 to zero
+         *
+         * @this {FP16}
+         */
         zero: function() {
             this.a.zero();
             this.b.zero();
         },
 
-        /* this=1 */
+	/**
+         * Set FP16 to unity
+         *
+         * @this {FP16}
+         * @param x FP16 instance to be set to one
+         */
         one: function() {
             this.a.one();
             this.b.zero();
         },
 
-        /* set from two FP8s */
+	/**
+         * Set FP16 from two FP8 values
+         *
+         * @this {FP16}
+         * @param c FP8 instance
+         * @param d FP8 instance
+         */
         set: function(c, d) {
             this.a.copy(c);
             this.b.copy(d);
         },
 
-        /* set a */
+	/**
+         * Set FP16 from one FP8 value
+         *
+         * @this {FP16}
+         * @param c FP8 instance
+         */
         seta: function(c) {
             this.a.copy(c);
             this.b.zero();
         },
 
-        /* this=-this */
+	/**
+         * this=-this
+         *
+         * @this {FP16}
+         */
         neg: function() {
             var m = new ctx.FP8(this.a), 
                 t = new ctx.FP8(0);
@@ -136,50 +215,87 @@ var FP16 = function(ctx) {
             this.norm();
         },
 
-        /* this=conjugate(this) */
+	/**
+         * Conjugation of FP16
+         *
+         * @this {FP16}
+         */
         conj: function() {
             this.b.neg();
             this.norm();
         },
 
-        /* this=-conjugate(this) */
+	/**
+         * Negative conjugation of FP16
+         *
+         * @this {FP16}
+         */
         nconj: function() {
             this.a.neg();
             this.norm();
         },
 
-        /* this+=x */
+	/**
+         * addition of two FP16s
+         *
+         * @this {FP16}
+         * @param x FP16 instance
+         */
         add: function(x) {
             this.a.add(x.a);
             this.b.add(x.b);
         },
 
-        /* this-=x */
+	/**
+         * subtraction of two FP16s
+         *
+         * @this {FP16}
+         * @param x FP16 instance
+         */
         sub: function(x) {
             var m = new FP16(x); 
             m.neg();
             this.add(m);
         },
 
-        /* this*=s where s is FP8 */
+	/**
+         * Multiplication of an FP16 by an FP8
+         *
+         * @this {FP16}
+         * @param s FP8 instance
+         */
         pmul: function(s) {
             this.a.mul(s);
             this.b.mul(s);
         },
 
-        /* this*=s where s is FP2 */
+	/**
+         * Multiplication of an FP16 by an FP2
+         *
+         * @this {FP16}
+         * @param s FP2 instance
+         */
         qmul: function(s) {
             this.a.qmul(s);
             this.b.qmul(s);
         },
 
-        /* this*=c where s is int */
+	/**
+         * Multiplication of an FP16 by a small integer
+         *
+         * @this {FP16}
+         * @param s integer
+         */
         imul: function(c) {
             this.a.imul(c);
             this.b.imul(c);
         },
 
-        /* this*=this */
+	/**
+         * Fast Squaring of an FP16
+         *
+         * @this {FP16}
+         */
         sqr: function() {
             var t1 = new ctx.FP8(this.a), 
                 t2 = new ctx.FP8(this.b), 
@@ -210,7 +326,12 @@ var FP16 = function(ctx) {
             this.norm();
         },
 
-        /* this*=y */
+	/**
+         * Full unconditional Multiplication of two FP16s
+         *
+         * @this {FP16}
+         * @param y FP16 instance, the multiplier
+         */
         mul: function(y) {
 
             var t1 = new ctx.FP8(this.a), 
@@ -245,12 +366,20 @@ var FP16 = function(ctx) {
             this.norm();
         },
 
-        /* convert to hex string */
+	/**
+         * convert this to hex string
+         *
+         * @this {FP16}
+         */
         toString: function() {
             return ("[" + this.a.toString() + "," + this.b.toString() + "]");
         },
 
-        /* this=1/this */
+	/**
+         * Inverting an FP16
+         *
+         * @this {FP16}
+         */
         inverse: function() {
             //this.norm();
 
@@ -269,7 +398,11 @@ var FP16 = function(ctx) {
             this.b.mul(t1);
         },
 
-        /* this*=i where i = sqrt(-1+sqrt(-1)) */
+	/**
+         * multiplies an FP16 instance by irreducible polynomial sqrt(1+sqrt(-1))
+         *
+         * @this {FP16}
+         */
         times_i: function() {
             var s = new ctx.FP8(this.b),
                 t = new ctx.FP8(this.a);
@@ -281,18 +414,33 @@ var FP16 = function(ctx) {
             this.norm();
         },
 
+	/**
+         * multiplies an FP16 instance by irreducible polynomial (1+sqrt(-1))
+         *
+         * @this {FP16}
+         */
         times_i2: function() {
             this.a.times_i();
             this.b.times_i();
         },
 
+	/**
+         * multiplies an FP16 instance by irreducible polynomial (1+sqrt(-1))
+         *
+         * @this {FP16}
+         */
         times_i4: function() {
             this.a.times_i2();
             this.b.times_i2();
         },
 
 
-        /* this=this^q using Frobenius, where q is Modulus */
+	/**
+         * Raises an FP16 to the power of the internal modulus p, using the Frobenius
+         *
+         * @this {FP16}
+         * @param f Modulus
+         */
         frob: function(f) {
             var ff=new ctx.FP2(f); ff.sqr(); ff.norm();
             this.a.frob(ff);
@@ -301,7 +449,12 @@ var FP16 = function(ctx) {
             this.b.times_i();
         },
 
-        /* this=this^e */
+	/**
+         * Raises an FP16 to the power of a BIG
+         *
+         * @this {FP16}
+         * @param e BIG instance exponent
+         */
         pow: function(e) {
             
             var w = new FP16(this), 
@@ -329,7 +482,14 @@ var FP16 = function(ctx) {
             return r;
         },
 
-        /* XTR xtr_a function */
+	/**
+         * Calculates the XTR addition function r=w*x-conj(x)*y+z
+         *
+         * @this {FP16}
+         * @param w FP16 instance
+         * @param y FP16 instance
+         * @param z FP16 instance
+         */
         xtr_A: function(w, y, z) {
             var r = new FP16(w), 
                 t = new FP16(w); 
@@ -349,7 +509,11 @@ var FP16 = function(ctx) {
             this.reduce();
         },
 
-        /* XTR xtr_d function */
+	/**
+         * Calculates the XTR doubling function r=x^2-2*conj(x)
+         *
+         * @this {FP16}
+         */
         xtr_D: function() {
             var w = new FP16(this); 
             this.sqr();
@@ -359,7 +523,12 @@ var FP16 = function(ctx) {
             this.reduce();
         },
 
-        /* r=x^n using XTR method on traces of FP12s */
+	/**
+         * Calculates FP16 trace of an FP16 raised to the power of a BIG number
+         *
+         * @this {FP16}
+         * @param n Big number
+         */
         xtr_pow: function(n) {
 			var sf = new FP16(this);
 			sf.norm();
@@ -414,7 +583,11 @@ var FP16 = function(ctx) {
             return r;
         },
 
-        /* r=ck^a.cl^n using XTR double exponentiation method on traces of FP12s. See Stam thesis. */
+	/**
+         * Calculates FP16 trace of c^a.d^b, where c and d are derived from FP16 traces of FP16s
+         *
+         * @this {FP16}
+         */
         xtr_pow2: function(ck, ckml, ckm2l, a, b) {
 
             var e = new ctx.BIG(a), 

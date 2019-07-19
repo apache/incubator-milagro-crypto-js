@@ -22,12 +22,27 @@
 var UInt64 = function() {
     "use strict";
 
+    /**
+      * Creates an instance of UInt64. Rudimentary unsigned 64-bit type for SHA384 and SHA512 
+      *
+      * @constructor
+      * @this {UInt64}
+      * @param top Top 32 bits
+      * @param bot Bottom 32 bits
+      */                
     var UInt64 = function(top, bot) {
         this.top = top;
         this.bot = bot;
     };
 
     UInt64.prototype = {
+
+	/**
+         * Add value
+         *
+         * @this {UInt64}
+         * @param y UInt64 value
+         */				
         add: function(y) {
             var t = (this.bot >>> 0) + (y.bot >>> 0),
                 low = t >>> 0,
@@ -44,11 +59,21 @@ var UInt64 = function() {
             return this;
         },
 
+	/**
+         * Copy value
+         *
+         * @this {UInt64}
+         */					
         copy: function() {
             var r = new UInt64(this.top, this.bot);
             return r;
         },
 
+	/**
+         * Shift left
+         *
+         * @this {UInt64}
+         */						
         shlb: function() {
             var t = this.bot >>> 24;
             this.top = t + (this.top << 8);

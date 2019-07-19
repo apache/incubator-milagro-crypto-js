@@ -22,7 +22,12 @@
 var ECP4 = function(ctx) {
     "use strict";
 
-    /* Constructor */
+    /**
+     * Creates an instance of ECP4
+     *
+     * @constructor
+     * @this {ECP4}
+    */    
     var ECP4 = function(input) {
         if (input instanceof ECP4) {
             // copy constructor
@@ -38,7 +43,13 @@ var ECP4 = function(ctx) {
     };
 
     ECP4.prototype = {
-        /* Test this=O? */
+	
+        /**
+         * Tests for ECP4 point equal to infinity
+         *
+         * @this {ECP4}
+         * @param 1 if infinity, else returns 0
+         */	
         is_infinity: function() {
             this.x.reduce();
             this.y.reduce();
@@ -46,21 +57,34 @@ var ECP4 = function(ctx) {
             return (this.x.iszilch() && this.z.iszilch());
         },
 
-        /* copy this=P */
+	/**
+         * Copy ECP4 point to another ECP4 point
+         *
+         * @this {ECP4}
+         * @param P ECP4 instance
+         */	
         copy: function(P) {
             this.x.copy(P.x);
             this.y.copy(P.y);
             this.z.copy(P.z);
         },
 
-        /* set this=O */
+	/**
+         * conditional move of Q to P dependant on d 
+         *
+         * @this {ECP4}
+         */	
         inf: function() {
             this.x.zero();
             this.y.one();
             this.z.zero();
         },
 
-        /* conditional move of Q to P dependant on d */
+	/**
+         * conditional move of Q to P dependant on d 
+         *
+         * @this {ECP4}
+         */	
         cmove: function(Q, d) {
             this.x.cmove(Q.x, d);
             this.y.cmove(Q.y, d);
@@ -68,7 +92,11 @@ var ECP4 = function(ctx) {
 
         },
 
-        /* Constant time select from pre-computed table */
+	/**
+         * Constant time select from pre-computed table 
+         *
+         * @this {ECP4}
+         */	
         select: function(W, b) {
             var MP = new ECP4(),
                 m = b >> 31,
@@ -90,7 +118,12 @@ var ECP4 = function(ctx) {
             this.cmove(MP, (m & 1));
         },
 
-        /* Test P == Q */
+	/**
+         * Test P == Q 
+         *
+         * @this {ECP4}
+         * @param Q ECP4 instance 
+         */	
         equals: function(Q) {
             var a, b;
 
@@ -114,7 +147,11 @@ var ECP4 = function(ctx) {
             return true;
         },
 
-        /* set this=-this */
+	/**
+         * set this=-this 
+         *
+         * @this {ECP4}
+         */	
         neg: function() {
             this.y.norm();
             this.y.neg();
@@ -122,7 +159,11 @@ var ECP4 = function(ctx) {
             return;
         },
 
-        /* convert this to affine, from (x,y,z) to (x,y) */
+	/**
+         * convert this to affine, from (x,y,z) to (x,y) 
+         *
+         * @this {ECP4}
+         */	
         affine: function() {
             var one;
 
@@ -147,34 +188,59 @@ var ECP4 = function(ctx) {
             this.z.copy(one);
         },
 
-        /* extract affine x as ctx.FP4 */
+	/**
+         * extract affine x as ctx.FP2 
+         *
+         * @this {ECP4}
+         */	
         getX: function() {
 			var W=new ECP4(); W.copy(this); W.affine();
             return W.x;
         },
 
-        /* extract affine y as ctx.FP4 */
+	/**
+         * extract affine y as ctx.FP2
+         *
+         * @this {ECP4}
+         */	
         getY: function() {
 			var W=new ECP4(); W.copy(this); W.affine();
             return W.y;
         },
 
-        /* extract projective x */
+	/**
+         * extract projective x
+         *
+         * @this {ECP4}
+         */	
         getx: function() {
             return this.x;
         },
 
-        /* extract projective y */
+	/**
+         * extract projective y
+         *
+         * @this {ECP4}
+         */	
         gety: function() {
             return this.y;
         },
 
-        /* extract projective z */
+	/**
+         * extract projective z
+         *
+         * @this {ECP4}
+         */	
         getz: function() {
             return this.z;
         },
 
-        /* convert this to byte array */
+	/**
+         * convert this to byte arrayextract projective x
+         *
+         * @this {ECP4}
+         * @param b byte array output
+         */	
         toBytes: function(b) {
             var t = [],
                 i;
@@ -216,7 +282,12 @@ var ECP4 = function(ctx) {
             }
         },
 
-        /* convert this to hex string */
+	/**
+         * convert this to hex string 
+         *
+         * @this {ECP4}
+         * @return hex string
+         */	
         toString: function() {
 			var W=new ECP4(); W.copy(this);
             if (W.is_infinity()) {
@@ -226,7 +297,13 @@ var ECP4 = function(ctx) {
             return "(" + W.x.toString() + "," + W.y.toString() + ")";
         },
 
-        /* set this=(x,y) */
+	/**
+         * set this=(x,y)
+         *
+         * @this {ECP4}
+         * @param ix x-value
+         * @param iy y-value
+         */	
         setxy: function(ix, iy) {
             var rhs, y2;
 
@@ -246,7 +323,12 @@ var ECP4 = function(ctx) {
 
         },
 
-        /* set this=(x,.) */
+	/**
+         * set this=(x,.) 
+         *
+         * @this {ECP4}
+         * @param ix x-value
+         */	
         setx: function(ix) {
             var rhs;
 
@@ -262,7 +344,11 @@ var ECP4 = function(ctx) {
             }
         },
 
-        /* set this*=q, where q is Modulus, using Frobenius */
+	/**
+         * set this*=q, where q is Modulus, using Frobenius 
+         *
+         * @this {ECP4}
+         */	
         frob: function(F,n) {
             for (var i=0;i<n;i++) {
                 this.x.frob(F[2]);
@@ -276,7 +362,11 @@ var ECP4 = function(ctx) {
             }
         },
 
-        /* this+=this */
+	/**
+         * this+=this 
+         *
+         * @this {ECP4}
+         */	
         dbl: function() {
             var iy, t0, t1, t2, x3, y3;
 
@@ -338,7 +428,12 @@ var ECP4 = function(ctx) {
             return 1;
         },
 
-        /* this+=Q */
+	/**
+         * Adds ECP4 instances
+         *
+         * param Q ECP4 instance
+         * @this {ECP4}
+         */		
         add: function(Q) {
             var b, t0, t1, t2, t3, t4, x3, y3, z3;
 
@@ -441,7 +536,12 @@ var ECP4 = function(ctx) {
             return 0;
         },
 
-        /* this-=Q */
+	/**
+         * Subtracts ECP instance Q  from this
+         *
+         * @this {ECP4}
+         * @param Q ECP4 instance
+         */	
         sub: function(Q) {
             var D;
 			var NQ=new ECP4(); NQ.copy(Q);
@@ -450,7 +550,12 @@ var ECP4 = function(ctx) {
             return D;
         },
 
-        /* P*=e */
+	/**
+         * Multiplies an ECP4 instance P by a BIG, side-channel resistant
+         *
+         * @this {ECP4}
+         * @param e BIG number multiplier
+         */		
         mul: function(e) {
             /* fixed size windows */
             var mt = new ctx.BIG(),
@@ -518,7 +623,11 @@ var ECP4 = function(ctx) {
         }
     };
 
-    // set to group generator
+    /**
+      * Set group generator
+      *
+      * @this {ECP4}
+      */	
     ECP4.generator = function() {
         var G=new ECP4(),
             A = new ctx.BIG(0),
@@ -550,7 +659,12 @@ var ECP4 = function(ctx) {
         return G;
     };
 
-    /* convert from byte array to point */
+    /**
+      * convert from byte array to point 
+      *
+      * @this {ECP4}
+      * @param b input byte array
+      */	    
     ECP4.fromBytes = function(b) {
         var t = [],
             ra, rb, ra4, rb4, i, rx, ry, P;
@@ -606,7 +720,12 @@ var ECP4 = function(ctx) {
         return P;
     };
 
-    /* Calculate RHS of curve equation x^3+B */
+    /**
+      * Calculate RHS of curve equation x^3+B
+      *
+      * @this {ECP4}
+      * @param x x-value
+      */	    
     ECP4.RHS = function(x) {
         var r, c, b;
 
@@ -636,6 +755,12 @@ var ECP4 = function(ctx) {
     // Bos & Costello https://eprint.iacr.org/2013/458.pdf
     // Faz-Hernandez & Longa & Sanchez  https://eprint.iacr.org/2013/158.pdf
     // Side channel attack secure
+
+    /**
+      * Calculate P=u0.Q0+u1*Q1+u2*Q2+u3*Q3... 
+      *
+      * @this {ECP4}
+      */ 
     ECP4.mul8 = function(Q, u) {
         var W = new ECP4(),
             P = new ECP4(),

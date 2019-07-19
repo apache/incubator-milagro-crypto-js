@@ -23,7 +23,13 @@
 var FP = function(ctx) {
     "use strict";
 
-    /* General purpose Constructor */
+    /**
+      * Creates an instance of FP.
+      *
+      * @constructor
+      * @this {FP}
+      * @param x FP / BIG instance
+      */
     var FP = function(x) {
         if (x instanceof FP) {
             this.f = new ctx.BIG(x.f);
@@ -57,31 +63,57 @@ var FP = function(ctx) {
     FP.TMASK = (1 << FP.TBITS) - 1;
 
     FP.prototype = {
-        /* set this=0 */
+	
+	/**
+         * Set FP to zero
+         *
+         * @this {FP}
+         */
         zero: function() {
             this.XES = 1;
             this.f.zero();
         },
 
-        /* copy from a ctx.BIG in ROM */
+	/**
+         * copy from a ctx.BIG in ROM 
+         *
+         * @this {FP}
+         * @param x FP instance to be copied
+         */
         rcopy: function(y) {
             this.f.rcopy(y);
             this.nres();
         },
 
-        /* copy from another ctx.BIG */
+	/**
+         * copy from another ctx.BIG 
+         *
+         * @this {FP}
+         * @param x FP instance to be copied
+         */
         bcopy: function(y) {
             this.f.copy(y);
             this.nres();
         },
 
-        /* copy from another FP */
+	/**
+         * Copy FP to another FP
+         *
+         * @this {FP}
+         * @param x FP instance to be copied
+         */
         copy: function(y) {
             this.XES = y.XES;
             this.f.copy(y.f);
         },
 
-        /* conditional swap of a and b depending on d */
+	/**
+         * Conditional constant time swap of two FP numbers
+         *
+         * @this {BIG}
+         * @parameter b FP number 
+         * @parameter d Integer
+         */		
         cswap: function(b, d) {
             this.f.cswap(b.f, d);
             var t, c = d;
@@ -91,7 +123,13 @@ var FP = function(ctx) {
             b.XES ^= t;
         },
 
-        /* conditional copy of b to a depending on d */
+	/**
+         * Conditional copy of FP number
+         *
+         * @this {FP}
+         * @param g FP instance
+         * @param d copy depends on this value
+         */
         cmove: function(b, d) {
             var c = d;
 
@@ -101,7 +139,11 @@ var FP = function(ctx) {
             this.XES ^= (this.XES ^ b.XES) & c;
         },
 
-        /* convert to Montgomery n-residue form */
+	/**
+         * Converts from BIG integer to residue form mod Modulus
+         *
+         * @this {FP}
+         */
         nres: function() {
             var r, d;
 
@@ -119,7 +161,11 @@ var FP = function(ctx) {
             return this;
         },
 
-        /* convert back to regular form */
+	/**
+         * Converts from residue form back to BIG integer form
+         *
+         * @this {FP}
+         */
         redc: function() {
             var r = new ctx.BIG(0),
                 d, w;
@@ -136,20 +182,32 @@ var FP = function(ctx) {
             return r;
         },
 
-        /* convert this to string */
+	/**
+         * convert to hex string
+         *
+         * @this {FP}
+         */
         toString: function() {
             var s = this.redc().toString();
             return s;
         },
 
-        /* test this=0 */
+	/**
+         * Tests for FP equal to zero
+         *
+         * @this {FP}
+         */
         iszilch: function() {
 			var c=new FP(0); c.copy(this);
             c.reduce();
             return c.f.iszilch();
         },
 
-        /* reduce this mod Modulus */
+	/**
+         * Reduces all components of possibly unreduced FP mod Modulus
+         *
+         * @this {FP}
+         */
         reduce: function() {
             var q,carry,sr,sb,m = new ctx.BIG(0);
             m.rcopy(ctx.ROM_FIELD.Modulus);
@@ -182,18 +240,31 @@ var FP = function(ctx) {
             this.XES = 1;
         },
 
-        /* set this=1 */
+	/**
+         * Set FP to unity
+         *
+         * @this {FP}
+         */
         one: function() {
             this.f.one();
             this.nres();
         },
 
-        /* normalise this */
+	/**
+         * Normalises the components of an FP
+         *
+         * @this {FP}
+         */
         norm: function() {
             return this.f.norm();
         },
 
-        /* this*=b mod Modulus */
+	/**
+         * Fast Modular multiplication of two FPs, mod Modulus
+         *
+         * @this {FP}
+         * @param b FP number, the multiplier
+         */
         mul: function(b) {
             var d;
 
@@ -208,7 +279,12 @@ var FP = function(ctx) {
             return this;
         },
 
-        /* this*=c mod Modulus where c is an int */
+	/**
+         * Multiplication of an FP by a small integer
+         *
+         * @this {FP}
+         * @param s integer
+         */
         imul: function(c) {
             var s = false,
                 d, n;
@@ -239,7 +315,11 @@ var FP = function(ctx) {
             return this;
         },
 
-        /* this*=this mod Modulus */
+	/**
+         * Fast Squaring of an FP
+         *
+         * @this {FP}
+         */
         sqr: function() {
             var d, t;
 
@@ -266,7 +346,13 @@ var FP = function(ctx) {
 
             return this;
         },
-        /* this=-this mod Modulus */
+	
+	/**
+         * negate this
+         *
+         * @this {FP}
+         * @param x FP instance to be set to one
+         */
         neg: function() {
             var m = new ctx.BIG(0),
                 sb;
@@ -286,7 +372,12 @@ var FP = function(ctx) {
             return this;
         },
 
-        /* this-=b */
+	/**
+         * subtraction of two FPs
+         *
+         * @this {FP}
+         * @param x FP instance
+         */
         sub: function(b) {
             var n = new FP(0);
 
@@ -306,7 +397,11 @@ var FP = function(ctx) {
             this.add(n);
         },
 
-        /* this/=2 mod Modulus */
+	/**
+         * Divide an FP by 2
+         *
+         * @this {FP}
+         */
         div2: function() {
             var p;
 
@@ -325,8 +420,14 @@ var FP = function(ctx) {
         },
 
 // return this^(p-3)/4 or this^(p-5)/8
-// See https://eprint.iacr.org/2018/1038
-		fpow: function() {
+	// See https://eprint.iacr.org/2018/1038
+
+	/**
+         * return this^(p-3)/4 or this^(p-5)/8
+         *
+         * @this {FP}
+         */	
+	fpow: function() {
 			var i,j,k,bw,w,c,nw,lo,m,n;
 			var xp=[];
 			var ac=[1,2,3,6,12,15,30,60,120,240,255];
@@ -427,7 +528,11 @@ var FP = function(ctx) {
 			return r;
 		},
 
-        /* this=1/this mod Modulus */
+	/**
+         * Inverting an FP
+         *
+         * @this {FP}
+         */
         inverse: function() {
 
 			if (FP.MODTYPE == FP.PSEUDO_MERSENNE || FP.MODTYPE == FP.GENERALISED_MERSENNE)
@@ -454,7 +559,12 @@ var FP = function(ctx) {
 			}
         },
 
-        /* return TRUE if this==a */
+	/**
+         * Tests for equality of two FP instances
+         *
+         * @this {FP}
+         * @param x FP instance to compare
+         */
         equals: function(a) {
 			var ft=new FP(0); ft.copy(this);
 			var sd=new FP(0); sd.copy(a);
@@ -468,7 +578,12 @@ var FP = function(ctx) {
             return false;
         },
 
-        /* return this^e mod Modulus */
+	/**
+         * Raises an FP to the power of a BIG
+         *
+         * @this {FP}
+         * @param e BIG instance exponent
+         */
         pow: function(e) {
             var i,w=[],
                 tb=[],
@@ -503,7 +618,11 @@ var FP = function(ctx) {
             return r;
         },
 
-        /* return jacobi symbol (this/Modulus) */
+	/**
+         * return jacobi symbol (this/Modulus)
+         *
+         * @this {FP}
+         */
         jacobi: function() {
             var p = new ctx.BIG(0),
                 w = this.redc();
@@ -513,7 +632,11 @@ var FP = function(ctx) {
             return w.jacobi(p);
         },
 
-        /* return sqrt(this) mod Modulus */
+	/**
+         * Fast Modular square root of a an FP, mod Modulus
+         *
+         * @this {FP}
+         */
         sqrt: function() {
             var i, v, r;
 
@@ -590,7 +713,11 @@ var FP = function(ctx) {
 		return Math.floor(num/(den+1))
 	};
 
-    /* reduce a ctx.DBIG to a ctx.BIG using a "special" modulus */
+    /**
+      * reduce a ctx.DBIG to a ctx.BIG using a "special" modulus 
+      *
+      * @this {FP}
+      */    
     FP.mod = function(d) {
         var b = new ctx.BIG(0),
             i, t, v, tw, tt, lo, carry, m, dd;

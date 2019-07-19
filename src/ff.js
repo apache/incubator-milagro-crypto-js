@@ -22,7 +22,12 @@
 var FF = function(ctx) {
     "use strict";
 
-    /* General purpose Constructor */
+    /**
+      * Creates an instance of FF.
+      *
+      * @constructor
+      * @this {FF}
+      */
     var FF = function(n) {
         this.v = new Array(n);
         this.length = n;
@@ -58,32 +63,59 @@ var FF = function(ctx) {
             return this.length;
         },
 
-        /* set to integer */
+	/**
+         * set to integer 
+         *
+         * @this {FF}
+         * @param m  Integer value to be set to
+         */
         set: function(m) {
             this.zero();
             this.v[0].set(0, (m & ctx.BIG.BMASK));
             this.v[0].set(1, (m >> ctx.BIG.BASEBITS));
         },
-        /* copy from FF b */
+
+	/**
+         * copy from FF b 
+         *
+         * @this {FF}
+         * @param b  FF element to copy from
+         */
         copy: function(b) {
             for (var i = 0; i < this.length; i++) {
                 this.v[i].copy(b.v[i]);
             }
         },
-        /* copy from FF b */
+	
+	/**
+         * copy from FF b 
+         *
+         * @this {FF}
+         * @param b  FF element to copy from
+         */
         rcopy: function(b) {
             for (var i = 0; i < this.length; i++) {
                 this.v[i].rcopy(b[i]);
             }
         },
-        /* x=y<<n */
+	
+	/**
+         * x=y<<n 
+         *
+         * @this {FF}
+         */
         dsucopy: function(b) {
             for (var i = 0; i < b.length; i++) {
                 this.v[b.length + i].copy(b.v[i]);
                 this.v[i].zero();
             }
         },
-        /* x=y */
+	
+	/**
+         * x=y
+         *
+         * @this {FF}
+         */
         dscopy: function(b) {
             for (var i = 0; i < b.length; i++) {
                 this.v[i].copy(b.v[i]);
@@ -91,19 +123,29 @@ var FF = function(ctx) {
             }
         },
 
-        /* x=y>>n */
+	/**
+         * x=y>>n 
+         *
+         * @this {FF}
+         */
         sducopy: function(b) {
             for (var i = 0; i < this.length; i++) {
                 this.v[i].copy(b.v[this.length + i]);
             }
         },
+	
         one: function() {
             this.v[0].one();
             for (var i = 1; i < this.length; i++) {
                 this.v[i].zero();
             }
         },
-        /* test equals 0 */
+	
+	/**
+         * test equals 0
+         *
+         * @this {FF}
+         */
         iszilch: function() {
             for (var i = 0; i < this.length; i++) {
                 if (!this.v[i].iszilch()) {
@@ -113,7 +155,12 @@ var FF = function(ctx) {
 
             return true;
         },
-        /* shift right by BIGBITS-bit words */
+	
+	/**
+         * shift right by BIGBITS-bit words
+         *
+         * @this {FF}
+         */
         shrw: function(n) {
             for (var i = 0; i < n; i++) {
                 this.v[i].copy(this.v[i + n]);
@@ -121,14 +168,23 @@ var FF = function(ctx) {
             }
         },
 
-        /* shift left by BIGBITS-bit words */
+	/**
+         * shift left by BIGBITS-bit words
+         *
+         * @this {FF}
+         */
         shlw: function(n) {
             for (var i = 0; i < n; i++) {
                 this.v[n + i].copy(this.v[i]);
                 this.v[i].zero();
             }
         },
-        /* extract last bit */
+	
+	/**
+         * extract last bit
+         *
+         * @this {FF}
+         */
         parity: function() {
             return this.v[0].parity();
         },
@@ -137,7 +193,11 @@ var FF = function(ctx) {
             return this.v[0].lastbits(m);
         },
 
-        /* recursive add */
+	/**
+         * recursive add
+         *
+         * @this {FF}
+         */
         radd: function(vp, x, xp, y, yp, n) {
             for (var i = 0; i < n; i++) {
                 this.v[vp + i].copy(x.v[xp + i]);
@@ -145,14 +205,22 @@ var FF = function(ctx) {
             }
         },
 
-        /* recursive inc */
+	/**
+         * recursive inc
+         *
+         * @this {FF}
+         */
         rinc: function(vp, y, yp, n) {
             for (var i = 0; i < n; i++) {
                 this.v[vp + i].add(y.v[yp + i]);
             }
         },
 
-        /* recursive sub */
+	/**
+         * recursive sub
+         *
+         * @this {FF}
+         */
         rsub: function(vp, x, xp, y, yp, n) {
             for (var i = 0; i < n; i++) {
                 this.v[vp + i].copy(x.v[xp + i]);
@@ -160,35 +228,55 @@ var FF = function(ctx) {
             }
         },
 
-        /* recursive dec */
+	/**
+         * recursive dec
+         *
+         * @this {FF}
+         */
         rdec: function(vp, y, yp, n) {
             for (var i = 0; i < n; i++) {
                 this.v[vp + i].sub(y.v[yp + i]);
             }
         },
 
-        /* simple add */
+	/**
+         * simple add
+         *
+         * @this {FF}
+         */
         add: function(b) {
             for (var i = 0; i < this.length; i++) {
                 this.v[i].add(b.v[i]);
             }
         },
 
-        /* simple sub */
+	/**
+         * simple sub
+         *
+         * @this {FF}
+         */
         sub: function(b) {
             for (var i = 0; i < this.length; i++) {
                 this.v[i].sub(b.v[i]);
             }
         },
 
-        /* reverse sub */
+	/**
+         * reverse sub 
+         *
+         * @this {FF}
+         */
         revsub: function(b) {
             for (var i = 0; i < this.length; i++) {
                 this.v[i].rsub(b.v[i]);
             }
         },
 
-        /* increment/decrement by a small integer */
+	/**
+         * increment/decrement by a small integer
+         *
+         * @this {FF}
+         */
         inc: function(m) {
             this.v[0].inc(m);
             this.norm();
@@ -199,7 +287,11 @@ var FF = function(ctx) {
             this.norm();
         },
 
-        /* normalise - but hold any overflow in top part unless n<0 */
+	/**
+         * normalise - but hold any overflow in top part unless n<0 
+         *
+         * @this {FF}
+         */
         rnorm: function(vp, n) {
             var trunc = false,
                 i, carry;
@@ -227,7 +319,11 @@ var FF = function(ctx) {
             this.rnorm(0, this.length);
         },
 
-        /* shift left by one bit */
+	/**
+         * shift left by one bit 
+         *
+         * @this {FF}
+         */
         shl: function() {
             var delay_carry = 0,
                 i, carry;
@@ -243,7 +339,11 @@ var FF = function(ctx) {
             this.v[this.length - 1].inc(delay_carry);
         },
 
-        /* shift right by one bit */
+	/**
+         * shift right by one bit
+         *
+         * @this {FF}
+         */
         shr: function() {
             var i, carry;
 
@@ -255,7 +355,11 @@ var FF = function(ctx) {
             this.v[0].fshr(1);
         },
 
-        /* Convert to Hex String */
+	/**
+         * Convert to Hex String 
+         *
+         * @this {FF}
+         */
         toString: function() {
             var s = "",
                 i;
@@ -268,7 +372,12 @@ var FF = function(ctx) {
 
             return s;
         },
-        /* Convert FFs to/from byte arrays */
+	
+	/**
+         * Convert FFs to/from byte arrays
+         *
+         * @this {FF}
+         */
         toBytes: function(b) {
             var i;
 
@@ -277,7 +386,11 @@ var FF = function(ctx) {
             }
         },
 
-        /* z=x*y, t is workspace */
+	/**
+         * z=x*y, t is workspace
+         *
+         * @this {FF}
+         */
         karmul: function(vp, x, xp, y, yp, t, tp, n) {
             var nd2, d;
 
@@ -368,7 +481,11 @@ var FF = function(ctx) {
             this.rnorm(nd2, n);
         },
 
-        /* return low part of product this*y */
+	/**
+         * return low part of product this*y
+         *
+         * @this {FF}
+         */
         lmul: function(y) {
             var n = this.length,
                 t = new FF(2 * n),
@@ -378,7 +495,11 @@ var FF = function(ctx) {
             this.karmul_lower(0, x, 0, y, 0, t, 0, n);
         },
 
-        /* Set b=b mod c */
+	/**
+         * Set b=b mod c
+         *
+         * @this {FF}
+         */
         mod: function(c) {
             var k = 0;
 
@@ -404,7 +525,14 @@ var FF = function(ctx) {
             }
         },
 
-        /* return This mod modulus, N is modulus, ND is Montgomery Constant */
+	/**
+         * return this mod modulus
+         *
+         * @this {FF}
+         * @param N Mmodulus
+         * @param ND Montgomery Constant
+         * @return this mod N
+         */
         reduce: function(N, ND) { /* fast karatsuba Montgomery reduction */
             var n = N.length,
                 t = new FF(2 * n),
@@ -426,6 +554,14 @@ var FF = function(ctx) {
         /* Set r=this mod b */
         /* this is of length - 2*n */
         /* r,b is of length - n */
+	
+	/**
+         * Reduces a double-length FF with respect to a given modulus
+         *
+         * @this {FF}
+         * @param b Mmodulus
+         * @return this mod N
+         */	
         dmod: function(b) {
             var n = b.length,
                 m = new FF(2 * n),
@@ -460,7 +596,11 @@ var FF = function(ctx) {
             return r;
         },
 
-        /* Set return=1/this mod p. Binary method - a<p on entry */
+	/**
+         * Set return=1/this mod p. Binary method - a<p on entry
+         *
+         * @this {FF}
+         */	
         invmodp: function(p) {
             var n = p.length,
                 u = new FF(n),
@@ -532,7 +672,11 @@ var FF = function(ctx) {
             }
         },
 
-        /* nresidue mod m */
+	/**
+         * nresidue mod m 
+         *
+         * @this {FF}
+         */	
         nres: function(m) {
             var n = m.length,
                 d;
@@ -572,7 +716,11 @@ var FF = function(ctx) {
             }
         },
 
-        /* U=1/a mod 2^m - Arazi & Qi */
+        /** 
+         * U=1/a mod 2^m - Arazi & Qi
+         *
+         * @this {FF}
+         */	
         invmod2m: function() {
             var n = this.length,
                 b = new FF(n),
@@ -627,7 +775,11 @@ var FF = function(ctx) {
             }
         },
 
-        /* generate random x */
+        /** 
+         * generate random x 
+         *
+         * @this {FF}
+         */	
         randomnum: function(p, rng) {
             var n = this.length,
                 d = new FF(2 * n),
@@ -640,7 +792,11 @@ var FF = function(ctx) {
             this.copy(d.dmod(p));
         },
 
-        /* this*=y mod p */
+        /** 
+         * this*=y mod p
+         *
+         * @this {FF}
+         */	
         modmul: function(y, p, nd) {
             var ex = this.P_EXCESS(),
                 ey = y.P_EXCESS(),
@@ -660,7 +816,11 @@ var FF = function(ctx) {
             }
         },
 
-        /* this*=y mod p */
+        /** 
+         * this*=y mod p
+         *
+         * @this {FF}
+         */	
         modsqr: function(p, nd) {
             var ex = this.P_EXCESS(),
                 n, d;
@@ -679,7 +839,13 @@ var FF = function(ctx) {
             }
         },
 
-        /* this=this^e mod p using side-channel resistant Montgomery Ladder, for large e */
+        /** 
+         * this=this^e mod p using side-channel resistant Montgomery Ladder, for large e
+         *
+         * @this {FF}
+         * @param e exponent
+         * @param p modulus
+         */		
         skpow: function(e, p) {
             var n = p.length,
                 R0 = new FF(n),
@@ -710,7 +876,13 @@ var FF = function(ctx) {
             this.redc(p, ND);
         },
 
-        /* this =this^e mod p using side-channel resistant Montgomery Ladder, for short e */
+        /** 
+         * this=this^e mod p using side-channel resistant Montgomery Ladder, for short e
+         *
+         * @this {FF}
+         * @param e exponent
+         * @param p modulus
+         */		
         skspow: function(e, p) {
             var n = p.length,
                 R0 = new FF(n),
@@ -739,7 +911,13 @@ var FF = function(ctx) {
             this.redc(p, ND);
         },
 
-        /* raise to an integer power - right-to-left method */
+        /** 
+         * raise to an integer power - right-to-left method
+         *
+         * @this {FF}
+         * @param e exponent
+         * @param p modulus
+         */		
         power: function(e, p) {
             var n = p.length,
                 f = true,
@@ -773,7 +951,13 @@ var FF = function(ctx) {
             this.redc(p, ND);
         },
 
-        /* this=this^e mod p, faster but not side channel resistant */
+        /** 
+         * this=this^e mod p, faster but not side channel resistant
+         *
+         * @this {FF}
+         * @param e exponent
+         * @param p modulus
+         */		
         pow: function(e, p) {
             var n = p.length,
                 w = new FF(n),
@@ -796,7 +980,15 @@ var FF = function(ctx) {
             this.redc(p, ND);
         },
 
-        /* double exponentiation r=x^e.y^f mod p */
+        /** 
+         * double exponentiation r=x^e.y^f mod p 
+         *
+         * @this {FF}
+         * @param e exponent
+         * @param y FF instance
+         * @param f exponent
+         * @param p modulus
+         */		
         pow2: function(e, y, f, p) {
             var n = p.length,
                 xn = new FF(n),
@@ -834,7 +1026,13 @@ var FF = function(ctx) {
             this.redc(p, ND);
         },
 
-        /* quick and dirty check for common factor with n */
+        /** 
+         * Test if an FF has factor in common with integer s
+         *
+         * @this {FF}
+         * @param s integerexponent
+         * @return true or false
+         */		
         cfactor: function(s) {
             var n = this.length,
                 x = new FF(n),
@@ -864,7 +1062,14 @@ var FF = function(ctx) {
         }
     };
 
-    /* compare x and y - must be normalised, and of same length */
+    /** 
+      * compare a and b - must be normalised, and of same length
+      *
+      * @this {FF}
+      * @param a FF number
+      * @param b FF number
+      * @return zero of error codetrue or false
+      */		
     FF.comp = function(a, b) {
         var i, j;
 
@@ -886,7 +1091,11 @@ var FF = function(ctx) {
         }
     };
 
-    /* in-place swapping using xor - side channel resistant - lengths must be the same */
+    /** 
+      * in-place swapping using xor - side channel resistant - lengths must be the same
+      *
+      * @this {FF}
+      */		
     FF.cswap = function(a, b, d) {
         var i;
 
@@ -895,7 +1104,11 @@ var FF = function(ctx) {
         }
     };
 
-    /* z=x*y. Assumes x and y are of same length. */
+    /** 
+      * z=x*y. Assumes x and y are of same length.
+      *
+      * @this {FF}
+      */		
     FF.mul = function(x, y) {
         var n = x.length,
             z = new FF(2 * n),
@@ -906,7 +1119,11 @@ var FF = function(ctx) {
         return z;
     };
 
-    /* z=x^2 */
+    /** 
+      * z=x^2
+      *
+      * @this {FF}
+      */		
     FF.sqr = function(x) {
         var n = x.length,
             z = new FF(2 * n),
@@ -932,7 +1149,13 @@ var FF = function(ctx) {
         return y;
     };
 
-    /* Miller-Rabin test for primality. Slow. */
+    /** 
+      * Miller-Rabin test for primality.
+      *
+      * @this {FF}
+      * @param p FF instance to be tested
+      * @param rmg an instance of a Cryptographically Secure Random Number Generator
+      */		
     FF.prime = function(p, rng) {
         var n = p.length,
             s = 0,

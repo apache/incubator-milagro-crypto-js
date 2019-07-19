@@ -20,6 +20,12 @@
 var HASH256 = function() {
     "use strict";
 
+    /**
+      * Creates an instance of HASH256
+      *
+      * @constructor
+      * @this {HASH256}
+      */    
     var HASH256 = function() {
         this.length = [];
         this.h = [];
@@ -28,6 +34,7 @@ var HASH256 = function() {
     };
 
     HASH256.prototype = {
+
         transform: function() { /* basic transformation step */
             var a, b, c, d, e, f, g, hh, t1, t2, j;
 
@@ -68,7 +75,11 @@ var HASH256 = function() {
 
         },
 
-        /* Initialise Hash function */
+	/**
+         * Initialise Hash function
+         *
+         * @this {HASH256}
+         */	
         init: function() { /* initialise */
             var i;
 
@@ -86,7 +97,12 @@ var HASH256 = function() {
             this.h[7] = HASH256.H[7];
         },
 
-        /* process a single byte */
+	/**
+         * Process a single byte
+         *
+         * @this {HASH256}
+         * @param byt byte to be included in hash
+         */	
         process: function(byt) { /* process the next message byte */
             var cnt;
 
@@ -105,14 +121,24 @@ var HASH256 = function() {
             }
         },
 
-        /* process an array of bytes */
+	/**
+         * Process an array of bytes
+         *
+         * @this {HASH256}
+         * @param b byte arrray to be included in hash
+         */	
         process_array: function(b) {
             for (var i = 0; i < b.length; i++) {
                 this.process(b[i]);
             }
         },
 
-        /* process a 32-bit integer */
+	/**
+         * Process a 32-bit integer 
+         *
+         * @this {HASH256}
+         * @param n Integer to be included in hash
+         */	
         process_num: function(n) {
             this.process((n >> 24) & 0xff);
             this.process((n >> 16) & 0xff);
@@ -120,6 +146,12 @@ var HASH256 = function() {
             this.process(n & 0xff);
         },
 
+	/**
+         * Generate 32-byte hash
+         *
+         * @this {HASH256}
+         * @return digest 32-byte hash
+         */		
         hash: function() { /* pad message and finish - supply digest */
             var digest = [],
                 len0, len1, i;

@@ -24,7 +24,12 @@ var BIG,
 BIG = function(ctx) {
     "use strict";
 
-    /* General purpose Constructor */
+    /**
+     * General purpose Constructor 
+     *
+     * @constructor
+     * @this {BIG}
+     */    
     var BIG = function(x) {
         this.w = new Array(BIG.NLEN);
 
@@ -54,7 +59,13 @@ BIG = function(ctx) {
     BIG.MODINV = (Math.pow(2, -BIG.BASEBITS));
 
     BIG.prototype = {
-        /* set to zero */
+
+	/**
+         * set to zero
+         *
+         * @this {BIG}
+         * @return BIG number
+         */
         zero: function() {
             var i;
 
@@ -65,7 +76,12 @@ BIG = function(ctx) {
             return this;
         },
 
-        /* set to one */
+	/**
+         * set to one
+         *
+         * @this {BIG}
+         * @return BIG number
+         */	
         one: function() {
             var i;
 
@@ -85,7 +101,12 @@ BIG = function(ctx) {
             this.w[i] = x;
         },
 
-        /* test for zero */
+	/**
+         * test for zero 
+         *
+         * @this {BIG}
+         * @return True if zero
+         */		
         iszilch: function() {
             var i;
 
@@ -98,7 +119,12 @@ BIG = function(ctx) {
             return true;
         },
 
-        /* test for unity */
+	/**
+         * test for unity 
+         *
+         * @this {BIG}
+         * @return True if one
+         */		
         isunity: function() {
             var i;
 
@@ -115,7 +141,13 @@ BIG = function(ctx) {
             return true;
         },
 
-        /* Conditional swap of two BIGs depending on d using XOR - no branches */
+	/**
+         * Conditional swap of two BIGs depending on d using XOR - no branches 
+         *
+         * @this {BIG}
+         * @parameter b BIG number 
+         * @parameter d BIG number 
+         */		
         cswap: function(b, d) {
             var c = d,
                 t, i;
@@ -129,7 +161,13 @@ BIG = function(ctx) {
             }
         },
 
-        /* Conditional move of BIG depending on d using XOR - no branches */
+	/**
+         * Conditional move of BIG depending on d using XOR - no branches 
+         *
+         * @this {BIG}
+         * @parameter b BIG number 
+         * @parameter d BIG number 
+         */			
         cmove: function(b, d) {
             var c = d,
                 i;
@@ -141,7 +179,13 @@ BIG = function(ctx) {
             }
         },
 
-        /* copy from another BIG */
+	/**
+         * Copy from another BIG 
+         *
+         * @this {BIG}
+         * @parameter y BIG number 
+         * @return The BIG object
+         */				
         copy: function(y) {
             var i;
 
@@ -152,7 +196,13 @@ BIG = function(ctx) {
             return this;
         },
 
-        /* copy from bottom half of ctx.DBIG */
+	/**
+         * copy from bottom half of ctx.DBIG 
+         *
+         * @this {BIG}
+         * @parameter y BIG number 
+         * @return The new BIG object
+         */				
         hcopy: function(y) {
             var i;
 
@@ -163,7 +213,13 @@ BIG = function(ctx) {
             return this;
         },
 
-        /* copy from ROM */
+	/**
+         *  copy from ROM 
+         *
+         * @this {BIG}
+         * @parameter y BIG number in ROM
+         * @return The BIG object
+         */				
         rcopy: function(y) {
             var i;
 
@@ -182,7 +238,12 @@ BIG = function(ctx) {
             this.w[BIG.NLEN - 1] |= x;
         },
 
-        /* normalise BIG - force all digits < 2^BASEBITS */
+	/**
+         *  normalise BIG - force all digits < 2^BASEBITS 
+         *
+         * @this {BIG}
+         * @return BIG number
+         */					
         norm: function() {
             var carry = 0,
                 d, i;
@@ -198,7 +259,13 @@ BIG = function(ctx) {
             return (this.w[BIG.NLEN - 1] >> ((8 * BIG.MODBYTES) % BIG.BASEBITS));
         },
 
-        /* quick shift right by less than a word */
+	/**
+         * Quick Fast shifts a BIG right by a small number of bits - input must be normalised, output will be normalised
+         *
+         * @this {BIG}
+         * @parameter k Number of bits to shift
+         * @return r The shifted out part
+         */					
         fshr: function(k) {
             var r, i;
 
@@ -213,7 +280,13 @@ BIG = function(ctx) {
             return r;
         },
 
-        /* General shift right by k bits */
+	/**
+         * General shift right by k bits 
+         *
+         * @this {BIG}
+         * @parameter k Number of bits to shift
+         * @return BIG number
+         */						
         shr: function(k) {
             var n = k % BIG.BASEBITS,
                 m = Math.floor(k / BIG.BASEBITS),
@@ -232,7 +305,13 @@ BIG = function(ctx) {
             return this;
         },
 
-        /* quick shift left by less than a word */
+	/**
+         * Fast shifts a BIG left by a small number of bits - input must be normalised, output will be normalised
+         *
+         * @this {BIG}
+         * @parameter k Number of bits to shift
+         * @return r The shifted out part
+         */							
         fshl: function(k) {
             var i;
 
@@ -247,7 +326,13 @@ BIG = function(ctx) {
             return (this.w[BIG.NLEN - 1] >> ((8 * BIG.MODBYTES) % BIG.BASEBITS)); /* return excess - only used in FF.java */
         },
 
-        /* General shift left by k bits */
+	/**
+         * General shift left by k bits
+         *
+         * @this {BIG}
+         * @parameter k Number of bits to shift
+         * @return BIG number 
+         */							
         shl: function(k) {
             var n = k % BIG.BASEBITS,
                 m = Math.floor(k / BIG.BASEBITS),
@@ -272,7 +357,12 @@ BIG = function(ctx) {
             return this;
         },
 
-        /* return length in bits */
+	/**
+         * length in bits 
+         *
+         * @this {BIG}
+         * @return The number of bigs in BIG object
+         */								
         nbits: function() {
             var k = BIG.NLEN - 1,
                 bts, c;
@@ -299,7 +389,12 @@ BIG = function(ctx) {
             return bts;
         },
 
-        /* convert this to string */
+	/**
+         * Convert to string
+         *
+         * @this {BIG}
+         * @return string representation of a BIG number
+         */									
         toString: function() {
             var s = "",
                 len = this.nbits(),
@@ -326,7 +421,13 @@ BIG = function(ctx) {
             return s;
         },
 
-        /* this+=y */
+	/**
+         * Sum two BIG mumbers
+         *
+         * @this {BIG}
+         * @parameter y BIG object
+         * @return this+=y
+         */										
         add: function(y) {
             var i;
 
@@ -338,7 +439,13 @@ BIG = function(ctx) {
         },
 
 
-        /* this|=y */
+	/**
+         * OR two BIG mumbers
+         *
+         * @this {BIG}
+         * @parameter y BIG object
+         * @return this|=y 
+         */										
         or: function(y) {
             var i;
 
@@ -349,8 +456,13 @@ BIG = function(ctx) {
             return this;
         },
 
-
-        /* return this+x */
+	/**
+         * Sum two BIG mumbers
+         *
+         * @this {BIG}
+         * @parameter x BIG object
+         * @return this+x 
+         */										
         plus: function(x) {
             var s = new BIG(0),
                 i;
@@ -362,14 +474,26 @@ BIG = function(ctx) {
             return s;
         },
 
-        /* this+=i, where i is int */
+	/**
+         * Sum BIG and integer
+         *
+         * @this {BIG}
+         * @parameter i Integer to add
+         * @return this+=i
+         */										
         inc: function(i) {
             this.norm();
             this.w[0] += i;
             return this;
         },
 
-        /* this-=y */
+	/**
+         * Subtract BIG from one another
+         *
+         * @this {BIG}
+         * @parameter y BIG object
+         * @return this-=y 
+         */										
         sub: function(y) {
             var i;
 
@@ -380,7 +504,13 @@ BIG = function(ctx) {
             return this;
         },
 
-        /* reverse subtract this=x-this */
+	/**
+         * Reverse subtract BIG from one another
+         *
+         * @this {BIG}
+         * @parameter x BIG object
+         * @return this=x-this
+         */										
         rsub: function(x) {
             var i;
 
@@ -391,14 +521,26 @@ BIG = function(ctx) {
             return this;
         },
 
-        /* this-=i, where i is int */
+	/**
+         * Subtract integer from BIG
+         *
+         * @this {BIG}
+         * @parameter i Integer to subtract
+         * @return this-=i
+         */										
         dec: function(i) {
             this.norm();
             this.w[0] -= i;
             return this;
         },
 
-        /* return this-x */
+	/**
+         * Subtract BIG
+         *
+         * @this {BIG}
+         * @parameter x BIG object
+         * @return New BIG object
+         */
         minus: function(x) {
             var d = new BIG(0),
                 i;
@@ -410,7 +552,13 @@ BIG = function(ctx) {
             return d;
         },
 
-        /* multiply by small integer */
+	/**
+         * Multiply by small integer
+         *
+         * @this {BIG}
+         * @parameter c small integer
+         * @return this*c 
+         */
         imul: function(c) {
             var i;
 
@@ -421,7 +569,11 @@ BIG = function(ctx) {
             return this;
         },
 
-        /* convert this BIG to byte array */
+	/**
+         * convert this BIG to byte array 
+         *
+         * @this {BIG}
+         */
         tobytearray: function(b, n) {
             var c = new BIG(0),
                 i;
@@ -437,19 +589,33 @@ BIG = function(ctx) {
             return this;
         },
 
-        /* convert this to byte array */
+	/**
+         * convert this to byte array 
+         *
+         * @this {BIG}
+         */
         toBytes: function(b) {
             this.tobytearray(b, 0);
         },
 
-        /* set this[i]+=x*y+c, and return high part */
+	/**
+         * this[i]+=x*y+c, and return high part
+         *
+         * @this {BIG}
+         */
         muladd: function(x, y, c, i) {
             var prod = x * y + c + this.w[i];
             this.w[i] = prod & BIG.BMASK;
             return ((prod - this.w[i]) * BIG.MODINV);
         },
 
-        /* multiply by larger int */
+	/**
+         *  multiply by larger int
+         *
+         * @this {BIG}
+         * @parameter c large integer
+         * @return carry value
+         */
         pmul: function(c) {
             var carry = 0,
                 ak, i;
@@ -463,7 +629,13 @@ BIG = function(ctx) {
             return carry;
         },
 
-        /* multiply by still larger int - results requires a ctx.DBIG */
+	/**
+         *  multiply by still larger int - results requires a DBIG
+         *
+         * @this {BIG}
+         * @parameter c large integer
+         * @return DBIG object
+         */
         pxmul: function(c) {
             var m = new ctx.DBIG(0),
                 carry = 0,
@@ -478,7 +650,12 @@ BIG = function(ctx) {
             return m;
         },
 
-        /* divide by 3 */
+	/**
+         *  divide by 3 
+         *
+         * @this {BIG}
+         * @return carry value
+         */
         div3: function() {
             var carry = 0,
                 ak, base, i;
@@ -494,7 +671,13 @@ BIG = function(ctx) {
             return carry;
         },
 
-        /* set x = x mod 2^m */
+	/**
+         * set x = x mod 2^m
+         *
+         * @this {BIG}
+         * @parameter m Exponent
+         * @return BIG object
+         */
         mod2m: function(m) {
             var i, wd, bt, msk;
 
@@ -508,7 +691,12 @@ BIG = function(ctx) {
             }
         },
 
-        /* a=1/a mod 2^256. This is very fast! */
+	/**
+         * a=1/a mod 2^256. This is very fast! 
+         *
+         * @this {BIG}
+         * @return BIG object
+         */
         invmod2m: function() {
             var U = new BIG(0),
                 b = new BIG(0),
@@ -548,7 +736,12 @@ BIG = function(ctx) {
             this.norm();
         },
 
-        /* reduce this mod m */
+	/**
+         * reduce this mod m 
+         *
+         * @this {BIG}
+         * @return BIG object
+         */
         mod: function(m1) {
             var k = 0,
                 r = new BIG(0);
@@ -576,7 +769,14 @@ BIG = function(ctx) {
                 k--;
             }
         },
-        /* this/=m */
+
+	/**
+         * this/=m1
+         *
+         * @this {BIG}
+         * @paramter m1 divisor
+         * @return BIG number
+         */
         div: function(m1) {
             var k = 0,
                 d = 0,
@@ -612,12 +812,24 @@ BIG = function(ctx) {
                 k--;
             }
         },
-        /* return parity of this */
+
+	/**
+         * return parity of this 
+         *
+         * @this {BIG}
+         * @return BIG object
+         */
         parity: function() {
             return this.w[0] % 2;
         },
 
-        /* return n-th bit of this */
+	/**
+         * return n-th bit of this 
+         *
+         * @this {BIG}
+         * @parameter nth bit to return
+         * @return bit value
+         */
         bit: function(n) {
             if ((this.w[Math.floor(n / BIG.BASEBITS)] & (1 << (n % BIG.BASEBITS))) > 0) {
                 return 1;
@@ -626,7 +838,13 @@ BIG = function(ctx) {
             }
         },
 
-        /* return last n bits of this */
+	/**
+         * return last n bits of this 
+         *
+         * @this {BIG}
+         * @parameter n bits to return
+         * @return bit values
+         */
         lastbits: function(n) {
             var msk = (1 << n) - 1;
             this.norm();
@@ -646,7 +864,13 @@ BIG = function(ctx) {
             return ok;
         },
 
-        /* Jacobi Symbol (this/p). Returns 0, 1 or -1 */
+	/**
+         * Jacobi Symbol (this/p)
+         *
+         * @this {BIG}
+         * @parameter p BIG number 
+         * @return 0, 1 or -1 
+         */	
         jacobi: function(p) {
             var m = 0,
                 t = new BIG(0),
@@ -697,7 +921,13 @@ BIG = function(ctx) {
             }
         },
 
-        /* this=1/this mod p. Binary method */
+	/**
+         * this=1/this mod p. Binary method
+         *
+         * @this {BIG}
+         * @parameter p The BIG Modulus
+         * @return BIG object
+         */	
         invmodp: function(p) {
             var u = new BIG(0),
                 v = new BIG(0),
@@ -761,7 +991,14 @@ BIG = function(ctx) {
             }
         },
 
-        /* return this^e mod m */
+	/**
+         * Exponentation modulo m
+         *
+         * @this {BIG}
+         * @parameter e1 BIG number
+         * @parameter m  The BIG Modulus
+         * @return this^e mod m
+         */		
         powmod: function(e1, m) {
             var a = new BIG(1),
                 z = new BIG(0),
@@ -809,7 +1046,13 @@ BIG = function(ctx) {
 		return ((r.w[n]>>(BIG.CHUNK-1))&1);
 	};
 
-    /* convert from byte array to BIG */
+    /**
+     * convert from byte array to BIG 
+     *
+     * @this {BIG}
+     * @parameter b Bytearray
+     * @return BIG object
+     */	
     BIG.frombytearray = function(b, n) {
         var m = new BIG(0),
             i;
@@ -826,7 +1069,14 @@ BIG = function(ctx) {
         return BIG.frombytearray(b, 0);
     };
 
-    /* return a*b where product fits a BIG */
+    /**
+     * return a*b where product fits a BIG 
+     *
+     * @this {BIG}
+     * @parameter a BIG number
+     * @parameter b BIG number
+     * @return a*b
+     */	    
     BIG.smul = function(a, b) {
         var c = new BIG(0),
             carry, i, j;
@@ -844,7 +1094,14 @@ BIG = function(ctx) {
         return c;
     };
 
-    /* Compare a and b, return 0 if a==b, -1 if a<b, +1 if a>b. Inputs must be normalised */
+    /**
+     * Compare a and b
+     *
+     * @this {BIG}
+     * @parameter a BIG number (normalised)
+     * @parameter b BIG number (normalised
+     * @return 0 if a==b, -1 if a<b, +1 if a>b
+     */	        
     BIG.comp = function(a, b) {
         var i;
 
@@ -863,7 +1120,13 @@ BIG = function(ctx) {
         return 0;
     };
 
-    /* get 8*MODBYTES size random number */
+    /**
+     * Get 8*MODBYTES size random number 
+     *
+     * @this {BIG}
+     * @parameter rng Cryptographically Secure Random Number Generator
+     * @return BIG number
+     */	            
     BIG.random = function(rng) {
         var m = new BIG(0),
             j = 0,
@@ -887,7 +1150,14 @@ BIG = function(ctx) {
         return m;
     };
 
-    /* Create random BIG in portable way, one bit at a time */
+    /**
+     * Create random BIG in portable way, one bit at a time 
+     *
+     * @this {BIG}
+     * @parameter rng Cryptographically Secure Random Number Generator
+     * @parameter q The BIG Modulus
+     * @return BIG number
+     */	                
     BIG.randomnum = function(q, rng) {
         var d = new ctx.DBIG(0),
             j = 0,
@@ -913,7 +1183,14 @@ BIG = function(ctx) {
         return m;
     };
 
-    /* return a*b as ctx.DBIG */
+    /**
+     * Multiple two BIG numbers
+     *
+     * @this {BIG}
+     * @parameter a BIG number
+     * @parameter b BIG number
+     * @return a*b as a DBIG number
+     */	                
     BIG.mul = function(a, b) {
         var c = new ctx.DBIG(0),
             d = new Array(BIG.NLEN), //[],
@@ -955,7 +1232,13 @@ BIG = function(ctx) {
         return c;
     };
 
-    /* return a^2 as ctx.DBIG */
+    /**
+     * Square two BIG numbers
+     *
+     * @this {BIG}
+     * @parameter a BIG number
+     * @return a*2 as a DBIG number
+     */	                    
     BIG.sqr = function(a) {
         var c = new ctx.DBIG(0),
             n, t, j, i, co;
@@ -1057,7 +1340,15 @@ BIG = function(ctx) {
         return b;
     };
 
-    /* return a*b mod m */
+    /**
+     * Multiple two BIG numbers modulo m
+     *
+     * @this {BIG}
+     * @parameter a1 BIG number
+     * @parameter b1 BIG number
+     * @parameter m The BIG Modulus
+     * @return a1*b1 mod m  as a BIG number
+     */	                    
     BIG.modmul = function(a1, b1, m) {
         var d;
 		var a=new BIG(0); a.copy(a1);
@@ -1069,7 +1360,14 @@ BIG = function(ctx) {
         return d.mod(m);
     };
 
-    /* return a^2 mod m */
+    /**
+     * Square a BIG number modulo m
+     *
+     * @this {BIG}
+     * @parameter a1 BIG number
+     * @parameter m The BIG Modulus
+     * @return a*2 mod m  as a BIG number
+     */	                        
     BIG.modsqr = function(a1, m) {
         var d;
 		var a=new BIG(0); a.copy(a1);
@@ -1079,14 +1377,27 @@ BIG = function(ctx) {
         return d.mod(m);
     };
 
-    /* return -a mod m */
+    /**
+     * Inversion
+     *
+     * @this {BIG}
+     * @parameter a1 BIG number
+     * @parameter m The BIG Modulus
+     * @return -a1 mod m
+     */	                            
     BIG.modneg = function(a1, m) {
 		var a=new BIG(0); a.copy(a1);
         a.mod(m);
         return m.minus(a);
     };
 
-    /* Arazi and Qi inversion mod 256 */
+    /**
+     *  Arazi and Qi inversion mod 256
+     *
+     * @this {BIG}
+     * @parameter a BIG number
+     * @return BIG number
+     */	                                
     BIG.invmod256 = function(a) {
         var U, t1, t2, b, c;
 
@@ -1133,7 +1444,12 @@ BIG = function(ctx) {
 DBIG = function(ctx) {
     "use strict";
 
-    /* constructor */
+    /**
+     * General purpose Constructor 
+     *
+     * @constructor
+     * @this {DBIG}
+     */        
     var DBIG = function(x) {
         this.w = new Array(BIG.DNLEN);
         this.zero();
@@ -1142,7 +1458,12 @@ DBIG = function(ctx) {
 
     DBIG.prototype = {
 
-        /* set this=0 */
+	/**
+         * set to zero
+         *
+         * @this {DBIG}
+         * @return BIG number
+         */
         zero: function() {
             for (var i = 0; i < ctx.BIG.DNLEN; i++) {
                 this.w[i] = 0;
@@ -1150,7 +1471,13 @@ DBIG = function(ctx) {
             return this;
         },
 
-        /* set this=b */
+	/**
+         * set to b
+         *
+         * @this {DBIG}
+         * @parameter b DBIG number 
+         * @return DBIG number
+         */		
         copy: function(b) {
             for (var i = 0; i < ctx.BIG.DNLEN; i++) {
                 this.w[i] = b.w[i];
@@ -1158,8 +1485,13 @@ DBIG = function(ctx) {
             return this;
         },
 
-
-        /* copy from ctx.BIG */
+	/**
+         * copy from ctx.BIG 
+         *
+         * @this {DBIG}
+         * @parameter b BIG number 
+         * @return DBIG number
+         */			
         hcopy: function(b) {
             var i;
 
@@ -1188,7 +1520,12 @@ DBIG = function(ctx) {
             return this;
         },
 
-        /* normalise this */
+	/**
+         *  normalise DBIG - force all digits < 2^BASEBITS 
+         *
+         * @this {DBIG}
+         * @return DBIG number
+         */						
         norm: function() {
             var carry = 0,
                 d, i;
@@ -1203,14 +1540,24 @@ DBIG = function(ctx) {
             return this;
         },
 
-        /* set this[i]+=x*y+c, and return high part */
+	/**
+         * this[i]+=x*y+c, and return high part
+         *
+         * @this {DBIG}
+         */	
         muladd: function(x, y, c, i) {
             var prod = x * y + c + this.w[i];
             this.w[i] = prod & ctx.BIG.BMASK;
             return ((prod - this.w[i]) * ctx.BIG.MODINV);
         },
 
-        /* shift this right by k bits */
+	/**
+         * General shift right by k bits 
+         *
+         * @this {DBIG}
+         * @parameter k Number of bits to shift
+         * @return BIG number
+         */							
         shr: function(k) {
             var n = k % ctx.BIG.BASEBITS,
                 m = Math.floor(k / ctx.BIG.BASEBITS),
@@ -1229,7 +1576,13 @@ DBIG = function(ctx) {
             return this;
         },
 
-        /* shift this left by k bits */
+	/**
+         * General shift left by k bits
+         *
+         * @this {BIG}
+         * @parameter k Number of bits to shift
+         * @return BIG number 
+         */							
         shl: function(k) {
             var n = k % ctx.BIG.BASEBITS,
                 m = Math.floor(k / ctx.BIG.BASEBITS),
@@ -1250,7 +1603,13 @@ DBIG = function(ctx) {
             return this;
         },
 
-        /* Conditional move of ctx.BIG depending on d using XOR - no branches */
+	/**
+         * Conditional move of BIG depending on d using XOR - no branches 
+         *
+         * @this {DBIG}
+         * @parameter b DBIG number 
+         * @parameter d DBIG number 
+         */			
         cmove: function(b, d) {
             var c = d,
                 i;
@@ -1262,14 +1621,26 @@ DBIG = function(ctx) {
             }
         },
 
-        /* this+=x */
+	/**
+         * Sum two DBIG mumbers
+         *
+         * @this {DBIG}
+         * @parameter x DBIG object
+         * @return this+=x
+         */											
         add: function(x) {
             for (var i = 0; i < ctx.BIG.DNLEN; i++) {
                 this.w[i] += x.w[i];
             }
         },
 
-        /* this-=x */
+	/**
+         * Subtract DBIG from one another
+         *
+         * @this {DBIG}
+         * @parameter x BIG object
+         * @return this-=x 
+         */											
         sub: function(x) {
             for (var i = 0; i < ctx.BIG.DNLEN; i++) {
                 this.w[i] -= x.w[i];
@@ -1282,7 +1653,12 @@ DBIG = function(ctx) {
             }
         },
 
-        /* return number of bits in this */
+	/**
+         * length in bits 
+         *
+         * @this {DBIG}
+         * @return The number of bigs in DBIG object
+         */									
         nbits: function() {
             var k = ctx.BIG.DNLEN - 1,
                 bts, c;
@@ -1309,7 +1685,12 @@ DBIG = function(ctx) {
             return bts;
         },
 
-        /* convert this to string */
+	/**
+         * Convert to string
+         *
+         * @this {DBIG}
+         * @return string representation of a BIG number
+         */									
         toString: function() {
             var s = "",
                 len = this.nbits(),
@@ -1332,7 +1713,12 @@ DBIG = function(ctx) {
             return s;
         },
 
-        /* reduces this DBIG mod a ctx.BIG, and returns the ctx.BIG */
+	/**
+         * reduces this DBIG mod a ctx.BIG, and returns the ctx.BIG 
+         *
+         * @this {DBIG}
+         * @return BIG object
+         */	
         mod: function(c) {
             var k = 0,
                 m = new DBIG(0),
@@ -1367,7 +1753,13 @@ DBIG = function(ctx) {
             return r;
         },
 
-        /* this/=c */
+	/**
+         * this/=c
+         *
+         * @this {DBIG}
+         * @paramter c divisor
+         * @return DBIG number
+         */	
         div: function(c) {
             var d = 0,
                 k = 0,
@@ -1405,7 +1797,13 @@ DBIG = function(ctx) {
             return a;
         },
 
-        /* split this DBIG at position n, return higher half, keep lower half */
+	/**
+         * split this DBIG at position n, return higher half, keep lower half 
+         *
+         * @this {DBIG}
+         * @paramter n Position to splitdivisor
+         * @return lower half BIG number
+         */	
         split: function(n) {
             var t = new ctx.BIG(0),
                 m = n % ctx.BIG.BASEBITS,
@@ -1425,7 +1823,14 @@ DBIG = function(ctx) {
 
     };
 
-    /* Compare a and b, return 0 if a==b, -1 if a<b, +1 if a>b. Inputs must be normalised */
+    /**
+     * Compare a and b
+     *
+     * @this {DBIG}
+     * @parameter a DBIG number (normalised)
+     * @parameter b DBIG number (normalised
+     * @return 0 if a==b, -1 if a<b, +1 if a>b
+     */	            
     DBIG.comp = function(a, b) {
         var i;
 
