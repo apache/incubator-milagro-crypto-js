@@ -36,7 +36,7 @@ export class FpCommon<T> {
 
     public inverse(): void;
 
-    public sqrt(): boolean;
+    public sqrt(): boolean | T;
 
     public pow(e: BIG): T;
 }
