@@ -7,6 +7,8 @@ import {FP12} from "./fp12";
 import {FP8} from "./fp8";
 import {ECP} from "./ecp";
 import {ECP2} from "./ecp2";
+import {PAIR} from "./pair";
+import {RomField} from "./rom_field";
 
 export enum CtxOption {
     ED25519 = "ED25519",
@@ -50,4 +52,7 @@ export class CTX {
     public FP12: typeof FP12;
     public ECP: typeof ECP;
     public ECP2: typeof ECP2;
+
+    public PAIR: PAIR;
+    public ROM_FIELD: RomField;
 }
