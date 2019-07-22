@@ -28,7 +28,7 @@
 
 /* Marsaglia & Zaman Random number generator constants */
 
-var RAND = function(ctx) {
+var Rand = function(ctx) {
     "use strict";
 
     /**
@@ -36,7 +36,7 @@ var RAND = function(ctx) {
       *
       * @constructor
       * @this {RAND}
-      */            
+      */
     var RAND = function() {
         /* Cryptographically strong pseudo-random number generator */
         this.ira = []; /* random number...   */
@@ -56,7 +56,7 @@ var RAND = function(ctx) {
          * Delete all internal state of a random number generator
          *
          * @this {RAND}
-         */			
+         */
         clean: function() {
             var i;
 
@@ -77,7 +77,7 @@ var RAND = function(ctx) {
          * Marsaglia & Zaman random number generator
          *
          * @this {RAND}
-         */				
+         */
         sbrand: function() {
             var i, k, pdiff, t;
 
@@ -205,8 +205,8 @@ var RAND = function(ctx) {
       * Pack 4 bytes into a 32-bit Word
       *
       * @this {RAND}
-      */    
-    RAND.pack = function(b) { 
+      */
+    RAND.pack = function(b) {
         return (((b[3]) & 0xff) << 24) | ((b[2] & 0xff) << 16) | ((b[1] & 0xff) << 8) | (b[0] & 0xff);
     };
 
@@ -215,6 +215,6 @@ var RAND = function(ctx) {
 
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     module.exports = {
-        RAND: RAND
+        RAND: Rand
     };
 }

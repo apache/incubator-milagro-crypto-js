@@ -1,4 +1,5 @@
 import {AES} from "./aes";
+import {BIG, DBIG} from "./big";
 
 export enum CtxOption {
     ED25519 = "ED25519",
@@ -33,4 +34,6 @@ export enum CtxOption {
 export class CTX {
     public constructor(input_param?: CtxOption);
     public AES: typeof AES;
+    public BIG: typeof BIG;
+    public DBIG: typeof DBIG;
 }

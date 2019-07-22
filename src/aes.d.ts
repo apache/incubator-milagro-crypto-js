@@ -34,12 +34,20 @@ export class AES {
     public end(): void;
 
     public static ROTL8(x: number): number;
+
     public static ROTL16(x: number): number;
+
     public static ROTL24(x: number): number;
+
     public static pack(b: number): number;
+
     public static unpack(a: number): number;
-    public static bmul(a: number, b:number): number;
+
+    public static bmul(a: number, b: number): number;
+
     public static SubByte(a: number): number;
-    public static product(a: number, b:number): number;
+
+    public static product(a: number, b: number): number;
+
     public static InvMixCol(x: number): number;
 }
