@@ -1,5 +1,10 @@
 import {AES} from "./aes";
 import {BIG, DBIG} from "./big";
+import {FP} from "./fp";
+import {FP2} from "./fp2";
+import {FP4} from "./fp4";
+import {FP12} from "./fp12";
+import {FP8} from "./fp8";
 
 export enum CtxOption {
     ED25519 = "ED25519",
@@ -36,4 +41,9 @@ export class CTX {
     public AES: typeof AES;
     public BIG: typeof BIG;
     public DBIG: typeof DBIG;
+    public FP: typeof FP;
+    public FP2: typeof FP2;
+    public FP4: typeof FP4;
+    public FP8: typeof FP8;
+    public FP12: typeof FP12;
 }
