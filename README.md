@@ -155,23 +155,6 @@ The tests can be run using Docker:
 docker build -t mcjs:builder .
 docker run --rm mcjs:builder 
 ```
-## Crypto Notice
-
-This distribution includes cryptographic software. The country in which you
-currently reside may have restrictions on the import, possession, use, and/or
-re-export to another country, of encryption software. BEFORE using any
-encryption software, please check your country's laws, regulations and
-policies concerning the import, possession, or use, and re-export of encryption
-software, to see if this is permitted. See <http://www.wassenaar.org/> for
-more information.
-
-The Apache Software Foundation has classified this software as Export Commodity
-Control Number (ECCN) 5D002, which includes information security software using
-or performing cryptographic functions with asymmetric algorithms. The form and
-manner of this Apache Software Foundation distribution makes it eligible for
-export under the "publicly available" Section 742.15(b) exemption (see the BIS
-Export Administration Regulations, Section 742.15(b)) for both object code and
-source code.
 
 ## Contributors 
 
@@ -194,3 +177,24 @@ Please add yourself here if you make or have made a contribution.
 3.  Write a test which shows that the bug was fixed or that the feature works as expected.
 4.  Make a pull request with a reference to the issue
 
+## Crypto Notice
+
+This distribution includes cryptographic software. The country in which you
+currently reside may have restrictions on the import, possession, use, and/or
+re-export to another country, of encryption software. BEFORE using any
+encryption software, please check your country's laws, regulations and
+policies concerning the import, possession, or use, and re-export of encryption
+software, to see if this is permitted. See <http://www.wassenaar.org/> for
+more information.
+
+The Apache Software Foundation has classified this software as Export Commodity
+Control Number (ECCN) 5D002, which includes information security software using
+or performing cryptographic functions with asymmetric algorithms. The form and
+manner of this Apache Software Foundation distribution makes it eligible for
+export under the "publicly available" Section 742.15(b) exemption (see the BIS
+Export Administration Regulations, Section 742.15(b)) for both object code and
+source code.
+
+## Disclaimer
+
+Apache Milagro is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Apache Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
