@@ -9,6 +9,7 @@ import {ECP} from "./ecp";
 import {ECP2} from "./ecp2";
 import {PAIR} from "./pair";
 import {RomField} from "./rom_field";
+import {ECDH} from "./ecdh";
 
 export type CtxOption =
     | "ED25519"
@@ -51,6 +52,7 @@ export class CTX {
     public FP12: typeof FP12;
     public ECP: typeof ECP;
     public ECP2: typeof ECP2;
+    public ECDH: typeof ECDH;
 
     public PAIR: PAIR;
     public ROM_FIELD: RomField;
