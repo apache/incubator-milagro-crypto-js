@@ -29,6 +29,13 @@
 var SHA3 = function(ctx) {
     "use strict";
 
+    /**
+      * Creates an instance of SHA3
+      *
+      * @constructor
+      * @this {SHA3}
+      * @param olen output length
+      */                
     var SHA3 = function(olen) {
         this.length = 0;
         this.rate = 0;
@@ -106,7 +113,12 @@ var SHA3 = function(ctx) {
             }
         },
 
-        /* Initialise Hash function */
+        /**
+          * Initialise an instance of SHA3
+          *
+          * @this {SHA3}
+          * @param olen output length
+          */
         init: function(olen) { /* initialise */
             var i, j;
             for (i = 0; i < 5; i++) {
@@ -120,7 +132,12 @@ var SHA3 = function(ctx) {
             this.rate = 200 - 2 * olen;
         },
 
-        /* process a single byte */
+        /**
+          * Process a byte for SHA3
+          *
+          * @this {SHA3}
+          * @byt byte of date to be processed
+          */
         process: function(byt) { /* process the next message byte */
             var i, j, k, b, cnt, el;
 
@@ -183,6 +200,12 @@ var SHA3 = function(ctx) {
             }
         },
 
+        /**
+          * Create fixed length hash output of SHA3
+          *
+          * @this {SHA3}
+          * @param buff byte array to store hash
+          */	
         hash: function(buff) { /* pad message and finish - supply digest */
             var q = this.rate - (this.length % this.rate);
             if (q == 1) {
@@ -197,6 +220,13 @@ var SHA3 = function(ctx) {
             this.squeeze(buff, this.len);
         },
 
+        /**
+          * Create variable length hash output of SHA3
+          *
+          * @this {SHA3}
+          * @param buff byte array to store hash
+          * @param olen length of the hash
+          */		
         shake: function(buff, olen) { /* pad message and finish - supply digest */
             var q = this.rate - (this.length % this.rate);
             if (q == 1) {

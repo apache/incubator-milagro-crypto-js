@@ -1,61 +1,27 @@
-<!DOCTYPE HTML PUBLIC -//W3C//DTD HTML 4.01 Transitional//EN>
-<html>
-<head>
-<title>Browser test</title>
-<script src="src/rand.js"></script>
-<script src="src/rom_curve.js"></script>
-<script src="src/rom_field.js"></script>
-<script src="src/uint64.js"></script>
-<script src="src/aes.js"></script>
-<script src="src/big.js"></script>
-<script src="src/gcm.js"></script>
-<script src="src/hash256.js"></script>
-<script src="src/hash384.js"></script>
-<script src="src/hash512.js"></script>
-<script src="src/sha3.js"></script>
-<script src="src/newhope.js"></script>
-<script src="src/nhs.js"></script>
-<script src="src/fp.js"></script>
-<script src="src/fp2.js"></script>
-<script src="src/fp4.js"></script>
-<script src="src/fp12.js"></script>
-<script src="src/ff.js"></script>
-<script src="src/rsa.js"></script>
-<script src="src/ecp.js"></script>
-<script src="src/ecp2.js"></script>
-<script src="src/ecdh.js"></script>
-<script src="src/pair.js"></script>
-<script src="src/mpin.js"></script>
-<script src="src/ctx.js"></script>
-</head>
-
-<body>
-<h1>Browser test</h1>
-
-<script type="text/javascript">
 /*
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
 */
 
 /* Test MPIN - test driver and function exerciser for MPIN API Functions */
 
+var CTX = require("../../index");
 
-var ctx = new CTX("BLS383");
+var ctx = new CTX("BLS381");
 
 /* Test M-Pin */
 
@@ -219,6 +185,3 @@ if (rtn == ctx.MPIN.BAD_PIN) {
 }
 
 console.log("SUCCESS");
-</script>
-</body>
-</html>

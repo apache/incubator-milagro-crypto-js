@@ -22,6 +22,12 @@
 var MPIN = function(ctx) {
     "use strict";
 
+    /**
+      * Creates an instance of MPIN
+      *
+      * @constructor
+      * @this {MPIN}
+      */            
     var MPIN = {
         BAD_PARAMS: -11,
         INVALID_POINT: -14,
@@ -43,12 +49,24 @@ var MPIN = function(ctx) {
         SHA384: 48,
         SHA512: 64,
 
-        /* return time in slots since epoch */
+	/**
+         * Get epoch time for today
+         *
+         * @this {MPIN}
+         * @return time in slots since epoch 
+         */	
         today: function() {
             var now = new Date();
             return Math.floor(now.getTime() / (60000 * 1440)); // for daily tokens
         },
 
+	/**
+         * Convert byte array to string
+         *
+         * @this {MPIN}
+         * @param b byte array
+         * @return s string
+         */			
         bytestostring: function(b) {
             var s = "",
                 len = b.length,
@@ -64,6 +82,13 @@ var MPIN = function(ctx) {
             return s;
         },
 
+	/**
+         * Convert a string to byte array
+         *
+         * @this {MPIN}
+         * @param s string
+         * @return b byte array
+         */				
         stringtobytes: function(s) {
             var b = [],
                 i;
@@ -75,6 +100,14 @@ var MPIN = function(ctx) {
             return b;
         },
 
+	/**
+         * Convert byte arrays
+         *
+         * @this {MPIN}
+         * @param a byte array
+         * @param b byte array
+         * @return true if equal
+         */					
         comparebytes: function(a, b) {
             if (a.length != b.length) {
                 return false;
@@ -89,6 +122,14 @@ var MPIN = function(ctx) {
             return true;
         },
 
+	/**
+         * Hash values
+         *
+         * @this {MPIN}
+         * @param c FP8 instance
+         * @param U ECP unstancebyte array
+         * @return R hash value
+         */						
         mpin_hash: function(sha, c, U) {
             var t = [],
                 w = [],
@@ -144,7 +185,15 @@ var MPIN = function(ctx) {
             return R;
         },
 
-        /* Hash number (optional) and string to point on curve */
+	/**
+         * General purpose hash function
+         *
+         * @this {MPIN}
+         * @param sha is the hash type
+         * @param n Integer
+         * @param B byte array
+         * @return R hash value
+         */					
         hashit: function(sha, n, B) {
             var R = [],
                 H, W, i, len;
@@ -188,8 +237,14 @@ var MPIN = function(ctx) {
             return W;
         },
 
-        /* these next two functions help to implement elligator squared - http://eprint.iacr.org/2014/043 */
-        /* maps a random u to a point on the curve */
+	/**
+         * maps a random u to a point on the curve 
+         *
+         * @this {MPIN}
+         * @param u BIG numberInteger
+         * @param cb an integer representing the "sign" of y, in fact its least significant bit.
+         * @return P ECP pointhash value
+         */					
         map: function(u, cb) {
             var P = new ctx.ECP(),
                 x = new ctx.BIG(u),
@@ -210,7 +265,14 @@ var MPIN = function(ctx) {
             return P;
         },
 
-        /* returns u derived from P. Random value in range 1 to return value should then be added to u */
+	/**
+         * returns u derived from P. Random value in range 1 to return value should then be added to u 
+         *
+         * @this {MPIN}
+         * @param u BIG numberInteger
+         * @param P ECP pointhash value
+         * @return r Value that should be added to u to derive P 
+         */							
         unmap: function(u, P) {
             var s = P.getS(),
                 R = new ctx.ECP(),
@@ -325,7 +387,15 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* R=R1+R2 in group G1 */
+	/**
+         * Add two members from the group G1
+         *
+         * @this {MPIN}
+         * @param R1 Input member of G1
+         * @param R2 Input member of G1
+         * @param R Output member of G1. R=R1+R2
+         * @return 0 or an error code
+         */						
         RECOMBINE_G1: function(R1, R2, R) {
             var P = ctx.ECP.fromBytes(R1),
                 Q = ctx.ECP.fromBytes(R2);
@@ -341,7 +411,15 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* W=W1+W2 in group G2 */
+	/**
+         * Add two members from the group G2
+         *
+         * @this {MPIN}
+         * @param W1 Input member of G2
+         * @param W2 Input member of G2
+         * @param W Output member of G2. W=W1+W2
+         * @return 0 or an error code
+         */						
         RECOMBINE_G2: function(W1, W2, W) {
             var P = ctx.ECP2.fromBytes(W1),
                 Q = ctx.ECP2.fromBytes(W2);
@@ -357,11 +435,26 @@ var MPIN = function(ctx) {
             return 0;
         },
 
+	/**
+         * Hash the identity
+         *
+         * @this {MPIN}
+         * @param sha is the hash type
+         * @param ID Identity as byte array
+         * @return hash value
+         */						
         HASH_ID: function(sha, ID) {
             return this.hashit(sha, 0, ID);
         },
 
-        /* create random secret S */
+	/**
+         * Create random secret
+         *
+         * @this {MPIN}
+         * @param rng cryptographically secure random number generator
+         * @param S Random secret value
+         * @return O for success or else error code
+         */					
         RANDOM_GENERATE: function(rng, S) {
             var r = new ctx.BIG(0),
                 s;
@@ -374,12 +467,31 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* Extract PIN from TOKEN for identity CID */
+	/**
+         * Extract a PIN number from a client secret
+         *
+         * @this {MPIN}
+         * @parameter sha hash type
+         * @parameter CID Client identity
+         * @parameter pin PIN value
+         * @parameter TOKEN Client secret
+         * @return token
+         */					
         EXTRACT_PIN: function(sha, CID, pin, TOKEN) {
             return this.EXTRACT_FACTOR(sha,CID,pin%this.MAXPIN,this.PBLEN,TOKEN);
         },
 
-        /* Extract factor from TOKEN for identity CID */
+	/**
+         * Extract factor from TOKEN for identity CID 
+         *
+         * @this {MPIN}
+         * @parameter sha hash type
+         * @parameter CID Client identity
+         * @parameter factor Value to extract
+         * @parameter facbits Number of bits in factor
+         * @parameter TOKEN Token value
+         * @return token
+         */					
         EXTRACT_FACTOR: function(sha, CID, factor, facbits, TOKEN) {
             var P, R, h;
 
@@ -400,7 +512,17 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* Restore factor to TOKEN for identity CID */
+	/**
+         * Restore factor to TOKEN for identity CID 
+         *
+         * @this {MPIN}
+         * @parameter sha hash type
+         * @parameter CID Client identity
+         * @parameter factor Value to extract
+         * @parameter facbits Number of bits in factor
+         * @parameter TOKEN Token value
+         * @return token
+         */					
         RESTORE_FACTOR: function(sha, CID, factor, facbits, TOKEN) {
             var P, R, h;
 
@@ -421,7 +543,14 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* Extract Server Secret SST=S*Q where Q is fixed generator in G2 and S is master secret */
+	/**
+         * Create a server secret in G2 from a master secret
+         *
+         * @this {MPIN}
+         * @param S Master secret
+         * @param SST Server secret = s.Q where Q is a fixed generator of G2
+         * @return O for success or else error code
+         */					
         GET_SERVER_SECRET: function(S, SST) {
             var s,Q;
 
@@ -434,12 +563,17 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /*
-         W=x*H(G);
-         if RNG == NULL then X is passed in
-         if RNG != NULL the X is passed out
-         if type=0 W=x*G where G is point on the curve, else W=x*M(G), where M(G) is mapping of octet G to point on the curve
-        */
+	/**
+         * Find a random multiple of a point in G1
+         *
+         * @this {MPIN}
+         * @parameter rng cryptographically secure random number generator
+	 * @param type determines type of action to be taken
+	 * @param x an output internally randomly generated if R!=NULL, otherwise must be provided as an input
+	 * @param G if type=0 a point in G1, else an octet to be mapped to G1
+	 * @param W the output =x.G or x.M(G), where M(.) is a mapping
+         * @return O for success or else error code
+         */					
         GET_G1_MULTIPLE: function(rng, type, X, G, W) {
             var r = new ctx.BIG(0),
                 x, P;
@@ -468,12 +602,30 @@ var MPIN = function(ctx) {
         },
 
 
-        /* Client secret CST=S*H(CID) where CID is client ID and S is master secret */
+	/**
+         * Create a client secret in G1 from a master secret and the client ID
+         *
+         * @this {MPIN}
+	 * @param S is an input master secret
+	 * @param CID is the input client identity
+	 * @param CST is the full client secret = s.H(ID)
+         * @return O for success or else error code
+         */					
         GET_CLIENT_SECRET: function(S, CID, CST) {
             return this.GET_G1_MULTIPLE(null, 1, S, CID, CST);
         },
 
-        /* Time Permit CTT=S*(date|H(CID)) where S is master secret */
+	/**
+         * Create a Time Permit in G1 from a master secret and the client ID
+         *
+         * @this {MPIN}
+  	 * @param sha is the hash type
+	 * @param date is input date, in days since the epoch.
+	 * @param S is an input master secret
+	 * @param CID is the input client identity
+	 * @param CTT is a Time Permit for the given date = s.H(d|H(ID))
+         * @return O for success or else error code
+         */					
         GET_CLIENT_PERMIT: function(sha, date, S, CID, CTT) {
             var h = this.hashit(sha, date, CID),
                 P = ctx.ECP.mapit(h),
@@ -485,7 +637,23 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* Implement step 1 on client side of MPin protocol */
+	/**
+         * Perform first pass of the client side of the 3-pass version of the M-Pin protocol
+         *
+         * @this {MPIN}
+ 	 * @param sha is the hash type
+	 * @param date is input date, in days since the epoch. Set to 0 if Time permits disabled
+	 * @param CLIENT_ID is the input client identity
+	 * @param rng is a pointer to a cryptographically secure random number generator
+	 * @param X an output internally randomly generated if R!=NULL, otherwise must be provided as an input
+	 * @param pin is the input PIN number
+	 * @param TOKEN is the input M-Pin token (the client secret with PIN portion removed)
+	 * @param SEC is output = CS+TP, where CS=is the reconstructed client secret, and TP is the time permit
+	 * @param xID is output = x.H(ID)
+	 * @param xCID is output = x.(H(ID)+H(d|H(ID)))
+	 * @param PERMIT is the input time permit
+         * @return O for success or else error code
+         */					
         CLIENT_1: function(sha, date, CLIENT_ID, rng, X, pin, TOKEN, SEC, xID, xCID, PERMIT) {
             var r = new ctx.BIG(0),
                 x, P, T, W, h;
@@ -545,7 +713,15 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* Implement step 2 on client side of MPin protocol */
+	/**
+         * Perform second pass of the client side of the 3-pass version of the M-Pin protocol
+         *
+         * @this {MPIN}
+	 * @param X an input, a locally generated random number
+	 * @param Y an input random challenge from the server
+	 * @param SEC on output = -(x+y).V
+         * @return O for success or else error code
+         */					
         CLIENT_2: function(X, Y, SEC) {
             var r = new ctx.BIG(0),
                 P, px, py;
@@ -568,7 +744,17 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* Outputs H(CID) and H(T|H(CID)) for time permits. If no time permits set HID=HTID */
+	/**
+         * Perform first pass of the server side of the 3-pass version of the M-Pin protocol
+         *
+         * @this {MPIN}
+ 	 * @param sha is the hash type
+	 * @param date is input date, in days since the epoch. Set to 0 if Time permits disabled
+	 * @param CID is the input claimed client identity
+	 * @param HID is output H(ID), a hash of the client ID
+	 * @param HTID is output H(ID)+H(d|H(ID))
+         * @return O for success or else error code
+         */
         SERVER_1: function(sha, date, CID, HID, HTID) {
             var h = this.hashit(sha, 0, CID),
                 P = ctx.ECP.mapit(h),
@@ -583,7 +769,23 @@ var MPIN = function(ctx) {
             }
         },
 
-        /* Implement step 1 of MPin protocol on server side. Pa is the client public key in case of DVS, otherwise must be set to null */
+	/**
+         * Perform third pass on the server side of the 3-pass version of the M-Pin protocol
+         *
+         * @this {MPIN}
+	 * @param date is input date, in days since the epoch. Set to 0 if Time permits disabled
+	 * @param HID is input H(ID), a hash of the client ID
+	 * @param HTID is input H(ID)+H(d|H(ID))
+	 * @param Y is the input server's randomly generated challenge
+	 * @param SST is the input server secret
+	 * @param xID is input from the client = x.H(ID)
+	 * @param xCID is input from the client= x.(H(ID)+H(d|H(ID)))
+	 * @param mSEC is an input from the client
+	 * @param E is an output to help the Kangaroos to find the PIN error, or NULL if not required
+	 * @param F is an output to help the Kangaroos to find the PIN error, or NULL if not required
+	 * @param Pa is the input public key from the client, z.Q or NULL if the client uses regular mpin
+         * @return O for success or else error code
+         */
         SERVER_2: function(date, HID, HTID, Y, SST, xID, xCID, mSEC, E, F, Pa) {
             var Q, sQ, R, y, P, g;
 
@@ -669,7 +871,14 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* Pollards kangaroos used to return PIN error */
+	/**
+         * Use Kangaroos to find PIN error
+         *
+         * @this {MPIN}
+	 * @param E a member of the group GT
+	 * @param F a member of the group GT =  E^e
+	 * @return 0 if Kangaroos failed, or the PIN error e
+         */
         KANGAROO: function(E, F) {
             var ge = ctx.FP12.fromBytes(E),
                 gf = ctx.FP12.fromBytes(F),
@@ -722,13 +931,27 @@ var MPIN = function(ctx) {
             return res;
         },
 
-        /* return time  since epoch */
+	/**
+         * Time since epoch 
+         *
+         * @this {MPIN}
+	 * @return time since epoch 
+         */
         GET_TIME: function() {
             var now = new Date();
             return Math.floor(now.getTime() / (1000));
         },
 
-        /* y = H(time,xCID) */
+	/**
+         * Generate Y=H(s,O), where s is epoch time, O is a byte array, and H(.) is a hash function
+         *
+         * @this {MPIN}
+  	 * @param sha is the hash type
+	 * @param TimeValue is epoch time in seconds
+	 * @param xCID input bytearray is an input octet
+	 * @param Y output value
+         * @return O for success or else error code
+         */
         GET_Y: function(sha, TimeValue, xCID, Y) {
             var q = new ctx.BIG(0),
                 h = this.hashit(sha, TimeValue, xCID),
@@ -742,7 +965,26 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* One pass MPIN Client - DVS signature. Message must be null in case of One pass MPIN. */
+	/**
+         * Perform client side of the one-pass version of the M-Pin protocol
+         *
+         * @this {MPIN}
+ 	 * @param sha is the hash type
+	 * @param date is input date, in days since the epoch. Set to 0 if Time permits disabled
+	 * @param CLIENT_ID is the input client identity
+	 * @param rng is a pointer to a cryptographically secure random number generator
+	 * @param X an output internally randomly generated if R!=NULL, otherwise must be provided as an input
+	 * @param pin is the input PIN number
+	 * @param TOKEN is the input M-Pin token (the client secret with PIN portion removed)
+	 * @param SEC is output = -(x+y)(CS+TP), where CS is the reconstructed client secret, and TP is the time permit
+	 * @param xID is output = x.H(ID)
+	 * @param xCID is output = x.(H(ID)+H(d|H(ID)))
+	 * @param PERMIT is the input time permit
+	 * @param TimeValue is input epoch time in seconds - a timestamp
+	 * @param Y is output H(t|U) or H(t|UT) if Time Permits enabled
+	 * @param Message is the message to be signed
+         * @return O for success or else error code
+         */
         CLIENT: function(sha, date, CLIENT_ID, rng, X, pin, TOKEN, SEC, xID, xCID, PERMIT, TimeValue, Y, Message) {
             var rtn = 0,
                 M = [],
@@ -778,7 +1020,27 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* One pass MPIN Server */
+	/**
+         * Perform server side of the one-pass version of the M-Pin protocol
+         *
+         * @this {MPIN}
+ 	 * @param sha is the hash type
+	 * @param date is input date, in days since the epoch. Set to 0 if Time permits disabled
+	 * @param HID is output H(ID), a hash of the client ID
+	 * @param HTID is output H(ID)+H(d|H(ID))
+	 * @param Y is output H(t|U) or H(t|UT) if Time Permits enabled
+	 * @param SST is the input server secret
+	 * @param xID is input from the client = x.H(ID)
+	 * @param xCID is input from the client= x.(H(ID)+H(d|H(ID)))
+	 * @param mSEC is an input from the client
+	 * @param E is an output to help the Kangaroos to find the PIN error, or NULL if not required
+	 * @param F is an output to help the Kangaroos to find the PIN error, or NULL if not required
+	 * @param CID is the input claimed client identity
+	 * @param TimeValue is input epoch time in seconds - a timestamp
+	 * @param MESSAGE is the message to be signed
+	 * @param Pa is input from the client z.Q or NULL if the key-escrow less scheme is not used
+         * @return O for success or else error code
+         */
         SERVER: function(sha, date, HID, HTID, Y, SST, xID, xCID, mSEC, E, F, CID, TimeValue, Message, Pa) {
             var rtn = 0,
                 M = [],
@@ -810,7 +1072,16 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* Functions to support M-Pin Full */
+	/**
+         * Precompute values for use by the client side of M-Pin Full
+         *
+         * @this {MPIN}
+	 * @param TOKEN is the input M-Pin token (the client secret with PIN portion removed)
+	 * @param CID is the input client identity
+	 * @param G1 precomputed output
+	 * @param G2 precomputed output
+         * @return O for success or else error code
+         */
         PRECOMPUTE: function(TOKEN, CID, G1, G2) {
             var P, T, g, Q;
 
@@ -833,8 +1104,20 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* Hash the M-Pin transcript - new */
-
+	/**
+         * Hash the session transcript
+         *
+         * @this {MPIN}
+ 	 * @param sha is the hash type
+	 * @param HID is the hashed input client ID = H(ID)
+	 * @param xID is the client output = x.H(ID)
+	 * @param xCID is the client output = x.(H(ID)+H(T|H(ID)))
+	 * @param SEC is the client part response
+	 * @param Y is the server challenge
+	 * @param R is the client part response
+	 * @param W is the server part response
+	 * @return H the output is the hash of all of the above that apply
+         */
         HASH_ALL: function(sha, HID, xID, xCID, SEC, Y, R, W) {
             var tlen = 0,
                 T = [],
@@ -880,8 +1163,21 @@ var MPIN = function(ctx) {
             return this.hashit(sha, 0, T);
         },
 
-        /* calculate common key on client side */
-        /* wCID = w.(A+AT) */
+	/**
+         * Calculate Key on Client side for M-Pin Full
+         *
+         * @this {MPIN}
+  	 * @param sha is the hash type
+	 * @param G1 precomputed input
+	 * @param G2 precomputed input
+	 * @param pin is the input PIN number
+	 * @param R is an input, a locally generated random number
+	 * @param X is an input, a locally generated random number
+	 * @param H is an input, hash of the protocol transcript
+	 * @param wCID is the input Server-side Diffie-Hellman component
+	 * @param CK is the output calculated shared key
+	 * @return 0 or an error code
+         */
         CLIENT_KEY: function(sha, G1, G2, pin, R, X, H, wCID, CK) {
             var t = [],
                 g1 = ctx.FP12.fromBytes(G1),
@@ -918,9 +1214,21 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* calculate common key on server side */
-        /* Z=r.A - no time permits involved */
-
+	/**
+         * Calculate Key on Server side for M-Pin Full
+         *
+         * @this {MPIN}
+ 	 * @param h is the hash type
+	 * @param Z is the input Client-side Diffie-Hellman component
+	 * @param SST is the input server secret
+	 * @param W is an input random number generated by the server
+	 * @param H is an input, hash of the protocol transcript
+	 * @param HID is the hashed input client ID = H(ID)
+	 * @param xID is input from the client = x.H(ID)
+	 * @param xCID is input from the client= x.(H(ID)+H(d|H(ID)))
+	 * @param SK is the output calculated shared key
+	 * @return 0 or an error code
+         */
         SERVER_KEY: function(sha, Z, SST, W, H, HID, xID, xCID, SK) {
             var t = [],
                 sQ, R, A, U, w, h, g, c, i;
@@ -971,12 +1279,15 @@ var MPIN = function(ctx) {
             return 0;
         },
 
-        /* Generate a public key and the corresponding z for the key-escrow less scheme */
-        /*
-            if R==NULL then Z is passed in
-            if R!=NULL then Z is passed out
-            Pa=(z^-1).Q
-        */
+	/**
+         * Generates a random public key for the client z.Q
+         *
+         * @this {MPIN}
+         * @param rng cryptographically secure random number generator
+	 * @param Z an output internally randomly generated if R!=NULL, otherwise it must be provided as an input
+	 * @param Pa the output public key for the client
+	 * @return 0 or an error code
+         */	
         GET_DVS_KEYPAIR: function(rng, Z, Pa) {
             var r = new ctx.BIG(0),
                 z, Q;

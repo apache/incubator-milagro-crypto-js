@@ -24,7 +24,12 @@
 var FP24 = function(ctx) {
     "use strict";
 
-    /* general purpose constructor */
+    /**
+      * Creates an instance of FP24.
+      *
+      * @constructor
+      * @this {FP24}
+      */
     var FP24 = function(d, e, f) {
 		if (!isNaN(d))
 		{
@@ -50,32 +55,55 @@ var FP24 = function(ctx) {
     };
 
     FP24.prototype = {
-        /* reduce all components of this mod Modulus */
+
+	/**
+         * Reduces all components of possibly unreduced FP24 mod Modulus
+         *
+         * @this {FP24}
+         */
         reduce: function() {
             this.a.reduce();
             this.b.reduce();
             this.c.reduce();
         },
 
-        /* normalize all components of this mod Modulus */
+	/**
+         * Normalises the components of an FP24
+         *
+         * @this {FP24}
+         */
         norm: function() {
             this.a.norm();
             this.b.norm();
             this.c.norm();
         },
 
-        /* test x==0 ? */
+	/**
+         * Tests for FP24 equal to zero
+         *
+         * @this {FP24}
+         */
         iszilch: function() {
             return (this.a.iszilch() && this.b.iszilch() && this.c.iszilch());
         },
 
-        /* test x==1 ? */
+	/**
+         * Tests for FP24 equal to unity
+         *
+         * @this {FP24}
+         */
         isunity: function() {
             var one = new ctx.FP8(1);
             return (this.a.equals(one) && this.b.iszilch() && this.c.iszilch());
         },
 
-        /* conditional copy of g to this depending on d */
+	/**
+         * Conditional copy of FP24 number
+         *
+         * @this {FP24}
+         * @param g FP24 instance
+         * @param d copy depends on this value
+         */
         cmove: function(g, d) {
             this.a.cmove(g.a, d);
             this.b.cmove(g.b, d);
@@ -84,7 +112,11 @@ var FP24 = function(ctx) {
 			this.stype^=(this.stype^g.stype)&d;
         },
 
-        /* Constant time select from pre-computed table */
+	/**
+         * Constant time select from pre-computed table 
+         *
+         * @this {FP24}
+         */
         select: function(g, b) {
             var invf = new FP24(0),
                 m, babs;
@@ -114,27 +146,50 @@ var FP24 = function(ctx) {
 		gettype: function() {
 			return this.stype;
 		},
-        /* extract a from this */
+	
+	/**
+         * extract a from this
+         *
+         * @this {FP24}
+         */	
         geta: function() {
             return this.a;
         },
 
-        /* extract b */
+	/**
+         * extract b from this
+         *
+         * @this {FP24}
+         */
         getb: function() {
             return this.b;
         },
 
-        /* extract c */
+	/**
+         * extract c from this
+         *
+         * @this {FP24}
+         */
         getc: function() {
             return this.c;
         },
 
-        /* return 1 if x==y, else 0 */
+	/**
+         * Tests for equality of two FP24s
+         *
+         * @this {FP24}
+         * @param x FP24 instance to compare
+         */
         equals: function(x) {
             return (this.a.equals(x.a) && this.b.equals(x.b) && this.c.equals(x.c));
         },
 
-        /* copy this=x */
+	/**
+         * Copy FP24 to another FP24
+         *
+         * @this {FP24}
+         * @param x FP24 instance to be copied
+         */
         copy: function(x) {
             this.a.copy(x.a);
             this.b.copy(x.b);
@@ -142,7 +197,12 @@ var FP24 = function(ctx) {
 			this.stype=x.stype;
         },
 
-        /* set this=1 */
+	/**
+         * Set FP24 to unity
+         *
+         * @this {FP24}
+         * @param x FP24 instance to be set to one
+         */
         one: function() {
             this.a.one();
             this.b.zero();
@@ -150,7 +210,11 @@ var FP24 = function(ctx) {
 			this.stype=ctx.FP.ONE;
         },
 
-        /* set this=0 */
+	/**
+         * Set FP24 to zero
+         *
+         * @this {FP24}
+         */
         zero: function() {
             this.a.zero();
             this.b.zero();
@@ -158,14 +222,25 @@ var FP24 = function(ctx) {
 			this.stype=ctx.FP.ZERO;
         },
 
-        /* this=conj(this) */
+	/**
+         * Conjugation of FP24
+         *
+         * @this {FP24}
+         */
         conj: function() {
             this.a.conj();
             this.b.nconj();
             this.c.conj();
         },
 
-        /* set this from 3 FP8s */
+	/**
+         * Set FP24 from three FP8 values
+         *
+         * @this {FP24}
+         * @param d FP8 instance
+         * @param e FP8 instance
+         * @param f FP8 instance
+         */
         set: function(d, e, f) {
             this.a.copy(d);
             this.b.copy(e);
@@ -173,7 +248,12 @@ var FP24 = function(ctx) {
 			this.stype=ctx.FP.DENSE;
         },
 
-        /* set this from one ctx.FP8 */
+	/**
+         * Set FP24 from one FP8 value
+         *
+         * @this {FP24}
+         * @param c FP8 instance
+         */
         seta: function(d) {
             this.a.copy(d);
             this.b.zero();
@@ -181,7 +261,11 @@ var FP24 = function(ctx) {
 			this.stype=ctx.FP.SPARSER
         },
 
-        /* Granger-Scott Unitary Squaring */
+	/**
+         * Fast Squaring of an FP24 in "unitary" form
+         *
+         * @this {FP24}
+         */
         usqr: function() {
             var A = new ctx.FP8(this.a), 
                 B = new ctx.FP8(this.c), 
@@ -220,7 +304,11 @@ var FP24 = function(ctx) {
             this.reduce();
         },
 
-        /* Chung-Hasan SQR2 method from http://cacr.uwaterloo.ca/techreports/2006/cacr2006-24.pdf */
+	/**
+         * Fast Squaring of an FP24
+         *
+         * @this {FP24}
+         */
         sqr: function() {
 			if (this.stype==ctx.FP.ONE)
 				return;
@@ -262,7 +350,12 @@ var FP24 = function(ctx) {
             this.norm();
         },
 
-        /* FP24 full multiplication this=this*y */
+	/**
+         * Full unconditional Multiplication of two FP24s
+         *
+         * @this {FP24}
+         * @param y FP24 instance, the multiplier
+         */
         mul: function(y) {
             var z0 = new ctx.FP8(this.a), 
                 z1 = new ctx.FP8(0),
@@ -336,8 +429,15 @@ var FP24 = function(ctx) {
 
 /* FP24 multiplication w=w*y */
 /* catering for special case that arises from special form of ATE pairing line function */
-/* w and y are both sparser line functions - cost = 6m */ 
-		smul: function(y) {
+	/* w and y are both sparser line functions - cost = 6m */
+
+	/**
+         * Fast multiplication of two sparse FP24s that arises from ATE pairing line functions
+         *
+         * @this {FP24}
+         * @param y FP24 instance, the multiplier
+         */	
+	smul: function(y) {
 			if (ctx.ECP.SEXTIC_TWIST==ctx.ECP.D_TYPE)
 			{	
 				var w1=new ctx.FP4(this.a.geta());
@@ -447,8 +547,15 @@ var FP24 = function(ctx) {
 
 /* FP24 full multiplication w=w*y */
 /* Supports sparse multiplicands */
-/* Usually w is denser than y */
-		ssmul: function(y) {
+	/* Usually w is denser than y */
+
+	/**
+         * Fast multiplication of what may be sparse multiplicands
+         *
+         * @this {FP24}
+         * @param y FP24 instance, the multiplier
+         */
+	ssmul: function(y) {
 			if (this.stype==ctx.FP.ONE)
 			{
 				this.copy(y);
@@ -642,7 +749,11 @@ var FP24 = function(ctx) {
 			this.norm();
 		},
 
-        /* this=1/this */
+	/**
+         * Inverting an FP24
+         *
+         * @this {FP24}
+         */
         inverse: function() {
             var f0 = new ctx.FP8(this.a), 
                 f1 = new ctx.FP8(this.b), 
@@ -689,7 +800,12 @@ var FP24 = function(ctx) {
 			this.stype=ctx.FP.DENSE;
         },
 
-        /* this=this^p, where p=Modulus, using Frobenius */
+	/**
+         * Raises an FP24 to the power of the internal modulus p, using the Frobenius
+         *
+         * @this {FP24}
+         * @param f Modulus
+         */
         frob: function(f,n) {
             var f2 = new ctx.FP2(f),
                 f3 = new ctx.FP2(f),
@@ -711,7 +827,11 @@ var FP24 = function(ctx) {
 			this.stype=ctx.FP.DENSE;
         },
 
-        /* trace function */
+	/**
+         * Calculate the trace of an FP24
+         *
+         * @this {FP24}
+         */
         trace: function() {
             var t = new ctx.FP8(0);
 
@@ -722,12 +842,21 @@ var FP24 = function(ctx) {
             return t;
         },
 
-        /* convert this to hex string */
+	/**
+         * convert this to hex string
+         *
+         * @this {FP24}
+         */
         toString: function() {
             return ("[" + this.a.toString() + "," + this.b.toString() + "," + this.c.toString() + "]");
         },
 
-        /* convert this to byte array */
+	/**
+         * convert this to byte array
+         *
+         * @this {FP24}
+         * @param w Byte array
+         */
         toBytes: function(w) {
             var t = [],
                 i;
@@ -835,7 +964,12 @@ var FP24 = function(ctx) {
             }
         },
 
-        /* set this=this^e */
+	/**
+         * Raises an FP24 to the power of a BIG
+         *
+         * @this {FP24}
+         * @param e BIG instance exponent
+         */
         pow: function(e) {
             var e1, e3, w, nb, i, bt, sf;
 
@@ -869,7 +1003,13 @@ var FP24 = function(ctx) {
             return w;
         },
 
-        /* constant time powering by small integer of max length bts */
+	/**
+         * Raises an FP24 instance x to a small integer power, side-channel resistant
+         *
+         * @this {FP24}
+         * @param e small integer exponent
+         * @param bts maximum number of bits in exponent
+         */
         pinpow: function(e, bts) {
             var R = [],
                 i, b;
@@ -886,7 +1026,13 @@ var FP24 = function(ctx) {
             this.copy(R[0]);
         },
 
-        /* Faster compressed powering for unitary elements */
+	/**
+         * Raises an FP24 instance to a BIG power, compressed to FP4
+         *
+         * @this {FP24}
+         * @param e BIG exponent
+         * @param r BIG group order
+         */
         compow: function(e, r) {
             var fa, fb, f, q, m, a, b, g1, g2, c, cp, cpm1, cpm2;
 
@@ -933,7 +1079,12 @@ var FP24 = function(ctx) {
         }
     };
 
-    /* convert from byte array to FP12 */
+    /**
+      * convert from byte array to FP24 
+      *
+      * @this {FP24}
+      * @param w Byte array
+      */    
     FP24.fromBytes = function(w) {
         var t = [],
             i, a, b, c, d, e, f, g, r, ea, eb;
@@ -1081,7 +1232,11 @@ var FP24 = function(ctx) {
         return r;
     };
 
-    /* return 1 if b==c, no branching */
+    /**
+      * return 1 if b==c, no branching 
+      *
+      * @this {FP24}
+      */    
     FP24.teq = function(b, c) {
         var x = b ^ c;
         x -= 1; // if x=0, x now -1
@@ -1092,6 +1247,12 @@ var FP24 = function(ctx) {
     // Bos & Costello https://eprint.iacr.org/2013/458.pdf
     // Faz-Hernandez & Longa & Sanchez  https://eprint.iacr.org/2013/158.pdf
     // Side channel attack secure
+
+    /**
+      * p=q0^u0.q1^u1.q2^u2.q3^u3... 
+      *
+      * @this {FP24}
+      */    
     FP24.pow8 = function(q, u) {
         var g1 = [],
             g2 = [],

@@ -20,8 +20,19 @@
 var PAIR192 = function(ctx) {
     "use strict";
 
+    /**
+      * Creates an instance of PAIR192
+      *
+      * @constructor
+      * @this {PAIR192}
+      */            
     var PAIR192 = {
-        /* Line function */
+	
+	/**
+         * Line function 
+         *
+         * @this {PAIR192}
+         */	
         line: function(A, B, Qx, Qy) {
             var r = new ctx.FP24(1),
                 XX, YY, ZZ, YZ, sb,
@@ -125,16 +136,26 @@ var PAIR192 = function(ctx) {
             return r;
         },
 
-/* prepare for multi-pairing */
-		initmp: function() {
+	/**
+         * prepare for multi-pairing 
+         *
+         * @this {PAIR192}
+         */	
+	initmp: function() {
 			var r=[];
 			for (var i=0;i<ctx.ECP.ATE_BITS;i++)
 				r[i] = new ctx.FP24(1);
 			return r;
 		},
 
-/* basic Miller loop */
-		miller: function(r) {
+	/**
+         * basic Miller loop
+         *
+         * @this {PAIR192}
+	 * @param r FP24 precomputed array of accumulated line functions
+ 	 * @param res FP24 result
+         */	
+	miller: function(r) {
 			var res=new ctx.FP24(1);
 			for (var i=ctx.ECP.ATE_BITS-1; i>=1; i--)
 			{
@@ -149,16 +170,22 @@ var PAIR192 = function(ctx) {
 			return res;
 		},
 
-/* Accumulate another set of line functions for n-pairing */
-		another: function(r,P1,Q1) {
-
+	/**
+         * Precompute line functions for n-pairing
+         *
+         * @this {PAIR192}
+         * @param r array of precomputed FP24 products of line functions
+	 * @param P1 An element of G2
+	 * @param Q1 An element of G1
+         */
+	another: function(r,P1,Q1) {
 			var f;
 			var n=new ctx.BIG(0);
 			var n3=new ctx.BIG(0);
 			var lv,lv2;
 			var bt;
 
-// P is needed in affine form for line function, Q for (Qx,Qy) extraction
+			// P is needed in affine form for line function, Q for (Qx,Qy) extraction
 			var P=new ctx.ECP4(); P.copy(P1); P.affine();
 			var Q=new ctx.ECP(); Q.copy(Q1); Q.affine();
 
@@ -196,7 +223,14 @@ var PAIR192 = function(ctx) {
 		},
 
 
-        /* Optimal R-ate pairing */
+	/**
+         * Calculate Miller loop for Optimal ATE pairing e(P,Q)
+         *
+         * @this {PAIR192}
+	 * @param P1 An element of G2
+	 * @param Q1 An element of G1
+	 * @result r An element of GT i.e. result of the pairing calculation e(P,Q)
+         */
         ate: function(P1, Q1) {
             var x, n, n3, lv, lv2,
                 Qx, Qy, A, NP, r, nb, bt,
@@ -245,7 +279,16 @@ var PAIR192 = function(ctx) {
             return r;
         },
 
-        /* Optimal R-ate double pairing e(P,Q).e(R,S) */
+	/**
+         * Calculate Miller loop for Optimal ATE double-pairing e(P,Q).e(R,S)
+         *
+         * @this {PAIR192}
+	 * @param P1 An element of G2
+	 * @param Q1 An element of G1
+	 * @param R1 An element of G2
+	 * @param S1 An element of G1
+	 * @result r An element of GT i.e. result of the double pairing calculation e(P,Q).e(R,S)
+         */
         ate2: function(P1, Q1, R1, S1) {
             var x, n, n3, lv, lv2,
                 Qx, Qy, Sx, Sy, A, B, NP, NR, r, nb, bt,
@@ -312,7 +355,13 @@ var PAIR192 = function(ctx) {
             return r;
         },
 
-        /* final exponentiation - keep separate for multi-pairings and to avoid thrashing stack */
+	/**
+         * Final exponentiation of pairing, converts output of Miller loop to element in GT
+         *
+         * @this {PAIR192}
+	 * @param m FP24 value
+	 * @result r m^((p^12-1)/r) where p is modulus and r is the group order
+         */
         fexp: function(m) {
             var fa, fb, f, x, r, lv,
                 t0,t1,t2,t3,t4,t5,t6,t7;
@@ -335,11 +384,11 @@ var PAIR192 = function(ctx) {
             lv.copy(r);
             r.frob(f,4);
             r.mul(lv);
-			if (r.isunity())
-			{
-				r.zero();
-				return r;
-			}
+//			if (r.isunity())
+//			{
+//				r.zero();
+//				return r;
+//			}
             /* Hard part of final exp */
             // Ghamman & Fouotsa Method
             t7=new ctx.FP24(r); t7.usqr();
@@ -415,17 +464,24 @@ var PAIR192 = function(ctx) {
         }
     };
 
-/* prepare ate parameter, n=6u+2 (BN) or n=u (BLS), n3=3*n */
-	PAIR192.lbits = function(n3,n)
-	{
+	/**
+         * prepare ate parameter, n=6u+2 (BN) or n=u (BLS), n3=3*n 
+         *
+         * @this {PAIR192}
+         */
+	PAIR192.lbits = function(n3,n) {
 		n.rcopy(ctx.ROM_CURVE.CURVE_Bnx);
 		n3.copy(n);
 		n3.pmul(3);
 		n3.norm();
 		return n3.nbits();
-	},
+	};
 
-    /* GLV method */
+    /**
+      * GLV method
+      *
+      * @this {PAIR192}
+      */
     PAIR192.glv = function(e) {
         var u = [],
             q, x, x2;
@@ -446,7 +502,11 @@ var PAIR192 = function(ctx) {
         return u;
     };
 
-    /* Galbraith & Scott Method */
+    /**
+      * Galbraith & Scott Method
+      *
+      * @this {PAIR192}
+      */
     PAIR192.gs = function(e) {
         var u = [],
             i, q, x, w;
@@ -474,7 +534,14 @@ var PAIR192 = function(ctx) {
         return u;
     };
 
-    /* Multiply P by e in group G1 */
+    /**
+      * Fast point multiplication of a member of the group G1 by a BIG number
+      *
+      * @this {PAIR192}
+      * @param P Member of G1
+      * @param e BIG multiplier
+      * @return R Member of G1 R=e.P
+      */
     PAIR192.G1mul = function(P, e) {
         var R, Q, q, bcru, cru, t, u, np, nn;
 
@@ -518,7 +585,14 @@ var PAIR192 = function(ctx) {
         return R;
     };
 
-    /* Multiply P by e in group G2 */
+    /**
+      * Multiply P by e in group G2
+      *
+      * @this {PAIR192}
+      * @param P Member of G2
+      * @param e BIG multiplier
+      * @return R Member of G2 R=e.P
+      */
     PAIR192.G2mul = function(P, e) {
         var R, Q, F, q, u, t, i, np, nn;
 
@@ -560,7 +634,14 @@ var PAIR192 = function(ctx) {
         return R;
     };
 
-    /* Note that this method requires a lot of RAM! Better to use compressed XTR method, see ctx.FP4.js */
+    /**
+      * Fast raising of a member of GT to a BIG power
+      *
+      * @this {PAIR192}
+      * @param d Member of GT
+      * @param e BIG exponent
+      * @return r d^e
+      */    
     PAIR192.GTpow = function(d, e) {
         var r, g, fa, fb, f, q, t, u, i, np, nn;
 
@@ -607,8 +688,7 @@ var PAIR192 = function(ctx) {
     return PAIR192;
 };
 
+// CommonJS module exports
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
-    module.exports = {
-        PAIR192: PAIR192
-    };
+  module.exports.PAIR192 = PAIR192;
 }

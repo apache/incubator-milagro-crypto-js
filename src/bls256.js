@@ -22,6 +22,12 @@
 var BLS256 = function(ctx) {
     "use strict";
 
+    /**
+     * Creates an instance of BLS256
+     *
+     * @constructor
+     * @this {BLS256}
+     */    
     var BLS256 = {
         BLS_OK: 0,
         BLS_FAIL: -1,
@@ -29,6 +35,13 @@ var BLS256 = function(ctx) {
         BFS: ctx.BIG.MODBYTES,
         BGS: ctx.BIG.MODBYTES,
 
+       /**
+         * Convert byte array to string
+         *
+         * @this {BLS192}
+         * @parameter b byte array
+         * @return string
+         */	
         bytestostring: function(b) {
             var s = "",
                 len = b.length,
@@ -44,6 +57,13 @@ var BLS256 = function(ctx) {
             return s;
         },
 
+       /**
+         * Convert string to byte array 
+         *
+         * @this {BLS192}
+         * @parameter s string
+         * @return byte array
+         */		
         stringtobytes: function(s) {
             var b = [],
                 i;
@@ -55,8 +75,13 @@ var BLS256 = function(ctx) {
             return b;
         },
 
-/* hash a message to an ECP point, using SHA3 */
-
+        /**
+          *  hash a message to an ECP point, using SHA3 
+          *
+          * @this {BLS192}
+          * @parameter m message to be hashedstring
+          * @return ECP point
+          */	
         bls_hashit: function(m) {
 			var sh = new ctx.SHA3(ctx.SHA3.SHAKE256);
             var hm = [];
@@ -68,9 +93,16 @@ var BLS256 = function(ctx) {
 			return P;
 		},
 
-/* generate key pair, private key S, public key W */
-
-		KeyPairGenerate(rng,S,W) {
+	/**
+          * Generate key pair
+          *
+          * @this {BLS192}
+          * @parameter rng Cryptographically Secure Random Number Generator
+          * @parameter S Private key
+          * @parameter W Public key
+          * @return Error code
+          */	
+ 	KeyPairGenerate(rng,S,W) {
 			var G=ctx.ECP8.generator();
 			var q=new ctx.BIG(0);
 			q.rcopy(ctx.ROM_CURVE.CURVE_Order);
@@ -82,9 +114,16 @@ var BLS256 = function(ctx) {
 
 		},
 
-/* Sign message m using private key S to produce signature SIG */
-
-		sign(SIG,m,S) {
+	/**
+          * Sign message
+          *
+          * @this {BLS192}
+          * @parameter SIG Singature
+          * @parameter m Message to sign
+          * @parameter S Private key
+          * @return Error code
+          */		
+	sign(SIG,m,S) {
 			var D=this.bls_hashit(m);
 			var s=ctx.BIG.fromBytes(S);
 			D=ctx.PAIR256.G1mul(D,s);
@@ -92,9 +131,16 @@ var BLS256 = function(ctx) {
 			return this.BLS_OK;
 		},
 
-/* Verify signature given message m, the signature SIG, and the public key W */
-
-		verify(SIG,m,W) {
+	/**
+          * Verify message
+          *
+          * @this {BLS192}
+          * @parameter SIG Signature
+          * @parameter m Message to sign
+          * @parameter W Public key
+          * @return Error code
+          */			
+	verify(SIG,m,W) {
 			var HM=this.bls_hashit(m);
 			var D=ctx.ECP.fromBytes(SIG);
 			var G=ctx.ECP8.generator();
@@ -114,7 +160,57 @@ var BLS256 = function(ctx) {
 			if (v.isunity())
 				return this.BLS_OK;
 			return this.BLS_FAIL;
-		}
+		},
+
+
+	/**
+          * R=R1+R2 in group G1 
+          *
+          * @this {BLS192}
+          * @parameter R1 G1 Point
+          * @parameter R2 G1 Point
+          * @parameter R G1 Point
+          * @return Error code
+          */			
+        add_G1(R1, R2, R) {
+                       var P = ctx.ECP.fromBytes(R1),
+                       Q = ctx.ECP.fromBytes(R2);
+
+                       if (P.is_infinity() || Q.is_infinity()) {
+                           return this.INVALID_POINT;
+		       }
+
+                       P.add(Q);
+
+                       P.toBytes(R,true);
+
+                       return 0;
+                },
+
+	/**
+          *  W=W1+W2 in group G2 
+          *
+          * @this {BLS192}
+          * @parameter W1 G2 Point
+          * @parameter W2 G2 Point
+          * @parameter R G2 Point
+          * @return Error code
+          */			
+        add_G2(W1, W2, W) {
+                       var P = ctx.ECP8.fromBytes(W1),
+                           Q = ctx.ECP8.fromBytes(W2);
+
+                       if (P.is_infinity() || Q.is_infinity()) {
+                           return this.INVALID_POINT;
+                       }
+
+                       P.add(Q);
+
+                       P.toBytes(W);
+
+                       return 0;
+                }
+	
     };
 
     return BLS256;

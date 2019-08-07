@@ -1,27 +1,27 @@
 /*
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
 */
 
 /* Test MPIN - test driver and function exerciser for MPIN API Functions */
 
 var CTX = require("../../index");
 
-var ctx = new CTX("BN254CX");
+var ctx = new CTX("BLS381");
 
 /* Test M-Pin */
 
@@ -52,9 +52,20 @@ var HCID = [];
 var HID = [];
 var HTID = [];
 
+var G1 = [];
+var G2 = [];
+var R = [];
+var Z = [];
+var W = [];
+var T = [];
+var CK = [];
+var SK = [];
+
+var HSID = [];
+
 /* Set configuration */
 var PINERROR = true;
-var ONE_PASS = false;
+var FULL = true;
 
 /* Trusted Authority set-up */
 ctx.MPIN.RANDOM_GENERATE(rng, S);
@@ -84,6 +95,10 @@ if (rtn != 0) {
 
 console.log("Client Token TK: 0x" + ctx.MPIN.bytestostring(TOKEN));
 
+if (FULL) {
+    ctx.MPIN.PRECOMPUTE(TOKEN, HCID, G1, G2);
+}
+
 var date = 0;
 
 pin = 1234;
@@ -107,69 +122,50 @@ var pHTID = HTID;
 var pE = E;
 var pF = F;
 var pPERMIT = PERMIT;
+var prHID;
 
 if (date != 0) {
+    prHID = pHTID;
     if (!PINERROR) {
         pxID = null;
         //	pHID=null;
     }
 } else {
+    prHID = pHID;
     pPERMIT = null;
     pxCID = null;
     pHTID = null;
 }
-
 if (!PINERROR) {
     pE = null;
     pF = null;
 }
 
-if (ONE_PASS) {
-    console.log("MPIN Single Pass ");
-    var timeValue = ctx.MPIN.GET_TIME();
-    console.log("Epoch " + timeValue);
+console.log("MPIN Single Pass ");
+var timeValue = ctx.MPIN.GET_TIME();
+console.log("Epoch " + timeValue);
 
-    rtn = ctx.MPIN.CLIENT(sha, date, CLIENT_ID, rng, X, pin, TOKEN, SEC, pxID, pxCID, pPERMIT, timeValue, Y);
+rtn = ctx.MPIN.CLIENT(sha, date, CLIENT_ID, rng, X, pin, TOKEN, SEC, pxID, pxCID, pPERMIT, timeValue, Y);
 
-    if (rtn != 0) {
-        console.error("FAILURE: CLIENT rtn: " + rtn);
-        process.exit(-1);
-    }
-    rtn = ctx.MPIN.SERVER(sha, date, pHID, pHTID, Y, SST, pxID, pxCID, SEC, pE, pF, CLIENT_ID, timeValue);
-    if (rtn != 0) {
-        console.error("FAILURE: SERVER rtn: " + rtn);
-        process.exit(-1);
-    }
-} else {
-    console.log("MPIN Multi Pass ");
-    rtn = ctx.MPIN.CLIENT_1(sha, date, CLIENT_ID, rng, X, pin, TOKEN, SEC, pxID, pxCID, pPERMIT);
-    if (rtn != 0) {
-        console.error("FAILURE: CLIENT_1 rtn: " + rtn);
-        process.exit(-1);
-    }
-
-    /* Server calculates H(ID) and H(T|H(ID)) (if time permits enabled), and maps them to points on the curve HID and HTID resp. */
-    ctx.MPIN.SERVER_1(sha, date, CLIENT_ID, pHID, pHTID);
-
-    /* Server generates ctx.RANDom number Y and sends it to Client */
-    ctx.MPIN.RANDOM_GENERATE(rng, Y);
-
-    /* Client Second Pass: Inputs Client secret SEC, x and y. Outputs -(x+y)*SEC */
-    rtn = ctx.MPIN.CLIENT_2(X, Y, SEC);
-    if (rtn != 0) {
-        console.error("FAILURE: CLIENT_2 rtn: " + rtn);
-        process.exit(-1);
-    }
-    /* Server Second pass. Inputs hashed client id, ctx.RANDom Y, -(x+y)*SEC, xID and xCID and Server secret SST. E and F help kangaroos to find error. */
-    /* If PIN error not required, set E and F = NULL */
-    rtn = ctx.MPIN.SERVER_2(date, pHID, pHTID, Y, SST, pxID, pxCID, SEC, pE, pF);
-
-    if (rtn != 0) {
-        console.log("FAILURE: SERVER_1 rtn: " + rtn);
-        process.exit(-1);
-    }
+if (rtn != 0) {
+    console.error("FAILURE: CLIENT rtn: " + rtn);
+    process.exit(-1);
+}
+if (FULL) {
+    HCID = ctx.MPIN.HASH_ID(sha, CLIENT_ID);
+    ctx.MPIN.GET_G1_MULTIPLE(rng, 1, R, HCID, Z); /* Also Send Z=r.ID to Server, remember ctx.RANDom r */
 }
 
+rtn = ctx.MPIN.SERVER(sha, date, pHID, pHTID, Y, SST, pxID, pxCID, SEC, pE, pF, CLIENT_ID, timeValue);
+if (rtn != 0) {
+    console.error("FAILURE: SERVER rtn: " + rtn);
+    process.exit(-1);
+}
+
+if (FULL) {
+    HSID = ctx.MPIN.HASH_ID(sha, CLIENT_ID);
+    ctx.MPIN.GET_G1_MULTIPLE(rng, 0, W, prHID, T); /* Also send T=w.ID to client, remember ctx.RANDom w  */
+}
 
 if (rtn == ctx.MPIN.BAD_PIN) {
     console.log("Server says - Bad Pin.");
@@ -182,6 +178,14 @@ if (rtn == ctx.MPIN.BAD_PIN) {
     }
 } else {
     console.log("Server says - PIN is good! You really are " + IDstr);
-}
+    if (FULL) {
+        var H = ctx.MPIN.HASH_ALL(sha, HCID, pxID, pxCID, SEC, Y, Z, T);
+        ctx.MPIN.CLIENT_KEY(sha, G1, G2, pin, R, X, H, T, CK);
 
+        console.log("Client Key =  0x" + ctx.MPIN.bytestostring(CK));
+        H = ctx.MPIN.HASH_ALL(sha, HSID, pxID, pxCID, SEC, Y, Z, T);
+        ctx.MPIN.SERVER_KEY(sha, Z, SST, W, H, pHID, pxID, pxCID, SK);
+        console.log("Server Key =  0x" + ctx.MPIN.bytestostring(SK));
+    }
+}
 console.log("SUCCESS");

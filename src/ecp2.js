@@ -22,15 +22,34 @@
 var ECP2 = function(ctx) {
     "use strict";
 
-    /* Constructor, set this=O */
-    var ECP2 = function() {
-        this.x = new ctx.FP2(0);
-        this.y = new ctx.FP2(1);
-        this.z = new ctx.FP2(0);
+    /**
+     * Creates an instance of ECP2
+     *
+     * @constructor
+     * @this {ECP2}
+     */    
+    var ECP2 = function(input) {
+        if (input instanceof ECP2) {
+            // copy constructor
+            this.x = new ctx.FP2(input.x);
+            this.y = new ctx.FP2(input.y);
+            this.z = new ctx.FP2(input.z);
+        } else {
+            // default constructor (point at infinity)
+            this.x = new ctx.FP2(0);
+            this.y = new ctx.FP2(1);
+            this.z = new ctx.FP2(0);
+        }
     };
 
     ECP2.prototype = {
-        /* Test this=O? */
+	
+	/**
+         * Tests for ECP2 point equal to infinity
+         *
+         * @this {ECP2}
+         * @param 1 if infinity, else returns 0
+         */	
         is_infinity: function() {
 
             this.x.reduce();
@@ -39,28 +58,45 @@ var ECP2 = function(ctx) {
             return (this.x.iszilch() && this.z.iszilch());
         },
 
-        /* copy this=P */
+	/**
+         * Copy ECP2 point to another ECP2 point
+         *
+         * @this {ECP2}
+         * @param P ECP2 instance
+         */	
         copy: function(P) {
             this.x.copy(P.x);
             this.y.copy(P.y);
             this.z.copy(P.z);
         },
 
-        /* set this=O */
+	/**
+         * Set ECP2 to point-at-infinity
+         *
+         * @this {ECP2}
+         */	
         inf: function() {
             this.x.zero();
             this.y.one();
             this.z.zero();
         },
 
-        /* conditional move of Q to P dependant on d */
+	/**
+         * conditional move of Q to P dependant on d 
+         *
+         * @this {ECP2}
+         */	
         cmove: function(Q, d) {
             this.x.cmove(Q.x, d);
             this.y.cmove(Q.y, d);
             this.z.cmove(Q.z, d);
         },
 
-        /* Constant time select from pre-computed table */
+	/**
+         * Constant time select from pre-computed table 
+         *
+         * @this {ECP2}
+         */	
         select: function(W, b) {
             var MP = new ECP2(),
                 m, babs;
@@ -83,7 +119,12 @@ var ECP2 = function(ctx) {
             this.cmove(MP, (m & 1));
         },
 
-        /* Test P == Q */
+	/**
+         * Test P == Q 
+         *
+         * @this {ECP2}
+         * @param Q ECP2 instance 
+         */	
         equals: function(Q) {
             var a, b;
 
@@ -115,7 +156,11 @@ var ECP2 = function(ctx) {
             return true;
         },
 
-        /* set this=-this */
+	/**
+         * set this=-this 
+         *
+         * @this {ECP2}
+         */	
         neg: function() {
             this.y.norm();
             this.y.neg();
@@ -123,7 +168,11 @@ var ECP2 = function(ctx) {
             return;
         },
 
-        /* convert this to affine, from (x,y,z) to (x,y) */
+	/**
+         * convert this to affine, from (x,y,z) to (x,y) 
+         *
+         * @this {ECP2}
+         */	
         affine: function() {
             var one;
 
@@ -148,34 +197,60 @@ var ECP2 = function(ctx) {
             this.z.copy(one);
         },
 
-        /* extract affine x as ctx.FP2 */
+	/**
+         * extract affine x as ctx.FP2 
+         *
+         * @this {ECP2}
+         */	
         getX: function() {
 			var W=new ECP2(); W.copy(this); W.affine();
             return W.x;
         },
 
-        /* extract affine y as ctx.FP2 */
+  
+	/**
+         * extract affine y as ctx.FP2
+         *
+         * @this {ECP2}
+         */	
         getY: function() {
 			var W=new ECP2(); W.copy(this); W.affine();
             return W.y;
         },
 
-        /* extract projective x */
+	/**
+         * extract projective x
+         *
+         * @this {ECP2}
+         */	
         getx: function() {
             return this.x;
         },
 
-        /* extract projective y */
+	/**
+         * extract projective y
+         *
+         * @this {ECP2}
+         */	
         gety: function() {
             return this.y;
         },
 
-        /* extract projective z */
+	/**
+         * extract projective z
+         *
+         * @this {ECP2}
+         */	
         getz: function() {
             return this.z;
         },
 
-        /* convert this to byte array */
+	/**
+         * convert this to byte arrayextract projective x
+         *
+         * @this {ECP2}
+         * @param b byte array output
+         */	
         toBytes: function(b) {
             var t = [],
                 i;
@@ -200,7 +275,12 @@ var ECP2 = function(ctx) {
             }
         },
 
-        /* convert this to hex string */
+	/**
+         * convert this to hex string 
+         *
+         * @this {ECP2}
+         * @return hex string
+         */	
         toString: function() {
 			var W=new ECP2(); W.copy(this);
             if (W.is_infinity()) {
@@ -210,7 +290,14 @@ var ECP2 = function(ctx) {
             return "(" + W.x.toString() + "," + W.y.toString() + ")";
         },
 
-        /* set this=(x,y) */
+ 
+	/**
+         * set this=(x,y)
+         *
+         * @this {ECP2}
+         * @param ix x-value
+         * @param iy y-value
+         */	
         setxy: function(ix, iy) {
             var rhs, y2;
 
@@ -229,7 +316,12 @@ var ECP2 = function(ctx) {
             }
         },
 
-        /* set this=(x,.) */
+	/**
+         * set this=(x,.) 
+         *
+         * @this {ECP2}
+         * @param ix x-value
+         */	
         setx: function(ix) {
             var rhs;
 
@@ -246,7 +338,11 @@ var ECP2 = function(ctx) {
             }
         },
 
-        /* set this*=q, where q is Modulus, using Frobenius */
+	/**
+         * set this*=q, where q is Modulus, using Frobenius 
+         *
+         * @this {ECP2}
+         */	
         frob: function(X) {
             var X2;
 
@@ -261,7 +357,11 @@ var ECP2 = function(ctx) {
             this.y.mul(X);
         },
 
-        /* this+=this */
+	/**
+         * this+=this 
+         *
+         * @this {ECP2}
+         */	
         dbl: function() {
             var iy, t0, t1, t2, x3, y3;
 
@@ -330,8 +430,12 @@ var ECP2 = function(ctx) {
             return 1;
         },
 
-        /* this+=Q - return 0 for add, 1 for double, -1 for O */
-        /* this+=Q */
+	/**
+         * Adds ECP2 instances
+         *
+         * param Q ECP2 instance
+         * @this {ECP2}
+         */		
         add: function(Q) {
             var b, t0, t1, t2, t3, t4, x3, y3, z3;
 
@@ -447,7 +551,12 @@ var ECP2 = function(ctx) {
             return 0;
         },
 
-        /* this-=Q */
+	/**
+         * Subtracts ECP instance Q  from this
+         *
+         * @this {ECP2}
+         * @param Q ECP2 instance
+         */	
         sub: function(Q) {
             var D;
 			var NQ=new ECP2(); NQ.copy(Q);
@@ -456,7 +565,12 @@ var ECP2 = function(ctx) {
             return D;
         },
 
-        /* P*=e */
+	/**
+         * Multiplies an ECP2 instance P by a BIG, side-channel resistant
+         *
+         * @this {ECP2}
+         * @param e BIG number multiplier
+         */		
         mul: function(e) {
             /* fixed size windows */
             var mt = new ctx.BIG(),
@@ -524,7 +638,11 @@ var ECP2 = function(ctx) {
         }
     };
 
-    // set to group generator
+    /**
+      * Set group generator
+      *
+      * @this {ECP2}
+      */	
     ECP2.generator = function() {
         var G=new ECP2(),
             A = new ctx.BIG(0),
@@ -543,7 +661,12 @@ var ECP2 = function(ctx) {
         return G;
     };
 
-    /* convert from byte array to point */
+    /**
+      * convert from byte array to point 
+      *
+      * @this {ECP2}
+      * @param b input byte array
+      */	    
     ECP2.fromBytes = function(b) {
         var t = [],
             ra, rb, i, rx, ry, P;
@@ -576,7 +699,12 @@ var ECP2 = function(ctx) {
         return P;
     };
 
-    /* Calculate RHS of curve equation x^3+B */
+    /**
+      * Calculate RHS of curve equation x^3+B
+      *
+      * @this {ECP2}
+      * @param x x-value
+      */	    
     ECP2.RHS = function(x) {
         var r, c, b;
 
@@ -609,6 +737,12 @@ var ECP2 = function(ctx) {
     // Bos & Costello https://eprint.iacr.org/2013/458.pdf
     // Faz-Hernandez & Longa & Sanchez  https://eprint.iacr.org/2013/158.pdf
     // Side channel attack secure
+
+    /**
+      * Calculate P=u0.Q0+u1*Q1+u2*Q2+u3*Q3 
+      *
+      * @this {ECP2}
+      */ 
     ECP2.mul4 = function(Q, u) {
         var W = new ECP2(),
             P = new ECP2(),
@@ -779,8 +913,7 @@ var ECP2 = function(ctx) {
     return ECP2;
 };
 
+// CommonJS module exports
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
-    module.exports = {
-        ECP2: ECP2
-    };
+  module.exports.ECP2 = ECP2;
 }

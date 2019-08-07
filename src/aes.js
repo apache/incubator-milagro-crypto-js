@@ -20,6 +20,12 @@
 var AES = function() {
     "use strict";
 
+    /**
+     * Creates an instance of AES.
+     *
+     * @constructor
+     * @this {AES}
+     */
     var AES = function() {
         this.Nk = 0;
         this.Nr = 0;
@@ -47,7 +53,14 @@ var AES = function() {
     AES.CTR16 = 45;
 
     AES.prototype = {
-        /* reset cipher */
+
+	/**
+         * Reset AES mode or IV
+         *
+         * @this {AES}
+         * @param m  The new active mode of operation (ECB, CBC, OFB, CFB etc)
+         * @param iv The new Initialisation Vector
+         */
         reset: function(m, iv) { /* reset mode, or reset iv */
             var i;
 
@@ -64,6 +77,12 @@ var AES = function() {
             }
         },
 
+	/**
+         * Reset Extract chaining vector
+         *
+         * @this {AES}
+         * @return f the extracted chaining vector
+         */
         getreg: function() {
             var ir = [],
                 i;
@@ -87,7 +106,15 @@ var AES = function() {
             }
         },
 
-        /* Initialise cipher */
+	/**
+         * Initialise an instance of AES and its mode of operation
+         *
+         * @this {AES}
+         * @param m is the active mode of operation (ECB, CBC, OFB, CFB etc)
+         * @param n is the key length in bytes, 16, 24 or 32
+         * @param key the AES key as an array of 16 bytes
+         * @param iv the Initialisation Vector
+         */
         init: function(m, nk, key, iv) { /* Key=16 bytes */
             /* Key Scheduler. Create expanded encryption key */
             var CipherKey = [],
@@ -160,7 +187,12 @@ var AES = function() {
             }
         },
 
-        /* Encrypt a single block */
+	/**
+         * Encrypt a single 16 byte block in ECB mode
+         *
+         * @this {AES}
+         * @param {string} buff is an array of 16 plaintext bytes, on exit becomes ciphertext
+         */
         ecb_encrypt: function(buff) {
             var b = [],
                 p = [],
@@ -234,7 +266,12 @@ var AES = function() {
             }
         },
 
-        /* Decrypt a single block */
+	/**
+         * Decrypt a single 16 byte block in ECB mode
+         *
+         * @this {AES}
+         * @param buff is an array of 16 cipherext bytes, on exit becomes plaintext
+         */	
         ecb_decrypt: function(buff) {
             var b = [],
                 p = [],
@@ -307,7 +344,12 @@ var AES = function() {
 
         },
 
-        /* Encrypt using selected mode of operation */
+	/**
+         * Encrypt using selected mode of operation 
+         *
+         * @this {AES}
+         * @param {string} buff is an array of 16 plaintext bytes, on exit becomes ciphertext
+         */
         encrypt: function(buff) {
             var st = [],
                 bytes, fell_off, j;
@@ -384,7 +426,12 @@ var AES = function() {
             }
         },
 
-        /* Decrypt using selected mode of operation */
+	/**
+         * Decrypt using selected mode of operation 
+         *
+         * @this {AES}
+         * @param {string} buff is an array of 16 cipherext bytes, on exit becomes plaintext
+         */	
         decrypt: function(buff) {
             var st = [],
                 bytes,fell_off, j;
@@ -461,7 +508,11 @@ var AES = function() {
             }
         },
 
-        /* Clean up and delete left-overs */
+	/**
+         * Clean up and delete left-overs 
+         *
+         * @this {AES}
+         */		
         end: function() { // clean up
             var i;
 

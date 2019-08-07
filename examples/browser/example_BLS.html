@@ -1,3 +1,22 @@
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -46,7 +65,7 @@
 
 
 <p><a id="myLink4" href="#" onclick="location.reload(false);bn254();">BN254 254-bit k=12 Pairing-Friendly BN Curve Boneh-Lynn-Shacham</a></p>
-<p><a id="myLink5" href="#" onclick="location.reload(false);bls383();">BLS383 383-bit k=12 Pairing-Friendly BLS Curve Boneh-Lynn-Shacham</a></p>
+<p><a id="myLink5" href="#" onclick="location.reload(false);bls381();">BLS381 381-bit k=12 Pairing-Friendly BLS Curve Boneh-Lynn-Shacham</a></p>
 <p><a id="myLink6" href="#" onclick="location.reload(false);bls24();">BLS24 479-bit k=24 Pairing-Friendly BLS Curve Boneh-Lynn-Shacham</a></p>
 <p><a id="myLink7" href="#" onclick="location.reload(false);bls48();">BLS48 556-bit k=48 Pairing-Friendly BLS Curve Boneh-Lynn-Shacham</a></p>
 
@@ -103,12 +122,12 @@ function bn254() {
 
 }
 
-// BLS383 context
-function bls383() {
-	var ctx = new CTX('BLS383');
+// BLS381 context
+function bls381() {
+	var ctx = new CTX('BLS381');
 	mywindow=window.open();
 
-	mywindow.document.write("<br> BLS383 Pairing-Friendly Curve "+  "<br>");
+	mywindow.document.write("<br> BLS381 Pairing-Friendly Curve "+  "<br>");
 
 	var i,res;
 	var result;
