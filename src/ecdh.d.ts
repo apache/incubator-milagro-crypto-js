@@ -35,7 +35,7 @@ export class ECDH {
 
     ECPSVDP_DH(s: ArrayLike<number>, w: ArrayLike<number>, k: ArrayLike<number>): number;
 
-    ECPSP_DSA(shaVersion: number, rng: RNG, c: ArrayLike<number>, d: ArrayLike<number>): number;
+    ECPSP_DSA(shaVersion: number, rng: RNG, s: ArrayLike<number>, f: ArrayLike<number>, c: ArrayLike<number>, d: ArrayLike<number>): number;
 
     ECPVP_DSA(shaVersion: number, w: ArrayLike<number>, f: ArrayLike<number>, c: ArrayLike<number>, d: ArrayLike<number>): number;
 
