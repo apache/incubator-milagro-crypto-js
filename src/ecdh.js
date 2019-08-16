@@ -511,9 +511,10 @@ var ECDH = function(ctx) {
           * @parameter rng Cryptographically Secure Random Number Generator
 	  * @parameter S the private key
 	  * @parameter W the output public key, which is s.G, where G is a fixed generator
+      * @parameter C boolean indicating to compress pubkey
   	  * @return 0 or an error code
           */						
-        KEY_PAIR_GENERATE: function(RNG, S, W) {
+        KEY_PAIR_GENERATE: function(RNG, S, W, C) {
             var res = 0,
                 r, s, G, WP;
             // var T=[];
@@ -533,7 +534,7 @@ var ECDH = function(ctx) {
             s.toBytes(S);
 
             WP = G.mul(s);
-            WP.toBytes(W,false);  // To use point compression on public keys, change to true 
+            WP.toBytes(W, C);  // To use point compression on public keys, change to true 
 
             return res;
         },
