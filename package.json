@@ -1,6 +1,6 @@
 {
   "name": "@chainsafe/milagro-crypto-js",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Apache Milagro Crypto JavaScript Library",
   "main": "index.js",
   "directories": {
