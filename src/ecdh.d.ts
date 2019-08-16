@@ -29,7 +29,7 @@ export class ECDH {
 
     AES_CBC_IV0_DECRYPT(k: ArrayLike<number>, c: ArrayLike<number>): number[];
 
-    KEY_PAIR_GENERATE(rng: RNG, s: ArrayLike<number>, w: ArrayLike<number>): number;
+    KEY_PAIR_GENERATE(rng: RNG, s: ArrayLike<number>, w: ArrayLike<number>, c: boolean): number;
 
     PUBLIC_KEY_VALIDATE(w: ArrayLike<number>): number;
 
