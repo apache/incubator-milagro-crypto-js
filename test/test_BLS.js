@@ -26,9 +26,7 @@ var chai = require('chai');
 var expect = chai.expect;
 
 // Curves for test
-//var pf_curves = ['BLS381'];
 var pf_curves = ['BLS381','BLS24', 'BLS48'];
-//var pf_curves = ['BN254', 'BN254CX', 'BLS381', 'BLS383', 'BLS461', 'FP256BN', 'FP512BN', 'BLS24', 'BLS48'];
 
 pf_curves.forEach(function(curve) {
 
