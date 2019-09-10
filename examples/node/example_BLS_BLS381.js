@@ -42,10 +42,15 @@ var message="test message";
 
 // User 1
 var sk1=[];
+var pktmp=[];
 var pk1=[];
 var sig1=[];
 
-ctx.BLS.KeyPairGenerate(rng,sk1,pk1);
+ctx.BLS.KeyPairGenerate(rng,sk1,pktmp);
+console.log("Private key user 1: 0x"+ctx.BLS.bytestostring(sk1));
+console.log("Public key user 1: 0x"+ctx.BLS.bytestostring(pktmp));
+
+ctx.BLS.KeyPairGenerate(null,sk1,pk1);
 console.log("Private key user 1: 0x"+ctx.BLS.bytestostring(sk1));
 console.log("Public key user 1: 0x"+ctx.BLS.bytestostring(pk1));
 
