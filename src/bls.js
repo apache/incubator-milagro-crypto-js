@@ -1,3 +1,4 @@
+// This is just a sample script. Paste your real code (javascript or HTML) here.
 /*
     Licensed to the Apache Software Foundation (ASF) under one
     or more contributor license agreements.  See the NOTICE file
@@ -18,7 +19,6 @@
 */
 
 /* BLS API Functions */
-
 var BLS = function(ctx) {
     "use strict";
 
@@ -27,7 +27,7 @@ var BLS = function(ctx) {
      *
      * @constructor
      * @this {BLS}
-     */        
+     */
     var BLS = {
         BLS_OK: 0,
         BLS_FAIL: -1,
@@ -35,13 +35,13 @@ var BLS = function(ctx) {
         BFS: ctx.BIG.MODBYTES,
         BGS: ctx.BIG.MODBYTES,
 
-       /**
+        /**
          * Convert byte array to string
          *
          * @this {BLS}
          * @parameter b byte array
          * @return string
-         */		
+         */
         bytestostring: function(b) {
             var s = "",
                 len = b.length,
@@ -57,13 +57,13 @@ var BLS = function(ctx) {
             return s;
         },
 
-       /**
+        /**
          * Convert string to byte array 
          *
          * @this {BLS}
          * @parameter s string
          * @return byte array
-         */			
+         */
         stringtobytes: function(s) {
             var b = [],
                 i;
@@ -77,144 +77,152 @@ var BLS = function(ctx) {
 
 
         /**
-          *  hash a message to an ECP point, using SHA3 
-          *
-          * @this {BLS}
-          * @parameter m message to be hashedstring
-          * @return ECP point
-          */	
+         *  hash a message to an ECP point, using SHA3 
+         *
+         * @this {BLS}
+         * @parameter m message to be hashedstring
+         * @return ECP point
+         */
         bls_hashit: function(m) {
-			var sh = new ctx.SHA3(ctx.SHA3.SHAKE256);
+            var sh = new ctx.SHA3(ctx.SHA3.SHAKE256);
             var hm = [];
-            var t=this.stringtobytes(m);
-			for (var i=0;i<t.length;i++)
-				sh.process(t[i]);
-			sh.shake(hm,this.BFS);
-			var P=ctx.ECP.mapit(hm);
-			return P;
-		},
+            var t = this.stringtobytes(m);
+            for (var i = 0; i < t.length; i++)
+                sh.process(t[i]);
+            sh.shake(hm, this.BFS);
+            var P = ctx.ECP.mapit(hm);
+            return P;
+        },
 
-	/**
-          * Generate key pair
-          *
-          * @this {BLS}
-          * @parameter rng Cryptographically Secure Random Number Generator
-          * @parameter S Private key
-          * @parameter W Public key
-          * @return Error code
-          */	
-	KeyPairGenerate(rng,S,W) {
-			var G=ctx.ECP2.generator();
-			var q=new ctx.BIG(0);
-			q.rcopy(ctx.ROM_CURVE.CURVE_Order);
-			var s=ctx.BIG.randomnum(q,rng);
-            s.toBytes(S);
-            G = ctx.PAIR.G2mul(G,s);
+        /**
+         * Generate key pair
+         *
+         * @this {BLS}
+         * @parameter rng Cryptographically Secure Random Number Generator
+         * @parameter S Private key. Generated externally if RNG set to NULL
+         * @parameter W Public key
+         * @return Error code
+         */
+        KeyPairGenerate(rng, S, W) {
+            var G = ctx.ECP2.generator();
+	    var s;
+	    
+            var q = new ctx.BIG(0);
+            q.rcopy(ctx.ROM_CURVE.CURVE_Order);
 
-            G.toBytes(W);  // To use point compression on public keys, change to true 
-			return this.BLS_OK;
-		},
+            if (rng != null) {
+                s = ctx.BIG.randomnum(q, rng);
+                s.toBytes(S);
+            } else {
+                s = ctx.BIG.fromBytes(S);
+            }
+	    
+            G = ctx.PAIR.G2mul(G, s);
+            G.toBytes(W);
+	    
+            return this.BLS_OK;
+        },
 
-	/**
-          * Sign message
-          *
-          * @this {BLS}
-          * @parameter SIG Singature
-          * @parameter m Message to sign
-          * @parameter S Private key
-          * @return Error code
-          */		
-	sign(SIG,m,S) {
-			var D=this.bls_hashit(m);
-			var s=ctx.BIG.fromBytes(S);
-			D=ctx.PAIR.G1mul(D,s);
-			D.toBytes(SIG,true);
-			return this.BLS_OK;
-		},
+        /**
+         * Sign message
+         *
+         * @this {BLS}
+         * @parameter SIG Singature
+         * @parameter m Message to sign
+         * @parameter S Private key
+         * @return Error code
+         */
+        sign(SIG, m, S) {
+            var D = this.bls_hashit(m);
+            var s = ctx.BIG.fromBytes(S);
+            D = ctx.PAIR.G1mul(D, s);
+            D.toBytes(SIG, true);
+            return this.BLS_OK;
+        },
 
-	/**
-          * Verify message
-          *
-          * @this {BLS}
-          * @parameter SIG Signature
-          * @parameter m Message to sign
-          * @parameter W Public key
-          * @return Error code
-          */			
-	verify(SIG,m,W) {
-			var HM=this.bls_hashit(m);
-			var D=ctx.ECP.fromBytes(SIG);
-			var G=ctx.ECP2.generator();
-			var PK=ctx.ECP2.fromBytes(W);
-			D.neg();
+        /**
+         * Verify message
+         *
+         * @this {BLS}
+         * @parameter SIG Signature
+         * @parameter m Message to sign
+         * @parameter W Public key
+         * @return Error code
+         */
+        verify(SIG, m, W) {
+            var HM = this.bls_hashit(m);
+            var D = ctx.ECP.fromBytes(SIG);
+            var G = ctx.ECP2.generator();
+            var PK = ctx.ECP2.fromBytes(W);
+            D.neg();
 
-// Use new multi-pairing mechanism 
-			var r=ctx.PAIR.initmp();
-			ctx.PAIR.another(r,G,D);
-			ctx.PAIR.another(r,PK,HM);
-			var v=ctx.PAIR.miller(r);
+            // Use new multi-pairing mechanism 
+            var r = ctx.PAIR.initmp();
+            ctx.PAIR.another(r, G, D);
+            ctx.PAIR.another(r, PK, HM);
+            var v = ctx.PAIR.miller(r);
 
-//.. or alternatively
-//			var v=ctx.PAIR.ate2(G,D,PK,HM);
+            //.. or alternatively
+            //			var v=ctx.PAIR.ate2(G,D,PK,HM);
 
-			v=ctx.PAIR.fexp(v);
-			if (v.isunity())
-				return this.BLS_OK;
-			return this.BLS_FAIL;
-		},
+            v = ctx.PAIR.fexp(v);
+            if (v.isunity())
+                return this.BLS_OK;
+            return this.BLS_FAIL;
+        },
 
-	/**
-          * R=R1+R2 in group G1 
-          *
-          * @this {BLS}
-          * @parameter R1 G1 Point
-          * @parameter R2 G1 Point
-          * @parameter R G1 Point
-          * @return Error code
-          */			
+        /**
+         * R=R1+R2 in group G1 
+         *
+         * @this {BLS}
+         * @parameter R1 G1 Point
+         * @parameter R2 G1 Point
+         * @parameter R G1 Point
+         * @return Error code
+         */
         add_G1(R1, R2, R) {
-                       var P = ctx.ECP.fromBytes(R1),
-                       Q = ctx.ECP.fromBytes(R2);
+            var P = ctx.ECP.fromBytes(R1),
+                Q = ctx.ECP.fromBytes(R2);
 
-                       if (P.is_infinity() || Q.is_infinity()) {
-                           return this.INVALID_POINT;
-		       }
+            if (P.is_infinity() || Q.is_infinity()) {
+                return this.INVALID_POINT;
+            }
 
-                       P.add(Q);
+            P.add(Q);
 
-                       P.toBytes(R,true);
+            P.toBytes(R, true);
 
-                       return 0;
-                },
+            return 0;
+        },
 
- 	/**
-          *  W=W1+W2 in group G2 
-          *
-          * @this {BLS}
-          * @parameter W1 G2 Point
-          * @parameter W2 G2 Point
-          * @parameter R G2 Point
-          * @return Error code
-          */			
+        /**
+         *  W=W1+W2 in group G2 
+         *
+         * @this {BLS}
+         * @parameter W1 G2 Point
+         * @parameter W2 G2 Point
+         * @parameter R G2 Point
+         * @return Error code
+         */
         add_G2(W1, W2, W) {
-                       var P = ctx.ECP2.fromBytes(W1),
-                       Q = ctx.ECP2.fromBytes(W2);
+            var P = ctx.ECP2.fromBytes(W1),
+                Q = ctx.ECP2.fromBytes(W2);
 
-                       if (P.is_infinity() || Q.is_infinity()) {
-                           return this.INVALID_POINT;
-                       }
+            if (P.is_infinity() || Q.is_infinity()) {
+                return this.INVALID_POINT;
+            }
 
-                       P.add(Q);
+            P.add(Q);
 
-                       P.toBytes(W);
+            P.toBytes(W);
 
-                       return 0;
-                }
-	
+            return 0;
+        }
+
     };
 
     return BLS;
-};	
+};
 
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     module.exports = {

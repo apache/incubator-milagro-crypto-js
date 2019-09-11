@@ -26,7 +26,7 @@ var chai = require('chai');
 var expect = chai.expect;
 
 // Curves for test
-var pf_curves = ['BN254', 'BN254CX', 'BLS381', 'BLS383', 'BLS461', 'FP256BN', 'FP512BN', 'BLS24', 'BLS48'];
+var pf_curves = ['BLS381','BLS24', 'BLS48'];
 
 pf_curves.forEach(function(curve) {
 
@@ -173,6 +173,34 @@ pf_curves.forEach(function(curve) {
 	    
             done();
         });
+
+      	it('test externally generated key', function(done) {
+            this.timeout(0);
+
+	    var sk=[];
+	    var pktmp=[];
+	    var pk=[];
+	    var sig=[];
+
+            var RAW = [];
+            rng.clean();
+            for (var j = 0; j < 100; j++) RAW[j] = j;
+            rng.seed(100, RAW);
+
+	    // Key pairs
+	    BLS.KeyPairGenerate(rng,sk,pktmp);
+	    BLS.KeyPairGenerate(null,sk,pk);
+
+	    // Sign message
+	    BLS.sign(sig,message,sk);
+
+	    // Verify signature
+    	    rc=BLS.verify(sig,message,pk);
+
+            expect(rc).to.be.equal(BLS.BLS_OK);
+
+            done();
+        });	
 	
     });
 });
