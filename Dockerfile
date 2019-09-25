@@ -9,7 +9,7 @@
 # To create the image execute:
 #     docker build -t mcjs:builder .
 #
-# To run tests:
+# To run the tests:
 #     docker run --rm mcjs:builder 
 #
 # To login to container:
