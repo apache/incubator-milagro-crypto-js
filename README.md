@@ -50,7 +50,7 @@ added New Hope, a post-quantum key exchange.
 
 ## Install and run  tests
 
-[Node.js](https://nodejs.org/en/) (minimum v6.9.5) and
+[Node.js](https://nodejs.org/en/) (maximum v8.0.0) and
 [npm](https://www.npmjs.com/) are required in order to build the library and
 run the tests. Install also the node.js modules required with the command
 
@@ -62,6 +62,20 @@ Run all the tests with the following command
 
 ```
 npm test
+```
+
+## Docker
+
+To create the image execute;
+
+```
+docker build -t mcjs:builder .
+```
+
+To run the tests;
+
+```
+docker run --rm mcjs:builder 
 ```
 
 ## Quick Start
