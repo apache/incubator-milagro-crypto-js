@@ -19,17 +19,8 @@
 
 # MCJS - *Milagro Crypto JavaScript*
 
-[![Master Branch](https://img.shields.io/badge/-master:-gray.svg)](https://github.com/apache/incubator-milagro-crypto-js/tree/master)
-[![Master Build Status](https://secure.travis-ci.org/apache/incubator-milagro-crypto-js.png?branch=master)](https://travis-ci.org/apache/incubator-milagro-crypto-js?branch=master)
-[![Master Coverage Status](https://coveralls.io/repos/github/apache/incubator-milagro-crypto-js/badge.svg?branch=master)](https://coveralls.io/github/apache/incubator-milagro-crypto-js?branch=master)
-
-[![Develop Branch](https://img.shields.io/badge/-develop:-gray.svg)](https://github.com/apache/incubator-milagro-crypto-js/tree/develop)
-[![Develop Build Status](https://secure.travis-ci.org/apache/incubator-milagro-crypto-js.png?branch=develop)](https://travis-ci.org/apache/incubator-milagro-crypto-js?branch=develop)
-[![Develop Coverage Status](https://coveralls.io/repos/github/apache/incubator-milagro-crypto-js/badge.svg?branch=develop)](https://coveralls.io/github/apache/incubator-milagro-crypto-js?branch=develop)
-
-
 * **category**:    Library
-* **copyright**:   2019 The Apache Software Foundation
+* **copyright**:   2023 The Apache Software Foundation
 * **license**:     ASL 2.0 - http://www.apache.org/licenses/LICENSE-2.0
 * **link**:        https://github.com/apache/incubator-milagro-crypto-js
 
@@ -186,7 +177,7 @@ Please add yourself here if you make or have made a contribution.
 1.  [Check for open issues](https://github.com/apache/incubator-milagro-crypto-js/issues)
     or start a discussion around a feature idea or a bug by sending a mail to
     dev@milagro.incubator.apache.org
-2.  Fork the repository to start making your changes. Please use the "development" branch
+2.  Fork the repository to start making your changes. Please use the master branch
     as a basis.
 3.  Write a test which shows that the bug was fixed or that the feature works as expected.
 4.  Make a pull request with a reference to the issue
